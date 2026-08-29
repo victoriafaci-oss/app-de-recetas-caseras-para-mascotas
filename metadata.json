@@ -1,0 +1,6 @@
+{
+  "name": "Recetas caseras para mascotas",
+  "description": "Nutrición casera y hábitos diarios para perros y gatos, recetario balanceado, cálculo metabólico RER/MER, monitor de hidratación y agenda médica con avisos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
