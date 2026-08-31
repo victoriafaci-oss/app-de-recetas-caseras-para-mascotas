@@ -365,7 +365,9 @@ export const NutriIAChatScreen: React.FC = () => {
             </div>
 
             <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
-              NutriIA formulará una receta completa de Haute Cuisine adaptada al peso ({selectedPet?.weightKg}kg) y condición clínica de <strong>{selectedPet?.name}</strong>.
+              {language === 'es' 
+                ? `NutriIA formulará una receta completa y equilibrada adaptada al peso (${selectedPet?.weightKg}kg) y condición de ${selectedPet?.name}.`
+                : `NutriAI will formulate a balanced homemade recipe tailored to ${selectedPet?.name}'s weight (${selectedPet?.weightKg}kg) and condition.`}
             </p>
 
             <div className="space-y-3 text-xs">

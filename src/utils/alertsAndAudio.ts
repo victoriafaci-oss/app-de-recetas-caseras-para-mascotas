@@ -112,17 +112,17 @@ export function exportToICS(events: HealthEvent[], filename = 'NutriPet_Agenda.i
   const icsLines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//NutriPet Haute Cuisine & Health//ES',
+    'PRODID:-//Recetas Caseras para Mascotas//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:NutriPet Agenda Salud & Nutrición',
+    'X-WR-CALNAME:Agenda Salud & Nutrición de Mascotas',
     'X-WR-TIMEZONE:Europe/Madrid',
   ];
 
   events.forEach((evt) => {
     const dtStart = formatDateToICS(evt.date, evt.time);
     const dtEnd = formatDateToICS(evt.date, addMinutesToTime(evt.time || '09:00', 30));
-    const uid = `nutripet-${evt.id}-${Date.now()}@nutripet.atelier`;
+    const uid = `petrecetas-${evt.id}-${Date.now()}@recetasmascotas.local`;
 
     icsLines.push(
       'BEGIN:VEVENT',
@@ -130,12 +130,12 @@ export function exportToICS(events: HealthEvent[], filename = 'NutriPet_Agenda.i
       `DTSTAMP:${formatDateToICS(new Date().toISOString().split('T')[0], '00:00')}Z`,
       `DTSTART:${dtStart}`,
       `DTEND:${dtEnd}`,
-      `SUMMARY:🐾 [NutriPet] ${evt.petName}: ${evt.title}`,
+      `SUMMARY:🐾 [Nutrición] ${evt.petName}: ${evt.title}`,
       `DESCRIPTION:${(evt.dosage ? `Dosis/Detalle: ${evt.dosage}\\n` : '') + (evt.notes ? `Notas: ${evt.notes}\\n` : '') + `Categoría: ${evt.category}`}`,
       'STATUS:CONFIRMED',
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
-      `DESCRIPTION:Recordatorio NutriPet: ${evt.title}`,
+      `DESCRIPTION:Recordatorio: ${evt.title}`,
       'TRIGGER:-PT15M',
       'END:VALARM',
       'END:VEVENT'
@@ -173,10 +173,10 @@ export function getGoogleCalendarUrl(evt: HealthEvent): string {
   const [endHours, endMins] = addMinutesToTime(evt.time || '09:00', 30).split(':');
   const endIso = `${year}${month}${day}T${endHours}${endMins}00`;
 
-  const title = encodeURIComponent(`🐾 [NutriPet] ${evt.petName}: ${evt.title}`);
+  const title = encodeURIComponent(`🐾 [Nutrición] ${evt.petName}: ${evt.title}`);
   const details = encodeURIComponent(
-    `${evt.dosage ? `Dosis: ${evt.dosage}\n` : ''}${evt.notes ? `Notas: ${evt.notes}\n` : ''}Plan Nutricional y Clínico NutriPet Haute Cuisine.`
+    `${evt.dosage ? `Dosis: ${evt.dosage}\n` : ''}${evt.notes ? `Notas: ${evt.notes}\n` : ''}Plan de Nutrición y Recetas Caseras.`
   );
 
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=Atelier+NutriPet`;
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=Casa`;
 }

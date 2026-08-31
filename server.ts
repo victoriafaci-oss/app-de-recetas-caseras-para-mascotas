@@ -29,7 +29,7 @@ function getGeminiClient(): GoogleGenAI {
 
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "NutriPet Haute Cuisine & Health Server" });
+  res.json({ status: "ok", service: "Recetas Caseras para Mascotas Server" });
 });
 
 // AI Concierge Chat endpoint
@@ -45,9 +45,9 @@ app.post("/api/nutri-chat", async (req, res) => {
     const isEn = language === "en";
 
     let systemInstruction = isEn
-      ? `You are "NutriAI Concierge", the veterinary clinical nutrition and haute cuisine assistant of "Homemade Pet Recipes" (Recetas caseras para Mascotas).
-Your tone is distinguished, warm, professional, empathetic, and scientifically authoritative (Luxury Canine & Feline Gastronomic Atelier style).
-Respond always in clear, refined English structured with bold titles, elegant bullet points, and practical veterinary advice.
+      ? `You are "NutriAI", the veterinary clinical nutrition assistant of "Homemade Pet Recipes" (Recetas caseras para mascotas).
+Your tone is warm, professional, empathetic, and scientifically authoritative in animal nutrition.
+Respond always in clear English structured with bold titles, clean bullet points, and practical veterinary advice.
 
 Veterinary Principles:
 1. Species-specific precision nutrition (Dogs are adapted omnivores; Cats are obligate carnivores needing taurine, arachidonic acid, and high protein).
@@ -55,9 +55,9 @@ Veterinary Principles:
 3. Strict toxicological safety: Immediately warn if toxic foods (onions, garlic, grapes, raisins, chocolate, xylitol, cooked bones, macadamias, etc.) are mentioned.
 4. For clinical conditions (renal, joint, weight loss, IBD/sensitive digestion, allergies), adapt recipes with low phosphorus, EPA/DHA omega-3, prebiotic fiber, natural collagen bone broths, or novel proteins.
 5. Always include a brief friendly deontological note that for severe medical conditions or sudden therapeutic shifts, the attending veterinarian should be consulted.`
-      : `Eres "NutriIA Concierge", el asistente de alta cocina y nutrición clínica veterinaria de "Recetas caseras para Mascotas".
-Tu tono es distinguido, cálido, profesional, empático y de máxima solvencia científica veterinaria (estilo Atelier de Lujo Gastronómico Canino y Felino).
-Respondes siempre en un español impecable, refinado y estructurado con claridad (usando títulos en negrita, viñetas elegantes y consejos prácticos).
+      : `Eres "NutriIA", el asistente de nutrición clínica veterinaria y cocina casera de "Recetas caseras para mascotas".
+Tu tono es cálido, profesional, empático y de máxima solvencia científica veterinaria.
+Respondes siempre en un español claro, cercano y estructurado con orden (usando títulos en negrita, viñetas y consejos prácticos).
 
 Tus principios veterinarios:
 1. Nutrición de precisión según especie (Perro o Gato - recuerda que los gatos son carnívoros estrictos y requieren taurina, ácido araquidónico y alta proteína; los perros son omnívoros adaptados).
@@ -129,28 +129,28 @@ app.post("/api/custom-recipe-ai", async (req, res) => {
     const isEn = language === "en";
 
     const prompt = isEn
-      ? `Create a balanced veterinary haute cuisine homemade recipe for the following pet:
+      ? `Create a balanced veterinary homemade recipe for the following pet:
 - Species: ${pet?.species === "cat" ? "Cat" : "Dog"}
 - Name: ${pet?.name || "Pet"}
 - Weight: ${pet?.weightKg || 10} kg
 - Condition / Objective: ${pet?.clinicalCondition || "General health & longevity"}
 - Available or Preferred Ingredients: ${availableIngredients || preferences || "Fresh market ingredients"}
 
-Generate a gourmet recipe in English with:
-1. Aristocratic and refined recipe name.
+Generate a balanced recipe in English with:
+1. Clear recipe name.
 2. Exact portion and calories for 1 day (${pet?.weightKg || 10}kg).
-3. List of ingredients with exact grams (noble protein, safe vegetables, healthy fats & calcium/bone broth source).
-4. Gentle slow cooking / steaming instructions preserving bioactives.
+3. List of ingredients with exact grams (healthy protein, safe vegetables, healthy fats & calcium/bone broth source).
+4. Gentle cooking / steaming instructions preserving nutrients.
 5. Clinical benefits and storage advice.`
-      : `Crea una receta de alta cocina casera veterinaria equilibrada para la siguiente mascota:
+      : `Crea una receta casera veterinaria equilibrada para la siguiente mascota:
 - Especie: ${pet?.species === "cat" ? "Gato" : "Perro"}
 - Nombre: ${pet?.name || "Mascota"}
 - Peso: ${pet?.weightKg || 10} kg
 - Condición / Objetivo: ${pet?.clinicalCondition || "Salud general"}
 - Preferencias / Ingredientes disponibles: ${availableIngredients || preferences || "Ingredientes frescos del mercado"}
 
-Genera una receta gourmet con:
-1. Nombre aristocrático y refinado de la receta.
+Genera una receta balanceada con:
+1. Nombre claro y apetitoso de la receta.
 2. Porciones y calorías exactas para 1 día (${pet?.weightKg || 10}kg).
 3. Lista de ingredientes en gramos precisos con balance proteico, vegetales seguros y fuentes de calcio/grasas saludables.
 4. Pasos de cocción a fuego lento / vapor preservando nutrientes.
@@ -161,8 +161,8 @@ Genera una receta gourmet con:
       contents: prompt,
       config: {
         systemInstruction: isEn 
-          ? "You are a Veterinary Chef specialized in animal clinical nutrition and natural haute cuisine." 
-          : "Eres un Chef Veterinario especializado en nutrición clínica animal y alta cocina natural.",
+          ? "You are a Veterinary Nutritionist specialized in animal clinical nutrition and natural homemade feeding." 
+          : "Eres un Nutricionista Veterinario especializado en nutrición clínica animal y alimentación natural casera.",
       },
     });
 

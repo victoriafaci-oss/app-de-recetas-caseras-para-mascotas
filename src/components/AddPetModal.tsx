@@ -10,7 +10,7 @@ interface AddPetModalProps {
 }
 
 export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petToEdit }) => {
-  const { addPet, updatePet } = useApp();
+  const { addPet, updatePet, language } = useApp();
 
   const [name, setName] = useState(petToEdit?.name || '');
   const [species, setSpecies] = useState<Species>(petToEdit?.species || 'dog');
@@ -93,7 +93,9 @@ export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petTo
             </div>
             <div>
               <h3 className="font-editorial text-lg font-bold text-stone-900 dark:text-[#F3E5AB]">
-                {petToEdit ? `Editar Perfil de ${petToEdit.name}` : 'Crear Perfil de Mascota en el Atelier'}
+                {petToEdit 
+                  ? (language === 'es' ? `Editar Perfil de ${petToEdit.name}` : `Edit Profile for ${petToEdit.name}`)
+                  : (language === 'es' ? 'Crear Nuevo Perfil de Mascota' : 'Create New Pet Profile')}
               </h3>
               <p className="text-[11px] text-stone-700 dark:text-stone-300 font-medium">
                 Cálculo de nutrición de precisión RER/MER y seguimiento clínico.

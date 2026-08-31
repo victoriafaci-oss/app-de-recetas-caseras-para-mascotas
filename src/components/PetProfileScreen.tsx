@@ -41,7 +41,8 @@ export const PetProfileScreen: React.FC = () => {
     recordCookedMeal, 
     customRecipes,
     setActiveTab,
-    showToast
+    showToast,
+    language
   } = useApp();
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -85,7 +86,7 @@ export const PetProfileScreen: React.FC = () => {
     addWalkRecord(selectedPet.id, {
       durationMin: Number(walkDuration),
       distanceKm: Number(walkDistance),
-      notes: walkNotes || 'Paseo regular registrado en el atelier.',
+      notes: walkNotes || (language === 'es' ? 'Paseo regular registrado.' : 'Regular walk recorded.'),
       time: walkTime || '10:00',
     });
     setWalkNotes('');
@@ -730,14 +731,14 @@ export const PetProfileScreen: React.FC = () => {
           <div className="flex items-center gap-2">
             <ChefHat className="w-5 h-5 text-amber-500" />
             <h2 className="font-editorial text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-              Recetas de Haute Cuisine Adaptadas
+              {language === 'es' ? 'Recetas Caseras Adaptadas' : 'Adapted Homemade Recipes'}
             </h2>
           </div>
           <button
             onClick={() => setActiveTab('recipes')}
             className="text-xs text-emerald-800 dark:text-[#D4AF37] font-semibold hover:underline"
           >
-            Ver Recetario Completo
+            {language === 'es' ? 'Ver Recetario Completo' : 'View Full Recipes'}
           </button>
         </div>
 

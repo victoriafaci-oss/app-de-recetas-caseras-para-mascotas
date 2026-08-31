@@ -184,18 +184,18 @@ export const TRANSLATIONS = {
     totalEnergy: 'Energía Total',
     ingredientsTitle: 'Ingredientes Proporcionados',
     instructionsTitle: 'Método de Preparación & Cocción',
-    storageTitle: 'Conservación en el Atelier',
-    chefTouch: 'Toque del Chef',
+    storageTitle: 'Conservación & Refrigeración',
+    chefTouch: 'Consejo Nutricional',
     cookedBatchBtn: 'He Cocinado este Batch',
     askNutriAiToAdapt: 'Pedir a NutriIA adaptar receta',
     kcalPer100: 'kcal por 100g',
     cookingTime: 'Cocción',
     difficulty: 'Dificultad',
-    benefits: 'Beneficios Clínicos & Bioactivos',
+    benefits: 'Beneficios Clínicos & Salud',
 
     // Toxic Foods Screen
     toxicTitle: 'Alimentos Prohibidos y Tóxicos para Mascotas',
-    toxicSubtitle: 'Guía de referencia rápida con compuestos nocivos, sintomatología de intoxicación, protocolos de urgencia veterinaria y sustitutos gastronómicos 100% seguros.',
+    toxicSubtitle: 'Guía de referencia rápida con compuestos nocivos, sintomatología de intoxicación, protocolos de urgencia veterinaria y sustitutos 100% seguros.',
     toxicEmergencyBannerTitle: '¿Sospecha de ingestión accidental reciente?',
     toxicEmergencyBannerText: 'No intente provocar el vómito sin supervisión. Acuda de inmediato a un hospital veterinario 24h con la muestra del producto o envase.',
     toxicSearch: 'Buscar alimento (chocolate, cebolla, uvas...)',
@@ -207,11 +207,11 @@ export const TRANSLATIONS = {
     toxicCompound: 'Principio Tóxico',
     clinicalSymptoms: 'Sintomatología Clínica',
     emergencyProtocol: 'Protocolo de Emergencia',
-    safeAlternative: 'Alternativa Gourmet Segura',
+    safeAlternative: 'Alternativa 100% Segura',
 
     // NutriIA Concierge Chat
-    conciergeTitle: 'Consultoría Culinaria & Nutricional',
-    conciergeSubtitle: 'Asesoría gastronómica canina y felina, cálculos energéticos y formulación de dietas terapéuticas seguras con Gemini.',
+    conciergeTitle: 'NutriIA Asistente Nutricional',
+    conciergeSubtitle: 'Asesoría nutricional canina y felina, cálculos energéticos y formulación de recetas caseras seguras con Gemini.',
     generateRecipeAi: 'Generar Receta con IA',
     resetChat: 'Reiniciar Chat',
     chatPlaceholder: 'Consulte sobre la alimentación de su mascota, caldos o restricciones...',
@@ -220,7 +220,7 @@ export const TRANSLATIONS = {
     aiModalGoal: 'Objetivo Nutricional o Terapéutico',
     aiModalIngredients: 'Ingredientes Disponibles o Preferidos',
     aiModalGenerateBtn: 'Crear y Guardar Receta',
-    aiModalFormulating: 'Formulando Receta Gourmet...',
+    aiModalFormulating: 'Formulando Receta Casera Balanceada...',
     suggestions: 'Sugerencias',
 
     // Alarm Modal
@@ -233,9 +233,9 @@ export const TRANSLATIONS = {
 
   en: {
     // Brand & App Title
-    appTitle: 'Homemade recipes for pets',
+    appTitle: 'Homemade Pet Recipes',
     appTitleShort: 'Homemade Recipes',
-    appSubtitle: 'Homemade nutrition & daily habits',
+    appSubtitle: 'Homemade nutrition and daily habits',
     appTagline: 'Natural nutrition, clinical cooking & pet health agenda for dogs and cats',
 
     // Top Navigation & Back buttons
@@ -414,18 +414,18 @@ export const TRANSLATIONS = {
     totalEnergy: 'Total Energy',
     ingredientsTitle: 'Portioned Ingredients',
     instructionsTitle: 'Preparation & Cooking Method',
-    storageTitle: 'Atelier Storage Guidelines',
-    chefTouch: 'Chef\'s Touch',
+    storageTitle: 'Storage & Refrigeration Guidelines',
+    chefTouch: 'Nutritional Tip',
     cookedBatchBtn: 'I Cooked this Batch',
     askNutriAiToAdapt: 'Ask NutriAI to adapt recipe',
     kcalPer100: 'kcal per 100g',
     cookingTime: 'Cook Time',
     difficulty: 'Difficulty',
-    benefits: 'Clinical & Bioactive Benefits',
+    benefits: 'Clinical & Health Benefits',
 
     // Toxic Foods Screen
     toxicTitle: 'Forbidden & Toxic Foods for Pets',
-    toxicSubtitle: 'Quick reference toxicology guide with harmful compounds, intoxication symptoms, emergency veterinary protocols, and 100% safe gourmet substitutes.',
+    toxicSubtitle: 'Quick reference toxicology guide with harmful compounds, intoxication symptoms, emergency veterinary protocols, and 100% safe substitutes.',
     toxicEmergencyBannerTitle: 'Suspect recent accidental ingestion?',
     toxicEmergencyBannerText: 'Do not induce vomiting without veterinary supervision. Immediately take your pet to a 24h veterinary emergency hospital with product packaging.',
     toxicSearch: 'Search food (chocolate, onion, grapes...)',
@@ -437,11 +437,11 @@ export const TRANSLATIONS = {
     toxicCompound: 'Toxic Principle',
     clinicalSymptoms: 'Clinical Symptoms',
     emergencyProtocol: 'Emergency Protocol',
-    safeAlternative: '100% Safe Gourmet Substitute',
+    safeAlternative: '100% Safe Substitute',
 
     // NutriIA Concierge Chat
-    conciergeTitle: 'Culinary & Nutritional Concierge',
-    conciergeSubtitle: 'Canine and feline gastronomic consulting, energy calculations, and safe therapeutic diet formulation with Gemini.',
+    conciergeTitle: 'NutriAI Nutritional Assistant',
+    conciergeSubtitle: 'Canine and feline nutritional consulting, energy calculations, and safe homemade recipe formulation with Gemini.',
     generateRecipeAi: 'Generate Recipe with AI',
     resetChat: 'Reset Chat',
     chatPlaceholder: 'Ask about feeding your pet, bone broths, or dietary restrictions...',

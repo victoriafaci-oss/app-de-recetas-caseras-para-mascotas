@@ -28,7 +28,8 @@ export const RecipesScreen: React.FC = () => {
     recordCookedMeal, 
     setActiveTab, 
     addChatMessage,
-    showToast 
+    showToast,
+    language
   } = useApp();
 
   const [selectedSpecies, setSelectedSpecies] = useState<'all' | 'dog' | 'cat'>('all');
@@ -43,13 +44,13 @@ export const RecipesScreen: React.FC = () => {
   const allRecipes = [...customRecipes, ...RECIPES_CATALOG];
 
   const categoriesList = [
-    { id: 'all', label: 'Todas las Especialidades' },
-    { id: 'joint_omega3', label: 'Articular & Longevidad' },
-    { id: 'renal', label: 'Soporte Renal & Fósforo Bajo' },
-    { id: 'sensitive_digestion', label: 'Digestión Sensible & IBD' },
-    { id: 'weight_control', label: 'Control de Peso & Saciante' },
-    { id: 'collagen_broth', label: 'Caldos de Colágeno Puro' },
-    { id: 'healthy_snacks', label: 'Snacks & Premios Atelier' },
+    { id: 'all', label: language === 'es' ? 'Todas las Especialidades' : 'All Specialties' },
+    { id: 'joint_omega3', label: language === 'es' ? 'Articular & Longevidad' : 'Joints & Longevity' },
+    { id: 'renal', label: language === 'es' ? 'Soporte Renal & Fósforo Bajo' : 'Renal Support & Low Phosphorus' },
+    { id: 'sensitive_digestion', label: language === 'es' ? 'Digestión Sensible & IBD' : 'Sensitive Digestion & IBD' },
+    { id: 'weight_control', label: language === 'es' ? 'Control de Peso & Saciante' : 'Weight Control & Satiety' },
+    { id: 'collagen_broth', label: language === 'es' ? 'Caldos de Colágeno Puro' : 'Pure Collagen Broths' },
+    { id: 'healthy_snacks', label: language === 'es' ? 'Snacks & Premios Caseros' : 'Healthy Homemade Snacks' },
   ];
 
   const filteredRecipes = allRecipes.filter((r) => {
@@ -110,7 +111,7 @@ export const RecipesScreen: React.FC = () => {
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-900 dark:text-[#D4AF37] border border-amber-500/30 mb-2">
             <ChefHat className="w-3.5 h-3.5" />
-            Haute Cuisine Veterinaria de Precisión
+            {language === 'es' ? 'Cocina Natural Veterinaria de Precisión' : 'Precision Veterinary Natural Cooking'}
           </div>
           <h1 className="font-editorial text-3xl sm:text-4xl font-bold text-stone-900 dark:text-[#F3E5AB]">
             Recetario General Casero & Escalador
@@ -430,7 +431,7 @@ export const RecipesScreen: React.FC = () => {
             <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-950 dark:text-blue-300 flex items-center gap-3">
               <ThermometerSnowflake className="w-5 h-5 shrink-0 text-blue-500" />
               <div>
-                <span className="font-bold block">Conservación en el Atelier:</span>
+                <span className="font-bold block">{language === 'es' ? 'Conservación & Refrigeración:' : 'Storage & Refrigeration:'}</span>
                 <span>{activeRecipe.storageInfo}</span>
               </div>
             </div>

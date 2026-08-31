@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 interface AppContextType {
   theme: ThemeMode;
   toggleTheme: () => void;
+  setTheme: (theme: ThemeMode) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKey) => string;
@@ -188,7 +189,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       {
         id: 'msg-welcome',
         role: 'assistant',
-        content: 'Bienvenido al **Atelier NutriPet Haute Cuisine & Health**.\n\nSoy **NutriIA Concierge**, su asistente especializado en nutrición de precisión, cálculo energético veterinario (RER / MER) y formulación culinaria casera para perros y gatos.\n\n¿En qué puedo asistir la salud y el menú gastronómico de sus compañeros hoy?',
+        content: 'Bienvenido a **Recetas caseras para mascotas**.\n\nSoy **NutriIA**, su asistente especializado en nutrición casera, cálculo calórico veterinario (RER / MER) y recetas equilibradas para perros y gatos.\n\n¿En qué puedo ayudarle hoy con la alimentación o cuidados de sus mascotas?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
     ];
@@ -200,7 +201,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Toast feedback
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'warning' } | null>(null);
 
-  // Sync to localStorage
+  // Sync to localStorage and document attributes
   useEffect(() => {
     localStorage.setItem(THEME_KEY, theme);
     if (theme === 'dark') {
@@ -211,6 +212,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       document.documentElement.classList.add('light');
     }
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.title = language === 'en' 
+      ? 'Homemade Pet Recipes - Homemade Nutrition & Daily Care'
+      : 'Recetas caseras para mascotas - Nutrición casera y hábitos diarios';
+  }, [language]);
 
   useEffect(() => {
     localStorage.setItem(PETS_KEY, JSON.stringify(pets));
@@ -247,7 +255,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addPet = (petData: Omit<Pet, 'id' | 'weightHistory' | 'walksHistory' | 'cookedRecipesHistory' | 'todayWaterMl' | 'todayBrothMl'>): boolean => {
     if (pets.length >= 4) {
-      showToast('Ha alcanzado el límite máximo de 4 perfiles en el Atelier.', 'warning');
+      showToast('Ha alcanzado el límite máximo de 4 perfiles de mascotas.', 'warning');
       return false;
     }
 
@@ -278,7 +286,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const deletePet = (id: string) => {
     if (pets.length <= 1) {
-      showToast('Debe conservar al menos un perfil de mascota en el atelier.', 'warning');
+      showToast('Debe conservar al menos un perfil de mascota en la aplicación.', 'warning');
       return;
     }
     const petToDelete = pets.find(p => p.id === id);
@@ -476,12 +484,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `NutriPet_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `PetRecetas_Backup_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Copia de seguridad del Atelier descargada.', 'success');
+    showToast('Copia de seguridad descargada.', 'success');
   };
 
   const importAllData = (jsonData: string): boolean => {
@@ -491,7 +499,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (data.events && Array.isArray(data.events)) setEvents(data.events);
       if (data.customRecipes && Array.isArray(data.customRecipes)) setCustomRecipes(data.customRecipes);
       if (data.theme && (data.theme === 'dark' || data.theme === 'light')) setTheme(data.theme);
-      showToast('Datos del Atelier restaurados con éxito.', 'success');
+      showToast('Datos restaurados con éxito.', 'success');
       playLuxuryChime('success');
       return true;
     } catch (err) {
@@ -505,6 +513,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       value={{
         theme,
         toggleTheme,
+        setTheme,
         language,
         setLanguage,
         t,

@@ -104,7 +104,7 @@ export interface RecipeIngredient {
 export interface Recipe {
   id: string;
   title: string;
-  frenchTitle: string;
+  frenchTitle?: string;
   species: 'dog' | 'cat' | 'both';
   category: 'renal' | 'weight_control' | 'sensitive_digestion' | 'collagen_broth' | 'healthy_snacks' | 'joint_omega3' | 'vitality_gourmet';
   categoryLabel: string;
@@ -113,7 +113,7 @@ export interface Recipe {
   kcalPer100g: number;
   prepTimeMin: number;
   cookTimeMin: number;
-  difficulty: 'Facile' | 'Intermédiaire' | 'Haute Cuisine';
+  difficulty: 'Fácil' | 'Media' | 'Avanzada' | 'Facile' | 'Intermédiaire' | 'Haute Cuisine';
   suitability: string;
   clinicalBenefits: string[];
   ingredients: RecipeIngredient[];
