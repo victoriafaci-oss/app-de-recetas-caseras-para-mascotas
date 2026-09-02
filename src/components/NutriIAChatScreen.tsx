@@ -57,17 +57,87 @@ export const NutriIAChatScreen: React.FC = () => {
     scrollToBottom();
   }, [chatMessages, isLoading]);
 
-  const quickPrompts = language === 'es' ? [
-    '¿Cómo balancear el ratio calcio:fósforo con cáscara de huevo en comida casera?',
-    'Beneficios del caldo de huesos con colágeno y cómo suministrarlo diariamente',
-    'Adaptar raciones para perro o gato esterilizado con tendencia al sobrepeso',
-    'Protocolo de transición gradual de pienso comercial a dieta casera cocinada',
+  const [activeCategory, setActiveCategory] = useState<'all' | 'nutrition' | 'health' | 'behavior' | 'care'>('all');
+
+  const categories = language === 'es' ? [
+    { id: 'all', label: 'Todas las áreas', icon: '🐾' },
+    { id: 'nutrition', label: 'Nutrición & Cocina', icon: '🍲' },
+    { id: 'health', label: 'Salud & Síntomas', icon: '🩺' },
+    { id: 'behavior', label: 'Comportamiento & Educación', icon: '🧠' },
+    { id: 'care', label: 'Higiene & Cuidados', icon: '🛁' },
   ] : [
-    'How to balance the calcium:phosphorus ratio with eggshell powder in homemade pet food?',
-    'Benefits of collagen-rich bone broth and daily dosage guidelines',
-    'How to adjust portions for a neutered dog or cat prone to weight gain',
-    'Step-by-step transition protocol from dry kibble to fresh cooked food',
+    { id: 'all', label: 'All Topics', icon: '🐾' },
+    { id: 'nutrition', label: 'Nutrition & Cooking', icon: '🍲' },
+    { id: 'health', label: 'Health & Symptoms', icon: '🩺' },
+    { id: 'behavior', label: 'Behavior & Training', icon: '🧠' },
+    { id: 'care', label: 'Hygiene & Care', icon: '🛁' },
   ];
+
+  const categorizedPrompts: Record<string, string[]> = language === 'es' ? {
+    nutrition: [
+      '¿Cómo balancear el ratio calcio:fósforo con cáscara de huevo en comida casera?',
+      'Beneficios del caldo de huesos con colágeno y cómo suministrarlo diariamente',
+      'Adaptar raciones para perro o gato esterilizado con tendencia al sobrepeso',
+      'Protocolo de transición gradual de pienso comercial a comida casera fresca',
+    ],
+    health: [
+      '¿Cuáles son los signos de alarma para ir a urgencias veterinarias de inmediato?',
+      'Calendario preventivo de vacunas y desparasitación interna/externa recomendado',
+      '¿Qué hacer ante un vómito esporádico o diarrea leve transitoria?',
+      'Cómo cuidar la salud dental y prevenir el sarro en mascotas',
+    ],
+    behavior: [
+      'Técnicas y ejercicios para calmar la ansiedad por separación cuando me voy',
+      '¿Cómo frenar los ladridos excesivos o llamadas de atención en casa?',
+      'Juegos de estimulación cognitiva y alfombras de olfato recomendadas',
+      'Socialización adecuada y manejo de miedos a ruidos fuertes o tormentas',
+    ],
+    care: [
+      '¿Cada cuánto bañar a mi mascota y qué tipo de champú es seguro?',
+      'Paso a paso para cortar las uñas sin tocar la vena interior (hiponiquio)',
+      'Protocolo de limpieza de oídos segura y prevención de otitis',
+      'Cómo prevenir y actuar frente a un golpe de calor en verano',
+    ],
+  } : {
+    nutrition: [
+      'How to balance the calcium:phosphorus ratio with eggshell powder in homemade food?',
+      'Benefits of collagen-rich bone broth and daily dosage guidelines',
+      'How to adjust portions for a neutered dog or cat prone to weight gain',
+      'Step-by-step transition protocol from dry kibble to fresh cooked food',
+    ],
+    health: [
+      'What are the critical red-flag signs requiring immediate emergency vet care?',
+      'Recommended core vaccine and internal/external deworming schedule',
+      'What to do for mild, transient digestive upset or occasional vomiting?',
+      'How to maintain dental hygiene and prevent tartar build-up in pets',
+    ],
+    behavior: [
+      'Techniques and routines to manage separation anxiety when leaving home',
+      'How to curb demand barking or excessive vocalization with positive reinforcement',
+      'Cognitive enrichment games and snuffle mat exercises for pets',
+      'Socialization protocols and handling fear of loud noises or storms',
+    ],
+    care: [
+      'How often should I bathe my pet and what shampoo pH is safe?',
+      'Step-by-step guide to trimming nails safely without touching the quick',
+      'Safe ear cleaning protocol and preventing ear infections (otitis)',
+      'How to prevent and react to heatstroke during hot summer days',
+    ],
+  };
+
+  const getFilteredPrompts = () => {
+    if (activeCategory === 'all') {
+      return [
+        categorizedPrompts.nutrition[0],
+        categorizedPrompts.health[0],
+        categorizedPrompts.behavior[0],
+        categorizedPrompts.care[0],
+        categorizedPrompts.nutrition[1],
+        categorizedPrompts.health[1],
+      ];
+    }
+    return categorizedPrompts[activeCategory] || [];
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
     const message = textToSend || inputMessage;
@@ -196,29 +266,31 @@ export const NutriIAChatScreen: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 border border-indigo-500/30 mb-2">
               <Bot className="w-3.5 h-3.5" />
-              NutriIA Concierge &bull; Gemini 2.5
+              <span>NutriIA &amp; Pet Concierge &bull; Gemini 3.7 Flash</span>
             </div>
             <h1 className="font-editorial text-2xl sm:text-3xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-              Consultoría Culinaria & Nutricional
+              {language === 'es' ? 'Consultoría Veterinaria & Cuidado Integral' : 'Veterinary & Comprehensive Pet Care'}
             </h1>
-            <p className="text-xs text-stone-700 dark:text-stone-300 mt-1 max-w-xl font-medium">
-              Asesoría gastronómica canina y felina, cálculos energéticos y formulación de dietas terapéuticas seguras.
+            <p className="text-xs text-stone-700 dark:text-stone-300 mt-1 max-w-2xl font-medium">
+              {language === 'es' 
+                ? 'Pregunta sobre nutrición, recetas, síntomas de salud, medicina preventiva, comportamiento, adiestramiento e higiene diaria de tu mascota.' 
+                : 'Ask about nutrition, recipes, health symptoms, preventive care, behavior, training, and daily pet hygiene.'}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowRecipeAiModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-600 to-[#D4AF37] text-stone-950 hover:brightness-110 transition-all shadow-md"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-600 to-[#D4AF37] text-stone-950 hover:brightness-110 transition-all shadow-md shrink-0"
             >
               <ChefHat className="w-4 h-4" />
-              <span>Generar Receta con IA</span>
+              <span>{language === 'es' ? 'Formular Receta IA' : 'Formulate AI Recipe'}</span>
             </button>
 
             <button
               onClick={clearChat}
               className="p-2 rounded-xl text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200 border border-stone-200 dark:border-stone-800 transition-colors"
-              title="Reiniciar chat"
+              title={language === 'es' ? 'Reiniciar chat' : 'Clear chat'}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -227,27 +299,47 @@ export const NutriIAChatScreen: React.FC = () => {
 
         {/* Active Pet Context Pill */}
         {selectedPet && (
-          <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs text-stone-700 dark:text-stone-300">
+          <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-700 dark:text-stone-300">
             <div className="flex items-center gap-2">
               <span className="text-base">{selectedPet.avatarIcon || '🐾'}</span>
               <span>
-                Contexto activo: <strong>{selectedPet.name}</strong> ({selectedPet.breed}, {selectedPet.weightKg}kg, {selectedPet.clinicalCondition})
+                {language === 'es' ? 'Paciente Activo:' : 'Active Pet:'} <strong>{selectedPet.name}</strong> ({selectedPet.species === 'cat' ? 'Gato' : 'Perro'}, {selectedPet.breed}, {selectedPet.weightKg}kg, {selectedPet.clinicalCondition})
               </span>
             </div>
-            <span className="hidden md:inline text-[11px] text-emerald-800 dark:text-[#D4AF37] font-semibold">
-              RER {selectedPet.weightKg ? Math.round(70 * Math.pow(selectedPet.weightKg, 0.75)) : 0} kcal &bull; MER activo
-            </span>
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-800 dark:text-[#D4AF37]">
+              <span>RER: {selectedPet.weightKg ? Math.round(70 * Math.pow(selectedPet.weightKg, 0.75)) : 0} kcal/día</span>
+              <span>&bull;</span>
+              <span>{selectedPet.isNeutered ? (language === 'es' ? 'Esterilizado' : 'Neutered') : (language === 'es' ? 'Sin esterilizar' : 'Intact')}</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Quick Prompts Chips */}
+      {/* Category Pills Selector */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id as any)}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 shadow-2xs ${
+              activeCategory === cat.id
+                ? 'bg-amber-700 dark:bg-[#D4AF37] text-white dark:text-stone-950 border border-amber-600 dark:border-[#D4AF37]'
+                : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:border-amber-500'
+            }`}
+          >
+            <span>{cat.icon}</span>
+            <span>{cat.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Filtered Prompt Chips */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300 shrink-0 flex items-center gap-1">
           <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-          Sugerencias:
+          {language === 'es' ? 'Preguntas frecuentes:' : 'Suggestions:'}
         </span>
-        {quickPrompts.map((prompt, idx) => (
+        {getFilteredPrompts().map((prompt, idx) => (
           <button
             key={idx}
             onClick={() => handleSendMessage(prompt)}
@@ -286,7 +378,7 @@ export const NutriIAChatScreen: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5 text-[10px] opacity-70">
-                    <span className="font-bold">{isUser ? 'Tú (Propietario)' : 'NutriIA Concierge'}</span>
+                    <span className="font-bold">{isUser ? (language === 'es' ? 'Tú (Propietario)' : 'You (Owner)') : 'NutriIA & Pet Concierge'}</span>
                     <span>{msg.timestamp}</span>
                   </div>
 
@@ -311,7 +403,7 @@ export const NutriIAChatScreen: React.FC = () => {
               </div>
               <div className="p-3 rounded-2xl bg-stone-50 dark:bg-[#0E1511] border border-stone-200 dark:border-stone-800 text-xs text-stone-600 dark:text-stone-400 flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin" />
-                <span>NutriIA está analizando el perfil veterinario y formulando la respuesta...</span>
+                <span>{language === 'es' ? 'NutriIA está analizando la consulta y formulando la respuesta clínica...' : 'NutriAI is analyzing your query and formulating veterinary guidance...'}</span>
               </div>
             </div>
           )}
@@ -330,7 +422,9 @@ export const NutriIAChatScreen: React.FC = () => {
           >
             <input
               type="text"
-              placeholder={`Consulte sobre la alimentación de ${selectedPet?.name || 'su mascota'}, caldos o restricciones...`}
+              placeholder={language === 'es' 
+                ? `Pregunta sobre nutrición, salud, comportamiento, higiene o cuidados de ${selectedPet?.name || 'tu mascota'}...`
+                : `Ask about nutrition, health symptoms, behavior, grooming, or care for ${selectedPet?.name || 'your pet'}...`}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               className="flex-1 p-3 rounded-2xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 text-xs text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-1 focus:ring-amber-500"

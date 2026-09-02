@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Pet, HealthEvent, Recipe, ChatMessage, ThemeMode, Language } from '../types';
+import { Pet, HealthEvent, Recipe, ChatMessage, ThemeMode, Language, NavigationTab, WeeklyTrackingMap, DailyTrackingRecord } from '../types';
 import { INITIAL_PETS, INITIAL_EVENTS, RECIPES_CATALOG } from '../data/mockData';
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { getTranslation, TranslationKey, TRANSLATIONS } from '../utils/translations';
@@ -33,16 +33,25 @@ interface AppContextType {
   addWeightRecord: (petId: string, weightKg: number, note?: string) => void;
   recordBathToday: (petId: string) => void;
   recordCookedMeal: (petId: string, record: { recipeId: string; recipeTitle: string; daysPrepared: number; totalGrams: number; totalKcal: number }) => void;
-  activeTab: 'home' | 'pet_profile' | 'agenda' | 'recipes' | 'concierge' | 'toxic_foods';
-  setActiveTab: (tab: 'home' | 'pet_profile' | 'agenda' | 'recipes' | 'concierge' | 'toxic_foods') => void;
+  activeTab: NavigationTab;
+  setActiveTab: (tab: NavigationTab) => void;
   goBack: () => void;
   goToHome: () => void;
-  tabHistory: ('home' | 'pet_profile' | 'agenda' | 'recipes' | 'concierge' | 'toxic_foods')[];
+  tabHistory: NavigationTab[];
+  weeklyTracking: WeeklyTrackingMap;
+  setMealStatus: (petId: string, dateKey: string, mealType: 'dish1' | 'dish2' | 'snack1' | 'snack2' | 'dessert1' | 'dessert2', status: boolean | null) => void;
+  setExerciseStatus: (petId: string, dateKey: string, completed: boolean, durationMin?: number, notes?: string) => void;
+  getTrackingForDay: (petId: string, dateKey: string) => DailyTrackingRecord;
   customRecipes: Recipe[];
   addCustomRecipe: (recipe: Recipe) => void;
   chatMessages: ChatMessage[];
   addChatMessage: (msg: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
   clearChat: () => void;
+  activePetSection: 'all' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene';
+  setActivePetSection: (section: 'all' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene') => void;
+  navigateToPetSection: (petId: string, section: 'all' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene') => void;
+  clearAllDataToBlank: () => void;
+  loadSampleReferenceData: () => void;
   toast: { message: string; type: 'success' | 'info' | 'warning' } | null;
   showToast: (message: string, type?: 'success' | 'info' | 'warning') => void;
   exportAllData: () => void;
@@ -57,6 +66,7 @@ const PETS_KEY = 'nutripet_pets_v1';
 const EVENTS_KEY = 'nutripet_events_v1';
 const RECIPES_KEY = 'nutripet_custom_recipes_v1';
 const CHAT_KEY = 'nutripet_chat_v1';
+const WEEKLY_TRACKING_KEY = 'nutripet_weekly_tracking_v1';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Theme state
@@ -125,10 +135,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   // Navigation tab state with history tracking
-  const [activeTab, setActiveTabState] = useState<'home' | 'pet_profile' | 'agenda' | 'recipes' | 'concierge' | 'toxic_foods'>('home');
-  const [tabHistory, setTabHistory] = useState<('home' | 'pet_profile' | 'agenda' | 'recipes' | 'concierge' | 'toxic_foods')[]>(['home']);
+  const [activeTab, setActiveTabState] = useState<NavigationTab>('home');
+  const [tabHistory, setTabHistory] = useState<NavigationTab[]>(['home']);
 
-  const setActiveTab = (tab: 'home' | 'pet_profile' | 'agenda' | 'recipes' | 'concierge' | 'toxic_foods') => {
+  const setActiveTab = (tab: NavigationTab) => {
     setActiveTabState(prev => {
       if (prev !== tab) {
         setTabHistory(h => [...h, tab]);
@@ -154,6 +164,152 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const goToHome = () => {
     setActiveTabState('home');
     setTabHistory(prev => [...prev, 'home']);
+  };
+
+  // Weekly meal & exercise tracking (stored by petId and dateKey YYYY-MM-DD)
+  const [weeklyTracking, setWeeklyTracking] = useState<WeeklyTrackingMap>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(WEEKLY_TRACKING_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') return parsed;
+        } catch (e) {
+          console.error('Error parsing stored weekly tracking', e);
+        }
+      }
+    }
+    // Seed initial realistic compliance state for demo pets
+    const today = new Date().toISOString().split('T')[0];
+    return {
+      'pet-1': {
+        [today]: {
+          dish1Given: true,
+          dish2Given: null, // Pending evening
+          snack1Given: true,
+          snack2Given: null,
+          dessert1Given: true,
+          dessert2Given: null,
+          exerciseCompleted: true,
+          exerciseDurationMin: 45,
+          exerciseType: 'Paseo matutino de olfato',
+          exerciseNotes: 'Muy buen ritmo y relajado.',
+        }
+      }
+    };
+  });
+
+  const getTrackingForDay = (petId: string, dateKey: string): DailyTrackingRecord => {
+    const petMap = weeklyTracking[petId] || {};
+    return petMap[dateKey] || {
+      dish1Given: null,
+      dish2Given: null,
+      snack1Given: null,
+      snack2Given: null,
+      dessert1Given: null,
+      dessert2Given: null,
+      exerciseCompleted: false,
+      exerciseDurationMin: 0,
+    };
+  };
+
+  const setMealStatus = (
+    petId: string, 
+    dateKey: string, 
+    mealType: 'dish1' | 'dish2' | 'snack1' | 'snack2' | 'dessert1' | 'dessert2', 
+    status: boolean | null
+  ) => {
+    setWeeklyTracking(prev => {
+      const petRecords = prev[petId] || {};
+      const dayRecord = petRecords[dateKey] || {
+        dish1Given: null,
+        dish2Given: null,
+        snack1Given: null,
+        snack2Given: null,
+        dessert1Given: null,
+        dessert2Given: null,
+        exerciseCompleted: false,
+        exerciseDurationMin: 0,
+      };
+
+      const updatedRecord: DailyTrackingRecord = {
+        ...dayRecord,
+        [`${mealType}Given`]: status,
+      };
+
+      return {
+        ...prev,
+        [petId]: {
+          ...petRecords,
+          [dateKey]: updatedRecord,
+        },
+      };
+    });
+
+    if (status === true) {
+      playLuxuryChime('success');
+      showToast(
+        language === 'es' 
+          ? 'Plato registrado como servido (Verde).' 
+          : 'Meal recorded as served (Green).', 
+        'success'
+      );
+    } else if (status === false) {
+      playLuxuryChime('gentle');
+      showToast(
+        language === 'es' 
+          ? 'Plato marcado como no dado (Rojo).' 
+          : 'Meal marked as not served (Red).', 
+        'warning'
+      );
+    }
+  };
+
+  const setExerciseStatus = (
+    petId: string, 
+    dateKey: string, 
+    completed: boolean, 
+    durationMin: number = 30, 
+    notes: string = ''
+  ) => {
+    setWeeklyTracking(prev => {
+      const petRecords = prev[petId] || {};
+      const dayRecord = petRecords[dateKey] || {
+        dish1Given: null,
+        dish2Given: null,
+        snack1Given: null,
+        snack2Given: null,
+        dessert1Given: null,
+        dessert2Given: null,
+        exerciseCompleted: false,
+        exerciseDurationMin: 0,
+      };
+
+      const updatedRecord: DailyTrackingRecord = {
+        ...dayRecord,
+        exerciseCompleted: completed,
+        exerciseDurationMin: durationMin,
+        exerciseNotes: notes || dayRecord.exerciseNotes,
+      };
+
+      return {
+        ...prev,
+        [petId]: {
+          ...petRecords,
+          [dateKey]: updatedRecord,
+        },
+      };
+    });
+
+    if (completed) {
+      playLuxuryChime('success');
+      showToast(
+        language === 'es' 
+          ? `¡Ejercicio registrado! (${durationMin} min realizados)` 
+          : `Exercise logged! (${durationMin} min completed)`, 
+        'success'
+      );
+    }
   };
 
   // Custom AI recipes
@@ -236,6 +392,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.setItem(CHAT_KEY, JSON.stringify(chatMessages));
   }, [chatMessages]);
 
+  useEffect(() => {
+    localStorage.setItem(WEEKLY_TRACKING_KEY, JSON.stringify(weeklyTracking));
+  }, [weeklyTracking]);
+
   const showToast = (message: string, type: 'success' | 'info' | 'warning' = 'info') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
@@ -285,17 +445,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deletePet = (id: string) => {
-    if (pets.length <= 1) {
-      showToast('Debe conservar al menos un perfil de mascota en la aplicación.', 'warning');
-      return;
-    }
     const petToDelete = pets.find(p => p.id === id);
-    setPets(prev => prev.filter(p => p.id !== id));
-    if (selectedPetId === id) {
-      const remaining = pets.filter(p => p.id !== id);
-      if (remaining[0]) setSelectedPetId(remaining[0].id);
+    const remaining = pets.filter(p => p.id !== id);
+    setPets(remaining);
+    if (remaining.length > 0) {
+      if (selectedPetId === id) {
+        setSelectedPetId(remaining[0].id);
+      }
+    } else {
+      setSelectedPetId('');
     }
-    showToast(`Perfil de ${petToDelete?.name || 'Mascota'} eliminado.`, 'info');
+    showToast(language === 'es' ? `Perfil de ${petToDelete?.name || 'Mascota'} eliminado.` : `Profile of ${petToDelete?.name || 'Pet'} deleted.`, 'info');
   };
 
   const addEvent = (eventData: Omit<HealthEvent, 'id' | 'completed' | 'completedAt'>) => {
@@ -476,9 +636,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       pets,
       events,
       customRecipes,
+      weeklyTracking,
       theme,
+      language,
       exportedAt: new Date().toISOString(),
-      version: '1.0',
+      version: '1.1',
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -492,12 +654,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Copia de seguridad descargada.', 'success');
   };
 
+  // Active Pet Sub-Section
+  const [activePetSection, setActivePetSection] = useState<'all' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene'>('all');
+
+  const navigateToPetSection = (petId: string, section: 'all' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene') => {
+    setSelectedPetId(petId);
+    setActivePetSection(section);
+    setActiveTab('pet_profile');
+    playLuxuryChime('gentle');
+  };
+
+  const clearAllDataToBlank = () => {
+    setPets([]);
+    setEvents([]);
+    setCustomRecipes([]);
+    setWeeklyTracking({});
+    setSelectedPetId('');
+    localStorage.removeItem(PETS_KEY);
+    localStorage.removeItem(EVENTS_KEY);
+    localStorage.removeItem(RECIPES_KEY);
+    localStorage.removeItem(WEEKLY_TRACKING_KEY);
+    setActiveTab('home');
+    showToast(language === 'es' ? 'Modo datos reales activo. Perfiles listos para rellenar.' : 'Fresh slate ready for your real pet data.', 'info');
+    playLuxuryChime('gentle');
+  };
+
+  const loadSampleReferenceData = () => {
+    setPets(INITIAL_PETS);
+    setEvents(INITIAL_EVENTS);
+    setSelectedPetId(INITIAL_PETS[0]?.id || 'pet-1');
+    localStorage.setItem(PETS_KEY, JSON.stringify(INITIAL_PETS));
+    localStorage.setItem(EVENTS_KEY, JSON.stringify(INITIAL_EVENTS));
+    setActiveTab('home');
+    showToast(language === 'es' ? 'Ejemplo de referencia cargado.' : 'Reference sample loaded.', 'success');
+    playLuxuryChime('success');
+  };
+
   const importAllData = (jsonData: string): boolean => {
     try {
       const data = JSON.parse(jsonData);
       if (data.pets && Array.isArray(data.pets)) setPets(data.pets);
       if (data.events && Array.isArray(data.events)) setEvents(data.events);
       if (data.customRecipes && Array.isArray(data.customRecipes)) setCustomRecipes(data.customRecipes);
+      if (data.weeklyTracking && typeof data.weeklyTracking === 'object') setWeeklyTracking(data.weeklyTracking);
       if (data.theme && (data.theme === 'dark' || data.theme === 'light')) setTheme(data.theme);
       showToast('Datos restaurados con éxito.', 'success');
       playLuxuryChime('success');
@@ -543,11 +742,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         goBack,
         goToHome,
         tabHistory,
+        weeklyTracking,
+        setMealStatus,
+        setExerciseStatus,
+        getTrackingForDay,
         customRecipes,
         addCustomRecipe,
         chatMessages,
         addChatMessage,
         clearChat,
+        activePetSection,
+        setActivePetSection,
+        navigateToPetSection,
+        clearAllDataToBlank,
+        loadSampleReferenceData,
         toast,
         showToast,
         exportAllData,

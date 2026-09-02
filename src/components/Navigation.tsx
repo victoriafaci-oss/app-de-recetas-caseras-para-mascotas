@@ -1,17 +1,19 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { NavigationTab } from '../types';
 import { 
   Home, 
   HeartPulse, 
-  CalendarDays, 
+  CalendarRange,
   BookOpen, 
+  CalendarDays, 
   Bot, 
   ShieldAlert,
   Sparkles
 } from 'lucide-react';
 
 interface NavItem {
-  id: 'home' | 'pet_profile' | 'recipes' | 'agenda' | 'concierge' | 'toxic_foods';
+  id: NavigationTab;
   label: string;
   subLabel?: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -38,6 +40,12 @@ export const Navigation: React.FC = () => {
       icon: HeartPulse 
     },
     { 
+      id: 'weekly_plan', 
+      label: t('navWeeklyPlan'), 
+      subLabel: language === 'es' ? 'Dieta 7 Días & Control' : '7-Day Diet & Check', 
+      icon: CalendarRange 
+    },
+    { 
       id: 'recipes', 
       label: t('navRecipes'), 
       subLabel: language === 'es' ? 'Recetas & Escalador' : 'Recipes & Scaler', 
@@ -53,7 +61,7 @@ export const Navigation: React.FC = () => {
     { 
       id: 'concierge', 
       label: t('navConcierge'), 
-      subLabel: language === 'es' ? 'Asesoría NutriIA' : 'NutriAI Advisory', 
+      subLabel: language === 'es' ? 'Consultoría & IA' : 'Pet Care & AI', 
       icon: Bot, 
       isAi: true 
     },

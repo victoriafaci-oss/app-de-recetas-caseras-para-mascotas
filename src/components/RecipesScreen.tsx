@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Recipe } from '../types';
+import { Recipe, GrowthStage } from '../types';
 import { RECIPES_CATALOG } from '../data/mockData';
 import { 
   BookOpen, 
@@ -18,7 +18,9 @@ import {
   ShieldCheck, 
   Layers,
   ThermometerSnowflake,
-  Award
+  Award,
+  Heart,
+  Droplet
 } from 'lucide-react';
 
 export const RecipesScreen: React.FC = () => {
@@ -29,10 +31,13 @@ export const RecipesScreen: React.FC = () => {
     setActiveTab, 
     addChatMessage,
     showToast,
-    language
+    language,
+    t
   } = useApp();
 
-  const [selectedSpecies, setSelectedSpecies] = useState<'all' | 'dog' | 'cat'>('all');
+  // User requirement: First choose species, then growth stage
+  const [selectedSpecies, setSelectedSpecies] = useState<'dog' | 'cat' | 'both'>('dog');
+  const [selectedGrowthStage, setSelectedGrowthStage] = useState<GrowthStage | 'all'>('adult');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
@@ -44,7 +49,7 @@ export const RecipesScreen: React.FC = () => {
   const allRecipes = [...customRecipes, ...RECIPES_CATALOG];
 
   const categoriesList = [
-    { id: 'all', label: language === 'es' ? 'Todas las Especialidades' : 'All Specialties' },
+    { id: 'all', label: language === 'es' ? 'Todas las Dietas' : 'All Diets' },
     { id: 'joint_omega3', label: language === 'es' ? 'Articular & Longevidad' : 'Joints & Longevity' },
     { id: 'renal', label: language === 'es' ? 'Soporte Renal & Fósforo Bajo' : 'Renal Support & Low Phosphorus' },
     { id: 'sensitive_digestion', label: language === 'es' ? 'Digestión Sensible & IBD' : 'Sensitive Digestion & IBD' },
@@ -53,15 +58,34 @@ export const RecipesScreen: React.FC = () => {
     { id: 'healthy_snacks', label: language === 'es' ? 'Snacks & Premios Caseros' : 'Healthy Homemade Snacks' },
   ];
 
+  const growthStagesList: { id: GrowthStage | 'all'; label: string; icon: string }[] = [
+    { id: 'puppy_kitten', label: language === 'es' ? 'Cachorro / Gatito (Crecimiento)' : 'Puppy / Kitten (Growth)', icon: '🍼' },
+    { id: 'adult', label: language === 'es' ? 'Adulto (Mantenimiento Óptimo)' : 'Adult (Optimal Maintenance)', icon: '🐕' },
+    { id: 'senior', label: language === 'es' ? 'Senior (Vitalidad & Articulaciones)' : 'Senior (Vitality & Joints)', icon: '👑' },
+    { id: 'all', label: language === 'es' ? 'Todas las Etapas' : 'All Life Stages', icon: '🌟' },
+  ];
+
   const filteredRecipes = allRecipes.filter((r) => {
-    const matchesSpecies = selectedSpecies === 'all' || r.species === 'both' || r.species === selectedSpecies;
+    // 1. Species filter
+    const matchesSpecies = selectedSpecies === 'both' || r.species === 'both' || r.species === selectedSpecies;
+    
+    // 2. Growth stage filter
+    const matchesGrowth = 
+      selectedGrowthStage === 'all' || 
+      !r.growthStage || 
+      r.growthStage === 'all' || 
+      r.growthStage === selectedGrowthStage;
+
+    // 3. Category filter
     const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory;
+
+    // 4. Search query
     const matchesSearch = 
       r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.frenchTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.frenchTitle && r.frenchTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
       r.ingredients.some(ing => ing.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    return matchesSpecies && matchesCategory && matchesSearch;
+    return matchesSpecies && matchesGrowth && matchesCategory && matchesSearch;
   });
 
   const handleOpenRecipeModal = (recipe: Recipe) => {
@@ -74,14 +98,12 @@ export const RecipesScreen: React.FC = () => {
   const handleLogCookingBatch = () => {
     if (!activeRecipe) return;
     
-    // Calculate total grams for the whole batch
     const totalGrams = activeRecipe.ingredients.reduce((acc, ing) => {
       const g = Math.round((ing.baseGramsFor10kgPetPerDay * (scalerPetWeight / 10)) * scalerDays);
       return acc + g;
     }, 0);
 
     const totalKcal = Math.round(totalGrams * (activeRecipe.kcalPer100g / 100));
-
     const targetPetId = selectedPet ? selectedPet.id : 'pet-1';
 
     recordCookedMeal(targetPetId, {
@@ -92,314 +114,397 @@ export const RecipesScreen: React.FC = () => {
       totalKcal,
     });
 
-    showToast(`¡Batch cooking de "${activeRecipe.title}" registrado con éxito!`, 'success');
+    showToast(language === 'es' ? `¡Batch cooking de "${activeRecipe.title}" registrado con éxito!` : `Batch cooking for "${activeRecipe.title}" recorded!`, 'success');
   };
 
   const handleConsultAiWithRecipe = (recipe: Recipe) => {
     addChatMessage({
       role: 'user',
-      content: `Deseo consultar sobre la receta "${recipe.title}" (${recipe.frenchTitle}) para ${selectedPet?.name || 'mi mascota'}. ¿Qué recomendaciones o adaptaciones específicas de temperatura y suplementos me sugieres?`,
+      content: language === 'es' 
+        ? `Deseo consultar sobre la receta "${recipe.title}" (${recipe.frenchTitle || ''}) para ${selectedPet?.name || 'mi mascota'}. ¿Qué adaptaciones específicas me sugieres según su peso y etapa?`
+        : `I would like to consult regarding "${recipe.title}" for ${selectedPet?.name || 'my pet'}. What adaptations do you recommend based on weight and life stage?`,
     });
     setActiveTab('concierge');
   };
 
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in duration-300">
+    <div className="space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-300">
       
       {/* Header Banner */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-white to-stone-50 dark:from-[#121B15] dark:to-[#0A0F0D] border border-stone-200 dark:border-[#D4AF37]/30 shadow-md">
+      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-white to-stone-50 dark:from-[#112019] dark:to-[#07130E] border border-[#E8DCCB] dark:border-[#D4AF37]/30 shadow-md">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-900 dark:text-[#D4AF37] border border-amber-500/30 mb-2">
             <ChefHat className="w-3.5 h-3.5" />
             {language === 'es' ? 'Cocina Natural Veterinaria de Precisión' : 'Precision Veterinary Natural Cooking'}
           </div>
-          <h1 className="font-editorial text-3xl sm:text-4xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-            Recetario General Casero & Escalador
+          <h1 className="font-editorial text-2xl sm:text-4xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+            {t('recipesTitle')}
           </h1>
           <p className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 mt-1 leading-relaxed font-medium">
-            Formulaciones completas equilibradas con proteínas nobles, extracto de colágeno, ratios calcio/fósforo clínicos y calculador de porciones en tiempo real para batch cooking semanal.
+            {t('recipesSubtitle')}
           </p>
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="space-y-3 p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#121B15] border border-stone-200 dark:border-[#D4AF37]/20 shadow-xs">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          
-          {/* Search Box */}
+      {/* ========================================================================= */}
+      {/* MANDATORY USER FLOW: STEP 1 (SPECIES) -> STEP 2 (GROWTH STAGE)           */}
+      {/* ========================================================================= */}
+      <div className="space-y-4 p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/25 shadow-md">
+        
+        {/* Step 1: Select Species */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-xs font-bold flex items-center justify-center">1</span>
+            <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-stone-900 dark:text-[#F3E5AB]">
+              {language === 'es' ? 'Paso 1: Seleccione Especie' : 'Step 1: Select Species'}
+            </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <button
+              onClick={() => setSelectedSpecies('dog')}
+              className={`p-3 sm:p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                selectedSpecies === 'dog'
+                  ? 'bg-amber-50 dark:bg-[#1B2F25] border-[#B8860B] dark:border-[#D4AF37] shadow-sm text-amber-950 dark:text-[#F3E5AB] scale-101'
+                  : 'bg-stone-50 dark:bg-[#16271F] border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-amber-400'
+              }`}
+            >
+              <span className="text-2xl sm:text-3xl">🐕</span>
+              <span className="text-xs sm:text-sm font-bold">{language === 'es' ? 'Perro' : 'Dog'}</span>
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 hidden sm:inline">{language === 'es' ? 'Canino / Omnívoro' : 'Canine diets'}</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedSpecies('cat')}
+              className={`p-3 sm:p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                selectedSpecies === 'cat'
+                  ? 'bg-amber-50 dark:bg-[#1B2F25] border-[#B8860B] dark:border-[#D4AF37] shadow-sm text-amber-950 dark:text-[#F3E5AB] scale-101'
+                  : 'bg-stone-50 dark:bg-[#16271F] border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-amber-400'
+              }`}
+            >
+              <span className="text-2xl sm:text-3xl">🐈</span>
+              <span className="text-xs sm:text-sm font-bold">{language === 'es' ? 'Gato' : 'Cat'}</span>
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 hidden sm:inline">{language === 'es' ? 'Felino / Carnívoro estricto' : 'Strict feline carnivore'}</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedSpecies('both')}
+              className={`p-3 sm:p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                selectedSpecies === 'both'
+                  ? 'bg-amber-50 dark:bg-[#1B2F25] border-[#B8860B] dark:border-[#D4AF37] shadow-sm text-amber-950 dark:text-[#F3E5AB] scale-101'
+                  : 'bg-stone-50 dark:bg-[#16271F] border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-amber-400'
+              }`}
+            >
+              <span className="text-2xl sm:text-3xl">🐾</span>
+              <span className="text-xs sm:text-sm font-bold">{language === 'es' ? 'Perros & Gatos' : 'Both Species'}</span>
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 hidden sm:inline">{language === 'es' ? 'Catálogo completo' : 'Full catalog'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Step 2: Select Growth Stage */}
+        <div className="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-xs font-bold flex items-center justify-center">2</span>
+            <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-stone-900 dark:text-[#F3E5AB]">
+              {language === 'es' ? 'Paso 2: Seleccione Etapa de Crecimiento' : 'Step 2: Select Growth Stage'}
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {growthStagesList.map((stage) => {
+              const isSelected = selectedGrowthStage === stage.id;
+              return (
+                <button
+                  key={stage.id}
+                  onClick={() => setSelectedGrowthStage(stage.id)}
+                  className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-amber-500/15 to-emerald-500/15 dark:from-[#1B2F25] dark:to-[#16271F] border-[#B8860B] dark:border-[#D4AF37] shadow-xs text-stone-900 dark:text-[#F3E5AB]'
+                      : 'bg-stone-50 dark:bg-[#16271F] border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400'
+                  }`}
+                >
+                  <span className="text-xl shrink-0">{stage.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold truncate">{stage.label}</div>
+                  </div>
+                  {isSelected && <Check className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37] shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Search & Category Sub-Filter */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pt-3 border-t border-stone-200 dark:border-stone-800">
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
             <input
               type="text"
-              placeholder="Buscar por ingrediente (pavo, calabaza, cúrcuma...)"
+              placeholder={language === 'es' ? 'Buscar ingrediente (salmón, pavo, cúrcuma...)' : 'Search ingredient (salmon, turkey, pumpkin...)'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-2 rounded-xl text-xs border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
             />
           </div>
 
-          {/* Species Selector */}
           <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
-            <button
-              onClick={() => setSelectedSpecies('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                selectedSpecies === 'all'
-                  ? 'bg-emerald-800 dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
-                  : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              onClick={() => setSelectedSpecies('dog')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shrink-0 ${
-                selectedSpecies === 'dog'
-                  ? 'bg-amber-600 dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
-                  : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200'
-              }`}
-            >
-              <span>🐕</span> Perros
-            </button>
-            <button
-              onClick={() => setSelectedSpecies('cat')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shrink-0 ${
-                selectedSpecies === 'cat'
-                  ? 'bg-emerald-600 dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
-                  : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200'
-              }`}
-            >
-              <span>🐈</span> Gatos
-            </button>
-          </div>
-        </div>
-
-        {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-stone-100 dark:border-stone-800">
-          {categoriesList.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setSelectedCategory(c.id)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === c.id
-                  ? 'bg-amber-500/20 text-amber-900 dark:text-[#F3E5AB] border border-amber-500/40 font-bold'
-                  : 'text-stone-700 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
-              }`}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Recipes Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRecipes.map((recipe) => (
-          <div
-            key={recipe.id}
-            onClick={() => handleOpenRecipeModal(recipe)}
-            className="group rounded-2xl overflow-hidden bg-white dark:bg-[#121B15] border border-stone-200 dark:border-[#D4AF37]/20 hover:border-amber-600/50 dark:hover:border-[#D4AF37] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              {/* Header card visual */}
-              <div className="p-5 pb-3">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-800 dark:text-[#D4AF37] border border-amber-500/20">
-                    {recipe.categoryLabel}
-                  </span>
-                  <span className="text-xs">
-                    {recipe.species === 'both' ? '🐕 / 🐈' : recipe.species === 'dog' ? '🐕 Canino' : '🐈 Felino'}
-                  </span>
-                </div>
-
-                <h3 className="font-editorial text-lg font-bold text-stone-900 dark:text-[#F3E5AB] group-hover:text-amber-800 dark:group-hover:text-[#D4AF37] transition-colors">
-                  {recipe.title}
-                </h3>
-                <p className="text-[11px] text-stone-600 dark:text-stone-400 italic">
-                  {recipe.frenchTitle}
-                </p>
-
-                <p className="text-xs text-stone-700 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
-                  {recipe.description}
-                </p>
-
-                {/* Macro & Time Pills */}
-                <div className="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-stone-50 dark:bg-[#0A0F0D] border border-stone-200 dark:border-stone-800/80">
-                    <span className="block text-[10px] text-stone-600 dark:text-stone-400">Calorías</span>
-                    <span className="font-bold text-stone-800 dark:text-stone-200">{recipe.kcalPer100g} kcal/100g</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-stone-50 dark:bg-[#0A0F0D] border border-stone-200 dark:border-stone-800/80">
-                    <span className="block text-[10px] text-stone-600 dark:text-stone-400">Cocción</span>
-                    <span className="font-bold text-stone-800 dark:text-stone-200">{recipe.cookTimeMin} min</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-stone-50 dark:bg-[#0A0F0D] border border-stone-200 dark:border-stone-800/80">
-                    <span className="block text-[10px] text-stone-600 dark:text-stone-400">Dificultad</span>
-                    <span className="font-bold text-emerald-800 dark:text-emerald-400">{recipe.difficulty}</span>
-                  </div>
-                </div>
-
-                {/* Chef tip preview */}
-                {recipe.chefTips && (
-                  <div className="mt-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-950 dark:text-amber-300">
-                    <span className="font-bold">Toque del Chef:</span> {recipe.chefTips}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Card Footer */}
-            <div className="p-5 pt-0">
+            {categoriesList.map((c) => (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenRecipeModal(recipe);
-                }}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-800 group-hover:bg-emerald-900 dark:bg-[#D4AF37] dark:group-hover:bg-[#E5C358] text-white dark:text-stone-950 transition-colors shadow-xs flex items-center justify-center gap-2"
+                key={c.id}
+                onClick={() => setSelectedCategory(c.id)}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 ${
+                  selectedCategory === c.id
+                    ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200'
+                }`}
               >
-                <Scale className="w-4 h-4" />
-                <span>Abrir Calculadora & Ración</span>
+                {c.label}
               </button>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
+
       </div>
 
-      {/* DETAILED RECIPE MODAL & BATCH-COOKING SCALER */}
-      {activeRecipe && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
-          <div className="w-full max-w-2xl my-8 rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#121B15] border-2 border-stone-300 dark:border-[#D4AF37]/40 shadow-2xl text-stone-900 dark:text-stone-100 max-h-[90vh] overflow-y-auto space-y-6">
-            
-            {/* Modal Top Bar */}
-            <div className="flex items-start justify-between pb-4 border-b border-stone-200 dark:border-[#D4AF37]/20">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-900 dark:text-[#D4AF37] border border-amber-500/30 mb-1">
-                  <ChefHat className="w-3.5 h-3.5" />
-                  {activeRecipe.categoryLabel}
+      {/* ========================================================================= */}
+      {/* RECIPES DISPLAY GRID                                                      */}
+      {/* ========================================================================= */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+            {language === 'es' 
+              ? `Recetas encontradas (${filteredRecipes.length})` 
+              : `Formulations found (${filteredRecipes.length})`}
+          </div>
+          {selectedPet && (
+            <div className="text-xs text-[#B8860B] dark:text-[#D4AF37] font-semibold flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{language === 'es' ? `Escalador activo para ${selectedPet.name} (${selectedPet.weightKg} kg)` : `Active for ${selectedPet.name} (${selectedPet.weightKg} kg)`}</span>
+            </div>
+          )}
+        </div>
+
+        {filteredRecipes.length === 0 ? (
+          <div className="p-12 text-center rounded-3xl bg-white dark:bg-[#112019] border border-stone-200 dark:border-stone-800 space-y-3">
+            <BookOpen className="w-10 h-10 text-stone-400 mx-auto" />
+            <h3 className="font-editorial text-lg font-bold text-stone-800 dark:text-stone-200">
+              {language === 'es' ? 'No se encontraron recetas con los filtros seleccionados' : 'No recipes match current filters'}
+            </h3>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              {language === 'es' ? 'Pruebe a seleccionar "Todas las Etapas" o "Todas las Especialidades".' : 'Try selecting "All Life Stages" or resetting the search filters.'}
+            </p>
+            <button
+              onClick={() => {
+                setSelectedSpecies('both');
+                setSelectedGrowthStage('all');
+                setSelectedCategory('all');
+                setSearchQuery('');
+              }}
+              className="px-4 py-2 rounded-full bg-[#B8860B] text-white font-bold text-xs shadow-xs"
+            >
+              {language === 'es' ? 'Restablecer Filtros' : 'Reset Filters'}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRecipes.map((recipe) => (
+              <div
+                key={recipe.id}
+                className="rounded-3xl overflow-hidden bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/25 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col group"
+              >
+                {/* Recipe Image or Header */}
+                <div className="h-44 relative overflow-hidden bg-stone-100 dark:bg-stone-800">
+                  {recipe.imageUrl ? (
+                    <img 
+                      src={recipe.imageUrl} 
+                      alt={recipe.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-amber-100 to-amber-200 dark:from-[#16271F] dark:to-[#112019]">
+                      <Utensils className="w-12 h-12 text-[#B8860B] dark:text-[#D4AF37] opacity-60" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                  
+                  {/* Species & Stage Badges */}
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 border border-white/20">
+                      <span>{recipe.species === 'dog' ? '🐕 Perro' : recipe.species === 'cat' ? '🐈 Gato' : '🐾 Ambos'}</span>
+                    </span>
+                    {recipe.growthStage && (
+                      <span className="px-2.5 py-1 rounded-full bg-[#B8860B]/80 backdrop-blur-md text-white text-[10px] font-bold border border-amber-300/40">
+                        {recipe.growthStage === 'puppy_kitten' ? '🍼 Cachorro' : recipe.growthStage === 'senior' ? '👑 Senior' : 'Adulto'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    {recipe.frenchTitle && (
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-amber-200 font-semibold block">{recipe.frenchTitle}</span>
+                    )}
+                    <h3 className="font-editorial text-lg font-bold leading-tight drop-shadow-sm">{recipe.title}</h3>
+                  </div>
                 </div>
-                <h2 className="font-editorial text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+
+                {/* Body Details */}
+                <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <p className="text-xs text-stone-600 dark:text-stone-300 line-clamp-2">
+                      {recipe.description}
+                    </p>
+
+                    {/* Stats Pill Row */}
+                    <div className="grid grid-cols-3 gap-1.5 py-2 px-3 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-200 dark:border-stone-800 text-center">
+                      <div>
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{t('kcalPer100')}</div>
+                        <div className="text-xs font-bold text-[#B8860B] dark:text-[#F3E5AB]">{recipe.kcalPer100g} kcal</div>
+                      </div>
+                      <div className="border-x border-stone-200 dark:border-stone-800">
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{t('cookingTime')}</div>
+                        <div className="text-xs font-bold text-stone-800 dark:text-stone-200">{recipe.prepTimeMin + (recipe.cookTimeMin || 0)} min</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{t('difficulty')}</div>
+                        <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{recipe.difficulty}</div>
+                      </div>
+                    </div>
+
+                    {/* Clinical Benefits snippet */}
+                    {recipe.clinicalBenefits && recipe.clinicalBenefits.length > 0 && (
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400 flex items-start gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37] shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">{recipe.clinicalBenefits.join(' • ')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
+                    <button
+                      onClick={() => handleOpenRecipeModal(recipe)}
+                      className="flex-1 py-2.5 px-3 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-bold text-xs shadow-xs hover:scale-102 transition-transform flex items-center justify-center gap-1.5"
+                    >
+                      <Scale className="w-3.5 h-3.5" />
+                      <span>{language === 'es' ? 'Ver & Escalar' : 'View & Scale'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleConsultAiWithRecipe(recipe)}
+                      className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-[#16271F] border border-amber-500/30 dark:border-[#D4AF37]/30 text-[#B8860B] dark:text-[#D4AF37] hover:scale-105 transition-transform"
+                      title={t('askNutriAiToAdapt')}
+                    >
+                      <Bot className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* RECIPE DETAIL & BATCH COOKING SCALER MODAL                                 */}
+      {/* ========================================================================= */}
+      {activeRecipe && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 rounded-3xl max-w-2xl w-full shadow-2xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 my-8 max-h-[90vh] overflow-y-auto">
+            
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-stone-200 dark:border-stone-800">
+              <div>
+                {activeRecipe.frenchTitle && (
+                  <span className="text-xs font-mono font-bold text-[#B8860B] dark:text-[#D4AF37] uppercase">{activeRecipe.frenchTitle}</span>
+                )}
+                <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-stone-900 dark:text-[#F3E5AB]">
                   {activeRecipe.title}
                 </h2>
-                <p className="text-xs text-stone-600 dark:text-stone-400 italic">
-                  {activeRecipe.frenchTitle} &bull; Adecuado para: {activeRecipe.suitability}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-semibold text-stone-600 dark:text-stone-300">
+                    {activeRecipe.species === 'dog' ? '🐕 Dieta Canina' : activeRecipe.species === 'cat' ? '🐈 Dieta Felina' : '🐾 Perros & Gatos'}
+                  </span>
+                  <span>•</span>
+                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{activeRecipe.kcalPer100g} kcal / 100g</span>
+                </div>
               </div>
-              <button
+              <button 
                 onClick={() => setActiveRecipe(null)}
-                className="p-1.5 rounded-xl text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Clinical Benefits */}
-            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-950 dark:text-emerald-300 space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                Beneficios Clínicos & Bioactivos:
-              </div>
-              <ul className="list-disc pl-4 space-y-0.5 leading-relaxed">
-                {activeRecipe.clinicalBenefits.map((benefit, bIdx) => (
-                  <li key={bIdx}>{benefit}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* INTERACTIVE INGREDIENT SCALER CONTROLS */}
-            <div className="p-5 rounded-2xl bg-stone-100/90 dark:bg-[#0E1511] border border-stone-200 dark:border-[#D4AF37]/30 space-y-4">
+            {/* Batch Cooking Scaler Control */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/60 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/30 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-editorial text-lg font-bold text-stone-900 dark:text-[#F3E5AB] flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-amber-500" />
-                  Calculadora & Escalador de Raciones
-                </h3>
-                <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
-                  {activeRecipe.kcalPer100g} kcal por cada 100g
+                <div className="flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
+                  <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-[#F3E5AB]">
+                    {t('scaleBatchCooking')}
+                  </h4>
+                </div>
+                <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                  {scalerDays} {language === 'es' ? 'días' : 'days'} ({scalerPetWeight} kg)
                 </span>
               </div>
 
-              {/* Inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Weight Slider */}
                 <div>
-                  <label className="block font-semibold mb-1 text-stone-700 dark:text-stone-300">
-                    Peso de la Mascota (kg):
+                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('petWeightScaler')}: <span className="text-[#B8860B] dark:text-[#D4AF37] font-bold">{scalerPetWeight} kg</span>
                   </label>
                   <input
-                    type="number"
-                    step="0.5"
-                    min="1"
-                    max="90"
+                    type="range"
+                    min={2}
+                    max={60}
+                    step={0.5}
                     value={scalerPetWeight}
                     onChange={(e) => setScalerPetWeight(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 font-bold text-stone-900 dark:text-[#F3E5AB]"
+                    className="w-full accent-amber-600"
                   />
                 </div>
 
+                {/* Days Selector */}
                 <div>
-                  <label className="block font-semibold mb-1 text-stone-700 dark:text-stone-300">
-                    Días a Preparar (Batch Cooking):
+                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300 block mb-1">
+                    {t('batchDays')}
                   </label>
-                  <select
-                    value={scalerDays}
-                    onChange={(e) => setScalerDays(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 font-bold text-stone-900 dark:text-[#F3E5AB]"
-                  >
-                    <option value={1}>1 Día (Ración Fresca Diaria)</option>
-                    <option value={3}>3 Días (Frigorífico)</option>
-                    <option value={7}>7 Días (Batch Cooking Semanal)</option>
-                    <option value={14}>14 Días (Congelador en Porciones)</option>
-                  </select>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[1, 3, 7, 14].map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setScalerDays(d)}
+                        className={`py-1 rounded-xl text-xs font-bold transition-all ${
+                          scalerDays === d
+                            ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
+                            : 'bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
+                        }`}
+                      >
+                        {d}d
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-
-              {/* Calculated Batch Metrics Banner */}
-              {(() => {
-                const totalGramsBatch = activeRecipe.ingredients.reduce((acc, ing) => {
-                  const g = Math.round((ing.baseGramsFor10kgPetPerDay * (scalerPetWeight / 10)) * scalerDays);
-                  return acc + g;
-                }, 0);
-                const dailyGrams = Math.round(totalGramsBatch / scalerDays);
-                const totalCalories = Math.round(totalGramsBatch * (activeRecipe.kcalPer100g / 100));
-
-                return (
-                  <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-center text-xs">
-                    <div>
-                      <span className="block text-[10px] text-stone-700 dark:text-stone-300 uppercase">Ración por Día</span>
-                      <span className="text-base font-bold text-emerald-800 dark:text-emerald-400">~{dailyGrams} g</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-stone-700 dark:text-stone-300 uppercase">Total a Cocinar</span>
-                      <span className="text-base font-bold text-amber-700 dark:text-[#D4AF37]">{totalGramsBatch} g</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-stone-700 dark:text-stone-300 uppercase">Energía Total</span>
-                      <span className="text-base font-bold text-stone-900 dark:text-stone-100">{totalCalories} kcal</span>
-                    </div>
-                  </div>
-                );
-              })()}
             </div>
 
-            {/* DYNAMIC SCALED INGREDIENTS LIST */}
+            {/* Calculated Portions & Ingredients Table */}
             <div className="space-y-3">
-              <h3 className="font-editorial text-lg font-bold text-stone-900 dark:text-[#F3E5AB]">
-                Ingredientes Proporcionados ({scalerDays} {scalerDays === 1 ? 'día' : 'días'} para {scalerPetWeight}kg):
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                {activeRecipe.ingredients.map((ing, i) => {
+              <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-[#F3E5AB]">
+                {t('ingredientsTitle')} ({scalerDays} {language === 'es' ? 'días de ración' : 'days prep'})
+              </h4>
+              <div className="divide-y divide-stone-200 dark:divide-stone-800 border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden text-xs">
+                {activeRecipe.ingredients.map((ing, idx) => {
                   const scaledGrams = Math.round((ing.baseGramsFor10kgPetPerDay * (scalerPetWeight / 10)) * scalerDays);
-
                   return (
-                    <div
-                      key={i}
-                      className="p-3 rounded-xl bg-stone-50 dark:bg-[#0E1511] border border-stone-200 dark:border-stone-800/80 flex items-center justify-between"
-                    >
+                    <div key={idx} className="p-3 flex items-center justify-between bg-stone-50/50 dark:bg-[#16271F]/50">
                       <div>
-                        <span className="font-bold text-stone-900 dark:text-stone-100">{ing.name}</span>
-                        {ing.notes && (
-                          <span className="block text-[10px] text-stone-700 dark:text-stone-300">{ing.notes}</span>
-                        )}
+                        <span className="font-bold text-stone-800 dark:text-stone-200">{ing.name}</span>
+                        {ing.notes && <span className="text-[10px] text-stone-500 dark:text-stone-400 block">{ing.notes}</span>}
                       </div>
-                      <span className="font-mono font-bold text-emerald-800 dark:text-[#D4AF37] text-sm shrink-0">
+                      <span className="font-mono font-bold text-[#B8860B] dark:text-[#D4AF37] text-sm">
                         {scaledGrams} g
                       </span>
                     </div>
@@ -408,59 +513,61 @@ export const RecipesScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Step-by-Step Instructions */}
-            <div className="space-y-3">
-              <h3 className="font-editorial text-lg font-bold text-stone-900 dark:text-[#F3E5AB]">
-                Método de Preparación & Cocción:
-              </h3>
-              <div className="space-y-2 text-xs">
+            {/* Cooking Instructions */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-[#F3E5AB]">
+                {t('instructionsTitle')}
+              </h4>
+              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-200 dark:border-stone-800 text-xs text-stone-700 dark:text-stone-300 space-y-2 leading-relaxed">
                 {activeRecipe.instructions.map((step, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-stone-50 dark:bg-[#0E1511] border border-stone-200 dark:border-stone-800 flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-900 dark:text-[#D4AF37] font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                      {idx + 1}
-                    </span>
-                    <p className="text-stone-800 dark:text-stone-200 leading-relaxed">
-                      {step}
-                    </p>
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="font-bold text-[#B8860B] dark:text-[#D4AF37]">{idx + 1}.</span>
+                    <span>{step}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Storage Guidelines */}
-            <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-950 dark:text-blue-300 flex items-center gap-3">
-              <ThermometerSnowflake className="w-5 h-5 shrink-0 text-blue-500" />
-              <div>
-                <span className="font-bold block">{language === 'es' ? 'Conservación & Refrigeración:' : 'Storage & Refrigeration:'}</span>
-                <span>{activeRecipe.storageInfo}</span>
+            {/* Storage & Chef Touch */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3.5 rounded-2xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-900/40">
+                <div className="font-bold text-sky-900 dark:text-sky-300 flex items-center gap-1.5 mb-1">
+                  <ThermometerSnowflake className="w-3.5 h-3.5" />
+                  <span>{t('storageTitle')}</span>
+                </div>
+                <p className="text-sky-800 dark:text-sky-200 text-[11px] leading-relaxed">
+                  {activeRecipe.storageInfo}
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40">
+                <div className="font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{t('chefTouch')}</span>
+                </div>
+                <p className="text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed">
+                  {activeRecipe.chefTips}
+                </p>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-stone-200 dark:border-[#D4AF37]/20">
+            {/* Bottom Modal Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
-                onClick={() => handleConsultAiWithRecipe(activeRecipe)}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold border border-indigo-500/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/10 transition-colors flex items-center gap-1.5"
+                onClick={handleLogCookingBatch}
+                className="flex-1 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-colors"
               >
-                <Bot className="w-4 h-4" />
-                <span>Pedir a NutriIA adaptar receta</span>
+                <Check className="w-4 h-4" />
+                <span>{t('cookedBatchBtn')} ({scalerDays} {language === 'es' ? 'días' : 'days'})</span>
               </button>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setActiveRecipe(null)}
-                  className="px-4 py-2.5 rounded-xl text-xs text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
-                >
-                  Cerrar
-                </button>
-                <button
-                  onClick={handleLogCookingBatch}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-800 hover:bg-emerald-900 dark:bg-[#D4AF37] dark:hover:bg-[#E5C358] text-white dark:text-stone-950 transition-all shadow-md flex items-center gap-1.5"
-                >
-                  <Utensils className="w-4 h-4" />
-                  <span>He Cocinado este Batch</span>
-                </button>
-              </div>
+              <button
+                onClick={() => handleConsultAiWithRecipe(activeRecipe)}
+                className="py-3 px-4 rounded-2xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:scale-102"
+              >
+                <Bot className="w-4 h-4" />
+                <span>{t('askNutriAiToAdapt')}</span>
+              </button>
             </div>
 
           </div>

@@ -101,11 +101,16 @@ export interface RecipeIngredient {
   notes?: string;
 }
 
+export type GrowthStage = 'puppy_kitten' | 'adult' | 'senior' | 'all';
+
+export type PetSection = 'overview' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene' | 'edit';
+
 export interface Recipe {
   id: string;
   title: string;
   frenchTitle?: string;
   species: 'dog' | 'cat' | 'both';
+  growthStage?: GrowthStage;
   category: 'renal' | 'weight_control' | 'sensitive_digestion' | 'collagen_broth' | 'healthy_snacks' | 'joint_omega3' | 'vitality_gourmet';
   categoryLabel: string;
   description: string;
@@ -148,3 +153,89 @@ export interface ChatMessage {
   timestamp: string;
   petName?: string;
 }
+
+export type NavigationTab = 
+  | 'home' 
+  | 'pet_profile' 
+  | 'weekly_plan' 
+  | 'recipes' 
+  | 'agenda' 
+  | 'concierge' 
+  | 'toxic_foods';
+
+export interface DailyMealItem {
+  id: string;
+  title: string;
+  category: 'dish1' | 'dish2';
+  mealSlot: 'morning' | 'night';
+  description: string;
+  portionGrams: number;
+  kcal: number;
+  ingredients: { name: string; grams: number; category: string }[];
+  instructions: string[];
+  clinicalBenefits: string[];
+  chefTip?: string;
+}
+
+export interface DailySnackItem {
+  id: string;
+  title: string;
+  portion: string;
+  description: string;
+  benefits: string;
+  ingredients: string[];
+  instructions?: string[];
+  chefTip?: string;
+  kcal?: number;
+}
+
+export interface DailyDessertItem {
+  id: string;
+  title: string;
+  portion: string;
+  description: string;
+  benefits: string;
+  ingredients: string[];
+  instructions?: string[];
+  chefTip?: string;
+  kcal?: number;
+  isFrozenOrGelatin?: boolean;
+}
+
+export interface DayDietPlan {
+  dayIndex: number; // 0 = Lunes, 6 = Domingo
+  dayNameEs: string;
+  dayNameEn: string;
+  dish1: DailyMealItem;
+  dish2: DailyMealItem;
+  snack1: DailySnackItem;
+  snack2: DailySnackItem;
+  dessert1: DailyDessertItem;
+  dessert2: DailyDessertItem;
+  exerciseTarget: {
+    durationMin: number;
+    activityTypeEs: string;
+    activityTypeEn: string;
+    notesEs: string;
+    notesEn: string;
+  };
+}
+
+export interface DailyTrackingRecord {
+  dish1Given: boolean | null; // true: Verde (Sí), false: Rojo (No), null: Pendiente
+  dish2Given: boolean | null;
+  snack1Given: boolean | null;
+  snack2Given: boolean | null;
+  dessert1Given: boolean | null;
+  dessert2Given: boolean | null;
+  exerciseCompleted: boolean;
+  exerciseDurationMin: number;
+  exerciseType?: string;
+  exerciseNotes?: string;
+}
+
+export type WeeklyTrackingMap = {
+  [petId: string]: {
+    [dateKey: string]: DailyTrackingRecord; // Key: YYYY-MM-DD
+  };
+};
