@@ -10,10 +10,68 @@ import { ToxicFoodsScreen } from './components/ToxicFoodsScreen';
 import { NutriIAChatScreen } from './components/NutriIAChatScreen';
 import { AlarmModal } from './components/AlarmModal';
 import { PageReturnHeader } from './components/PageReturnHeader';
+import { WelcomePaymentGateway } from './components/WelcomePaymentGateway';
+import { LandingPage } from './components/LandingPage';
+import { PaymentPlansModal } from './components/PaymentPlansModal';
 import { Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
-  const { activeTab, toast } = useApp();
+  const { 
+    isSubscribed, 
+    showPaymentModal, 
+    setShowPaymentModal, 
+    activeTab, 
+    toast 
+  } = useApp();
+
+  const [guestView, setGuestView] = React.useState<'landing' | 'pricing'>('landing');
+  const [selectedPlanId, setSelectedPlanId] = React.useState<string | undefined>(undefined);
+
+  // If user has not subscribed or verified trial yet, display Landing Page by default or Welcome Payment Gateway
+  if (!isSubscribed) {
+    return (
+      <>
+        {guestView === 'landing' ? (
+          <LandingPage 
+            onGoToPricing={(planId) => {
+              setSelectedPlanId(planId);
+              setGuestView('pricing');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }} 
+          />
+        ) : (
+          <WelcomePaymentGateway 
+            onBackToLanding={() => {
+              setGuestView('landing');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            initialSelectedPlanId={selectedPlanId}
+          />
+        )}
+
+        {toast && (
+          <div className="fixed bottom-6 right-4 sm:right-8 z-50 animate-in slide-in-from-bottom-5 fade-in duration-200">
+            <div className={`flex items-center gap-2.5 py-3 px-4 rounded-2xl shadow-xl border text-xs font-semibold backdrop-blur-md ${
+              toast.type === 'success'
+                ? 'bg-emerald-900/90 text-emerald-100 border-emerald-500/40 shadow-emerald-950/40'
+                : toast.type === 'warning'
+                ? 'bg-amber-900/90 text-amber-100 border-amber-500/40 shadow-amber-950/40'
+                : 'bg-stone-900/90 text-stone-100 border-[#D4AF37]/30 shadow-black/40'
+            }`}>
+              {toast.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : toast.type === 'warning' ? (
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-[#D4AF37] shrink-0" />
+              )}
+              <span>{toast.message}</span>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
 
   const renderActiveScreen = () => {
     switch (activeTab) {
@@ -49,6 +107,12 @@ const MainLayout: React.FC = () => {
 
       {/* Global Interactive Alarm Sound & Visual Reminder Popup Modal */}
       <AlarmModal />
+
+      {/* Settings Modalidad de Pagos (Subscription Manager) */}
+      <PaymentPlansModal 
+        isOpen={showPaymentModal} 
+        onClose={() => setShowPaymentModal(false)} 
+      />
 
       {/* Global Toast Notification */}
       {toast && (

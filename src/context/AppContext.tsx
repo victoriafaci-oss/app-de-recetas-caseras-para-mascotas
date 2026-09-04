@@ -1,6 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Pet, HealthEvent, Recipe, ChatMessage, ThemeMode, Language, NavigationTab, WeeklyTrackingMap, DailyTrackingRecord } from '../types';
+import { 
+  Pet, 
+  HealthEvent, 
+  Recipe, 
+  ChatMessage, 
+  ThemeMode, 
+  Language, 
+  NavigationTab, 
+  WeeklyTrackingMap, 
+  DailyTrackingRecord,
+  UserSubscription,
+  SubscriptionPlanId,
+  PaymentMethodType,
+  PricingPlan
+} from '../types';
 import { INITIAL_PETS, INITIAL_EVENTS, RECIPES_CATALOG } from '../data/mockData';
+import { PRICING_PLANS } from '../data/pricingData';
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { getTranslation, TranslationKey, TRANSLATIONS } from '../utils/translations';
 import confetti from 'canvas-confetti';
@@ -56,6 +71,18 @@ interface AppContextType {
   showToast: (message: string, type?: 'success' | 'info' | 'warning') => void;
   exportAllData: () => void;
   importAllData: (jsonData: string) => boolean;
+  // Subscription & Payment Gateway state
+  subscription: UserSubscription | null;
+  isSubscribed: boolean;
+  showPaymentModal: boolean;
+  setShowPaymentModal: (show: boolean) => void;
+  activateSubscription: (
+    planId: SubscriptionPlanId, 
+    method: PaymentMethodType, 
+    details?: { phoneNumber?: string; cardLast4?: string; transactionId?: string }
+  ) => Promise<boolean>;
+  cancelOrResetSubscription: () => void;
+  currentPricingPlan: PricingPlan | undefined;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -67,8 +94,45 @@ const EVENTS_KEY = 'nutripet_events_v1';
 const RECIPES_KEY = 'nutripet_custom_recipes_v1';
 const CHAT_KEY = 'nutripet_chat_v1';
 const WEEKLY_TRACKING_KEY = 'nutripet_weekly_tracking_v1';
+const SUBSCRIPTION_KEY = 'nutripet_subscription_v1';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Subscription & Payment Gateway state
+  const [subscription, setSubscription] = useState<UserSubscription | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(SUBSCRIPTION_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object' && parsed.status === 'active') {
+            return parsed;
+          }
+        } catch (e) {
+          console.error('Error parsing stored subscription', e);
+        }
+      }
+    }
+    return null;
+  });
+
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  const isSubscribed = Boolean(
+    subscription &&
+    subscription.status === 'active' &&
+    (subscription.isLifetime || !subscription.expiresAt || new Date(subscription.expiresAt).getTime() > Date.now())
+  );
+
+  const currentPricingPlan = PRICING_PLANS.find(p => p.id === subscription?.planId);
+
+  useEffect(() => {
+    if (subscription) {
+      localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscription));
+    } else {
+      localStorage.removeItem(SUBSCRIPTION_KEY);
+    }
+  }, [subscription]);
+
   // Theme state
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
@@ -707,6 +771,87 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const activateSubscription = async (
+    planId: SubscriptionPlanId, 
+    method: PaymentMethodType, 
+    details?: { phoneNumber?: string; cardLast4?: string; transactionId?: string }
+  ): Promise<boolean> => {
+    const planConfig = PRICING_PLANS.find(p => p.id === planId) || PRICING_PLANS[0];
+    const now = Date.now();
+    let expiresAt: string | null = null;
+    let billingPeriod: '48h_trial' | 'monthly' | 'annual' | 'lifetime' = 'monthly';
+
+    if (planId === 'free_trial_48h') {
+      expiresAt = new Date(now + 48 * 3600 * 1000).toISOString();
+      billingPeriod = '48h_trial';
+    } else if (planId === 'monthly') {
+      expiresAt = new Date(now + 30 * 24 * 3600 * 1000).toISOString();
+      billingPeriod = 'monthly';
+    } else if (planId === 'annual') {
+      expiresAt = new Date(now + 365 * 24 * 3600 * 1000).toISOString();
+      billingPeriod = 'annual';
+    } else if (planId === 'lifetime') {
+      expiresAt = null;
+      billingPeriod = 'lifetime';
+    }
+
+    const newSub: UserSubscription = {
+      status: 'active',
+      planId,
+      planTitle: `${planConfig.title} (${planConfig.priceFormatted})`,
+      amountEur: planConfig.priceEur,
+      billingPeriod,
+      paymentMethod: method,
+      activatedAt: new Date().toISOString(),
+      expiresAt,
+      phoneNumber: details?.phoneNumber,
+      transactionId: details?.transactionId || `TX-${Date.now().toString(36).toUpperCase()}`,
+      isLifetime: planId === 'lifetime',
+    };
+
+    setSubscription(newSub);
+    setShowPaymentModal(false);
+    playLuxuryChime('success');
+    confetti({ particleCount: 65, spread: 85, origin: { y: 0.6 } });
+
+    showToast(
+      language === 'es'
+        ? `¡Tarifa "${planConfig.title}" activada con éxito! Bienvenido a la app.`
+        : `"${planConfig.title}" activated successfully! Welcome to the app.`,
+      'success'
+    );
+    return true;
+  };
+
+  // Automatically activate subscription when returning from Stripe or PayPal checkout URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success') {
+        const plan = (params.get('plan') as SubscriptionPlanId) || 'lifetime';
+        const provider = (params.get('provider') as PaymentMethodType) || 'stripe';
+        const sessionId = params.get('session_id') || `STRIPE_SES_${Date.now()}`;
+        activateSubscription(plan, provider, { transactionId: sessionId });
+        try {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch {
+          // ignore in sandboxed environments
+        }
+      }
+    }
+  }, []);
+
+  const cancelOrResetSubscription = () => {
+    setSubscription(null);
+    localStorage.removeItem(SUBSCRIPTION_KEY);
+    showToast(
+      language === 'es'
+        ? 'Modalidad de pago restablecida. Redirigiendo a pasarela de bienvenida.'
+        : 'Payment mode reset. Redirecting to welcome gateway.',
+      'info'
+    );
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -760,6 +905,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         showToast,
         exportAllData,
         importAllData,
+        subscription,
+        isSubscribed,
+        showPaymentModal,
+        setShowPaymentModal,
+        activateSubscription,
+        cancelOrResetSubscription,
+        currentPricingPlan,
       }}
     >
       {children}

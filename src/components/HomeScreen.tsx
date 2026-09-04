@@ -57,6 +57,7 @@ export const HomeScreen: React.FC = () => {
   } = useApp();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
 
   // Detailed Recipe modal state for daily suggestions
   const [inspectingRecipe, setInspectingRecipe] = useState<{
@@ -142,11 +143,12 @@ export const HomeScreen: React.FC = () => {
                 >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden p-1 bg-gradient-to-tr from-[#B8860B] via-[#D4AF37] to-emerald-600 shadow-md group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 ring-2 ring-[#D4AF37]/30">
                     <div className="w-full h-full rounded-[20px] overflow-hidden bg-stone-100 dark:bg-stone-900 flex items-center justify-center">
-                      {selectedPet.avatarUrl ? (
+                      {selectedPet.avatarUrl && !avatarLoadError ? (
                         <img 
                           src={selectedPet.avatarUrl} 
                           alt={selectedPet.name}
                           referrerPolicy="no-referrer"
+                          onError={() => setAvatarLoadError(true)}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (

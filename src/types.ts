@@ -123,8 +123,8 @@ export interface Recipe {
   clinicalBenefits: string[];
   ingredients: RecipeIngredient[];
   instructions: string[];
-  chefTips: string;
-  storageInfo: string;
+  chefTips?: string;
+  storageInfo?: string;
   macronutrients: {
     proteinPct: number;
     fatPct: number;
@@ -239,3 +239,38 @@ export type WeeklyTrackingMap = {
     [dateKey: string]: DailyTrackingRecord; // Key: YYYY-MM-DD
   };
 };
+
+export type SubscriptionPlanId = 'free_trial_48h' | 'monthly' | 'annual' | 'lifetime';
+
+export type PaymentMethodType = 'stripe' | 'paypal' | 'card' | 'phone_sms';
+
+export type SubscriptionStatus = 'active' | 'expired' | 'none';
+
+export interface UserSubscription {
+  status: SubscriptionStatus;
+  planId: SubscriptionPlanId;
+  planTitle: string;
+  amountEur: number;
+  billingPeriod: '48h_trial' | 'monthly' | 'annual' | 'lifetime';
+  paymentMethod: PaymentMethodType;
+  activatedAt: string; // ISO Date string
+  expiresAt: string | null; // ISO Date string or null for lifetime
+  phoneNumber?: string;
+  transactionId?: string;
+  isLifetime: boolean;
+}
+
+export interface PricingPlan {
+  id: SubscriptionPlanId;
+  title: string;
+  subtitle: string;
+  priceEur: number;
+  priceFormatted: string;
+  periodLabel: string;
+  badge?: string;
+  popular?: boolean;
+  requiresPhoneVerification?: boolean;
+  quotaDescription: string;
+  billingModeSummary: string;
+  features: string[];
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { calculateMER, getConditionClinicalAlerts } from '../utils/nutrition';
 import { RECIPES_CATALOG } from '../data/mockData';
@@ -58,6 +58,7 @@ export const PetProfileScreen: React.FC = () => {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddPetModal, setShowAddPetModal] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   
   // Walk logger state
@@ -93,11 +94,22 @@ export const PetProfileScreen: React.FC = () => {
   const merData = calculateMER(selectedPet);
   const clinicalData = getConditionClinicalAlerts(selectedPet.clinicalCondition, selectedPet.species);
 
-  // Today's dates and daily diet recommendations adapted strictly to this pet's profile
-  const weekDates = getCurrentWeekDates();
-  const todayDateObj = weekDates.find(d => d.isToday) || weekDates[0];
-  const todayPlan = generateDailyDietPlan(selectedPet, todayDateObj.dateStr, todayDateObj.dayIndex, language);
-  const todayTracking = getTrackingForDay(selectedPet.id, todayDateObj.dateStr);
+  // Week dates and day navigation for rotating daily nutrition
+  const weekDates = useMemo(() => getCurrentWeekDates(), []);
+  const initialDayIndex = useMemo(() => {
+    const idx = weekDates.findIndex(d => d.isToday);
+    return idx >= 0 ? idx : 0;
+  }, [weekDates]);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(initialDayIndex);
+
+  const activeDateObj = weekDates[selectedDayIndex] || weekDates[0];
+  const activePlan = generateDailyDietPlan(selectedPet, activeDateObj.dateStr, activeDateObj.dayIndex, language);
+  const activeTracking = getTrackingForDay(selectedPet.id, activeDateObj.dateStr);
+
+  // Dynamic pointers reflecting the active selected day (defaults to today)
+  const todayDateObj = activeDateObj;
+  const todayPlan = activePlan;
+  const todayTracking = activeTracking;
 
   // Bath calculation
   const lastBath = new Date(selectedPet.lastBathDate || Date.now());
@@ -208,11 +220,12 @@ export const PetProfileScreen: React.FC = () => {
           {/* Avatar Picture */}
           <div className="relative shrink-0">
             <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-gradient-to-br from-amber-500 via-[#D4AF37] to-emerald-600 shadow-xl">
-              {selectedPet.avatarUrl ? (
+              {selectedPet.avatarUrl && !avatarError ? (
                 <img
                   src={selectedPet.avatarUrl}
                   alt={selectedPet.name}
                   referrerPolicy="no-referrer"
+                  onError={() => setAvatarError(true)}
                   className="w-full h-full object-cover rounded-[20px]"
                 />
               ) : (
@@ -413,6 +426,67 @@ export const PetProfileScreen: React.FC = () => {
             <span>{language === 'es' ? 'Ver Plan Semanal (7 Días)' : 'Full 7-Day Plan'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
+        </div>
+
+        {/* 7-Day Day Selector Bar & Weekly Balance Indicator */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between gap-2 px-1 text-xs">
+            <span className="font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+              <span>
+                {language === 'es' 
+                  ? 'Rotación Diaria Equilibrada (Haz clic en un día para ver sus recetas):' 
+                  : 'Daily Balanced Rotation (Click a day to view its recipes):'}
+              </span>
+            </span>
+            <span className="text-[11px] text-stone-500 dark:text-stone-400">
+              {todayDateObj.isToday 
+                ? (language === 'es' ? 'Viendo menú de HOY' : 'Viewing TODAY menu')
+                : (language === 'es' ? `Viendo menú de ${todayDateObj.dayNameEs}` : `Viewing ${todayDateObj.dayNameEn}`)}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1.5 p-1.5 rounded-2xl bg-stone-100 dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800">
+            {weekDates.map((d, idx) => {
+              const isSelected = selectedDayIndex === idx;
+              return (
+                <button
+                  key={d.dateStr}
+                  type="button"
+                  onClick={() => setSelectedDayIndex(idx)}
+                  className={`py-2 px-1 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
+                    isSelected
+                      ? 'bg-white dark:bg-[#16271F] text-[#B8860B] dark:text-[#F3E5AB] font-bold shadow-xs border border-[#D4AF37]'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-white/60 dark:hover:bg-stone-800/60'
+                  }`}
+                >
+                  <span className="text-[10px] uppercase font-bold tracking-wider">
+                    {language === 'es' ? d.dayShortNameEs : d.dayShortNameEn}
+                  </span>
+                  <span className="text-xs font-mono font-bold">
+                    {d.dayNumber}
+                  </span>
+                  {d.isToday ? (
+                    <span className="text-[9px] px-1 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold leading-tight">
+                      {language === 'es' ? 'Hoy' : 'Today'}
+                    </span>
+                  ) : (
+                    <span className="text-[9px] opacity-0 leading-tight">·</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Balance Clinical Assurance Pill */}
+          <div className="px-3.5 py-2 rounded-xl bg-amber-500/10 dark:bg-[#D4AF37]/10 border border-amber-500/20 dark:border-[#D4AF37]/20 flex items-center gap-2 text-xs text-stone-700 dark:text-stone-300">
+            <Info className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37] shrink-0" />
+            <span className="leading-snug">
+              {language === 'es'
+                ? `🔄 Alimentación equilibrada por semanas: Las recetas alternan fuentes de proteína (${todayDateObj.dayIndex % 2 === 0 ? 'aves, pescado azul y carne magra' : 'pescado blanco, vacuno y carnes hipoalergénicas'}), fibras prebióticas y antioxidantes para evitar carencias.`
+                : `🔄 Weekly dietary balance: Recipes rotate protein sources, prebiotic fibers and antioxidants daily to ensure complete nutrition without deficiencies.`}
+            </span>
+          </div>
         </div>
 
         {/* The 4 Recommendations Grid */}

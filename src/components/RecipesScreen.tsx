@@ -45,6 +45,7 @@ export const RecipesScreen: React.FC = () => {
   // Scaler state inside modal
   const [scalerPetWeight, setScalerPetWeight] = useState(selectedPet ? selectedPet.weightKg : 12);
   const [scalerDays, setScalerDays] = useState(3);
+  const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
 
   const allRecipes = [...customRecipes, ...RECIPES_CATALOG];
 
@@ -312,19 +313,25 @@ export const RecipesScreen: React.FC = () => {
                 className="rounded-3xl overflow-hidden bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/25 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col group"
               >
                 {/* Recipe Image or Header */}
-                <div className="h-44 relative overflow-hidden bg-stone-100 dark:bg-stone-800">
-                  {recipe.imageUrl ? (
+                <div className="h-44 relative overflow-hidden bg-gradient-to-br from-[#12241C] to-[#0A1610] flex items-center justify-center">
+                  {!failedImageIds[recipe.id] && recipe.imageUrl ? (
                     <img 
                       src={recipe.imageUrl} 
                       alt={recipe.title}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      onError={() => {
+                        setFailedImageIds(prev => ({ ...prev, [recipe.id]: true }));
+                      }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-amber-100 to-amber-200 dark:from-[#16271F] dark:to-[#112019]">
-                      <Utensils className="w-12 h-12 text-[#B8860B] dark:text-[#D4AF37] opacity-60" />
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-amber-100 to-amber-200 dark:from-[#16271F] dark:to-[#112019]">
+                      <Utensils className="w-10 h-10 text-[#B8860B] dark:text-[#D4AF37] opacity-60 mb-1" />
+                      <span className="text-[11px] font-bold text-stone-700 dark:text-[#F3E5AB]">Plato Gourmet</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
                   
                   {/* Species & Stage Badges */}
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">

@@ -20,7 +20,8 @@ import {
   ShieldAlert,
   Trash2,
   Database,
-  Plus
+  Plus,
+  CreditCard
 } from 'lucide-react';
 import { AddPetModal } from './AddPetModal';
 
@@ -40,13 +41,16 @@ export const Header: React.FC = () => {
     activeTab,
     setActiveTab,
     clearAllDataToBlank,
-    loadSampleReferenceData
+    loadSampleReferenceData,
+    subscription,
+    setShowPaymentModal
   } = useApp();
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [showAddPetModal, setShowAddPetModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   const pendingEventsCount = events.filter(e => !e.completed).length;
   const currentPet = pets.find(p => p.id === selectedPetId) || pets[0];
@@ -142,10 +146,12 @@ export const Header: React.FC = () => {
                   title={currentPet?.name}
                 >
                   <div className="w-5 h-5 rounded-full overflow-hidden bg-amber-100 dark:bg-stone-800 shrink-0">
-                    {currentPet?.avatarUrl ? (
+                    {currentPet?.avatarUrl && !avatarError ? (
                       <img 
                         src={currentPet.avatarUrl} 
                         alt={currentPet.name}
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarError(true)}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -451,6 +457,48 @@ export const Header: React.FC = () => {
                     EN
                   </button>
                 </div>
+              </div>
+
+              {/* Modalidad de pagos (Payment Mode) as specifically requested */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-bold text-stone-900 dark:text-[#F3E5AB]">
+                    <CreditCard className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
+                    <span>{language === 'es' ? 'Modalidad de pagos' : 'Payment Mode'}</span>
+                  </div>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60">
+                    {subscription ? (language === 'es' ? 'Tarifa Activa' : 'Active Plan') : 'Activa'}
+                  </span>
+                </div>
+
+                <div className="flex items-baseline justify-between text-xs pt-0.5">
+                  <div className="text-stone-700 dark:text-stone-300 font-semibold text-xs">
+                    {subscription?.planTitle || (language === 'es' ? 'Acceso Completo Activo' : 'Active Full Access')}
+                  </div>
+                  <div className="text-[#B8860B] dark:text-[#D4AF37] font-bold">
+                    {subscription?.isLifetime 
+                      ? (language === 'es' ? 'Vitalicio' : 'Lifetime') 
+                      : subscription ? `${subscription.amountEur.toFixed(2)} €` : '0,00 €'}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
+                  {language === 'es'
+                    ? 'Consulta tu modalidad de pago activa o cambia de tarifa a mensual, anual o vitalicia en cualquier momento.'
+                    : 'Review your active subscription plan or switch tariffs anytime to monthly, annual or lifetime.'}
+                </p>
+
+                <button
+                  onClick={() => {
+                    setShowSettingsModal(false);
+                    setShowPaymentModal(true);
+                  }}
+                  id="btn-settings-payment-mode"
+                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] hover:opacity-95 text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>{language === 'es' ? 'Cambiar o Gestionar Tarifa' : 'Change or Manage Plan'}</span>
+                </button>
               </div>
 
               {/* Data Slates: Empty Slate vs Sample Data */}

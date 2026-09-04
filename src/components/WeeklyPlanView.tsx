@@ -44,6 +44,7 @@ export const WeeklyPlanView: React.FC = () => {
 
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
 
+  const [avatarError, setAvatarError] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(() => {
     const today = new Date().toISOString().split('T')[0];
     const idx = weekDates.findIndex(d => d.dateStr === today);
@@ -130,12 +131,13 @@ export const WeeklyPlanView: React.FC = () => {
             className="w-14 h-14 rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-800 border-2 border-[#D4AF37] shrink-0 shadow-inner cursor-pointer hover:scale-105 transition-transform"
             title={language === 'es' ? 'Ver Ficha de la Mascota' : 'View Pet Profile'}
           >
-            {selectedPet.avatarUrl ? (
+            {selectedPet.avatarUrl && !avatarError ? (
               <img 
                 src={selectedPet.avatarUrl} 
                 alt={selectedPet.name} 
                 className="w-full h-full object-cover" 
                 referrerPolicy="no-referrer"
+                onError={() => setAvatarError(true)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">
