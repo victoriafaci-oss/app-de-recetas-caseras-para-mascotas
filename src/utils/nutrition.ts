@@ -51,11 +51,19 @@ export function calculateMER(pet: Pet): {
       multiplier = pet.isNeutered ? 1.3 : 1.4;
       reason = 'Senior con metabolismo adaptado';
     } else if (pet.isNeutered) {
-      multiplier = pet.activityLevel === 'active' ? 1.6 : (pet.activityLevel === 'sedentary' ? 1.3 : 1.5);
-      reason = 'Adulto esterilizado';
+      multiplier = (pet.activityLevel === 'high_performance' || pet.activityLevel === 'working') 
+        ? 2.2 
+        : (pet.activityLevel === 'active' ? 1.6 : (pet.activityLevel === 'sedentary' ? 1.3 : 1.5));
+      reason = (pet.activityLevel === 'high_performance' || pet.activityLevel === 'working')
+        ? 'Adulto esterilizado de alto rendimiento / trabajo (3.0% - 3.5% peso diario)'
+        : 'Adulto esterilizado';
     } else {
-      multiplier = pet.activityLevel === 'active' ? 1.9 : (pet.activityLevel === 'sedentary' ? 1.5 : 1.8);
-      reason = 'Adulto entero';
+      multiplier = (pet.activityLevel === 'high_performance' || pet.activityLevel === 'working')
+        ? 2.5
+        : (pet.activityLevel === 'active' ? 1.9 : (pet.activityLevel === 'sedentary' ? 1.5 : 1.8));
+      reason = (pet.activityLevel === 'high_performance' || pet.activityLevel === 'working')
+        ? 'Perro atleta / trabajo / alta energía (3.5% - 4.0% peso diario)'
+        : 'Adulto entero';
     }
   } else {
     // Cat (Strict carnivore)
@@ -87,6 +95,8 @@ export function calculateMER(pet: Pet): {
     reason += ' (Ajuste Articular: enriquecido en colágeno, condroprotectores y EPA/DHA)';
   } else if (pet.clinicalCondition === 'sensitive_digestive') {
     reason += ' (Ajuste Gastrointestinal: digestión suave y fibra prebiótica)';
+  } else if (pet.clinicalCondition === 'high_performance_hyperactivity' || pet.activityLevel === 'high_performance' || pet.activityLevel === 'working') {
+    reason += ' (Ajuste Alta Energía: 3.5% - 4.0% peso corporal diario con grasas nobles y bajo índice glucémico)';
   }
 
   const mer = Math.round(rer * multiplier);
@@ -141,6 +151,13 @@ export function calculateMER(pet: Pet): {
       fatPct: 33,
       fiberCarbsPct: pet.species === 'cat' ? 15 : 22,
       notes: 'Articular: Rico en ácidos grasos Omega-3 (EPA/DHA) y colágeno natural hidrolizado',
+    };
+  } else if (pet.clinicalCondition === 'high_performance_hyperactivity' || pet.activityLevel === 'high_performance' || pet.activityLevel === 'working') {
+    macronutrientSplit = {
+      proteinPct: 50,
+      fatPct: 30,
+      fiberCarbsPct: 20,
+      notes: 'Alto Rendimiento & Gestión de Hiperactividad: Proteína magra, ácidos grasos MCT y carbohidratos de liberación sostenida',
     };
   }
 
@@ -245,6 +262,21 @@ export function getConditionClinicalAlerts(condition: ClinicalCondition, species
         ],
         keyNutrients: ['Proteína Nobel (Conejo/Pato)', 'Aceite de Onagra/Borraja', 'Vitamina E natural', 'Zanahoria cocida'],
         forbiddenAlert: 'Prohibido: Trazas de cereales con gluten, premios mixtos con harinas de carne genéricas.',
+      };
+
+    case 'high_performance_hyperactivity':
+      return {
+        badgeLabel: '⚡ Alto Rendimiento & Hiperactividad',
+        badgeColor: 'border-blue-500/40 text-blue-300 bg-blue-950/30',
+        title: 'Pautas de Alta Energía, Trabajo y Estimulación Cognitiva',
+        alerts: [
+          'Aporte calórico elevado (3.0% a 4.0% del peso corporal en comida fresca) para mantener masa muscular sin fatiga.',
+          'Estimulación mental obligatoria: El ejercicio físico sin trabajo cognitivo (olfato / búsqueda) produce sobreexcitación.',
+          'Uso del Método Mousse congelado (Kong / lamer) para canalizar la ansiedad mediante liberación de endorfinas.',
+          'Carbohidratos de liberación sostenida (arroz integral, avena cocida, camote) para evitar picos de glucosa que detonen nerviosismo.'
+        ],
+        keyNutrients: ['Triglicéridos de cadena media (MCT)', 'Colágeno y aminoácidos (BCAA)', 'Omega-3 EPA/DHA de salmón salvaje', 'Fibra soluble y mucílagos'],
+        forbiddenAlert: 'Prohibido: Ejercicio físico extenuante inmediatamente antes o después de comer (riesgo crítico de torsión gástrica). Dejar reposar al menos 45-60 min.'
       };
 
     default:

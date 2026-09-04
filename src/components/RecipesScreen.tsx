@@ -51,12 +51,13 @@ export const RecipesScreen: React.FC = () => {
 
   const categoriesList = [
     { id: 'all', label: language === 'es' ? 'Todas las Dietas' : 'All Diets' },
+    { id: 'vitality_gourmet', label: language === 'es' ? 'Vitalidad & Mantenimiento' : 'Vitality & Maintenance' },
     { id: 'joint_omega3', label: language === 'es' ? 'Articular & Longevidad' : 'Joints & Longevity' },
     { id: 'renal', label: language === 'es' ? 'Soporte Renal & Fósforo Bajo' : 'Renal Support & Low Phosphorus' },
     { id: 'sensitive_digestion', label: language === 'es' ? 'Digestión Sensible & IBD' : 'Sensitive Digestion & IBD' },
     { id: 'weight_control', label: language === 'es' ? 'Control de Peso & Saciante' : 'Weight Control & Satiety' },
     { id: 'collagen_broth', label: language === 'es' ? 'Caldos de Colágeno Puro' : 'Pure Collagen Broths' },
-    { id: 'healthy_snacks', label: language === 'es' ? 'Snacks & Premios Caseros' : 'Healthy Homemade Snacks' },
+    { id: 'healthy_snacks', label: language === 'es' ? 'Snacks, Premios & Postres' : 'Healthy Snacks & Desserts' },
   ];
 
   const growthStagesList: { id: GrowthStage | 'all'; label: string; icon: string }[] = [

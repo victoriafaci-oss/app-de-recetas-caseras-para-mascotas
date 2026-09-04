@@ -1,6 +1,113 @@
 import { Pet, DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem } from '../types';
 import { calculateMER } from './nutrition';
 
+export const HIGH_PERFORMANCE_BREEDS = [
+  'border collie',
+  'malinois',
+  'pastor belga',
+  'pastor aleman',
+  'pastor alemán',
+  'german shepherd',
+  'husky',
+  'malamute',
+  'jack russell',
+  'fox terrier',
+  'braco',
+  'pointer',
+  'galgo',
+  'greyhound',
+  'whippet',
+  'doberman',
+  'rottweiler',
+  'australian shepherd',
+  'pastor australiano',
+  'perro de agua',
+  'setter',
+  'beagle',
+  'bodeguero'
+];
+
+export function isHighPerformancePet(pet: Pet): boolean {
+  if (pet.species !== 'dog') return false;
+  if (pet.activityLevel === 'working' || pet.activityLevel === 'high_performance') return true;
+  if (pet.clinicalCondition === 'high_performance_hyperactivity') return true;
+  const breedLower = (pet.breed || '').toLowerCase();
+  return HIGH_PERFORMANCE_BREEDS.some(b => breedLower.includes(b));
+}
+
+export const HIGH_PERFORMANCE_COGNITIVE_HABITS = [
+  {
+    dayIndex: 0,
+    titleEs: 'Juego de Cajas Olfativo Autónomo',
+    titleEn: 'Autonomous Scent Box Game',
+    protocolEs: 'Colocar 5-6 cajas de cartón en la sala con premios de alto valor (hígado o pavo) ocultos en 2 de ellas. Permitir 15-20 minutos de búsqueda independiente sin dar órdenes verbales.',
+    protocolEn: 'Place 5-6 cardboard boxes with hidden high-value treats in 2 of them. Allow 15-20 minutes of autonomous search without verbal commands.',
+    recommendedTime: '11:30',
+    icon: '📦',
+    benefitsEs: 'Estimula el sistema dopaminérgico de búsqueda tranquila, reduciendo el cortisol hasta un 40% y canalizando la hiperactividad motora.',
+  },
+  {
+    dayIndex: 1,
+    titleEs: 'Kong Terapéutico Congelado (Mousse Luna)',
+    titleEn: 'Frozen Therapeutic Kong (Moon Mousse)',
+    protocolEs: 'Rellenar un juguete Kong con Mousse de Pavo y Calabaza (Receta 41) y congelar durante 4 horas. Ofrecer tras el ejercicio en su cama o transportín abierto.',
+    protocolEn: 'Fill a Kong toy with Turkey & Pumpkin Mousse (Recipe 41) and freeze for 4 hours. Offer after exercise in their bed or open crate.',
+    recommendedTime: '16:30',
+    icon: '🧊',
+    benefitsEs: 'El lamido rítmico continuo estimula el nervio vago y libera endorfinas que conmutan el sistema nervioso simpático hacia el descanso reparador.',
+  },
+  {
+    dayIndex: 2,
+    titleEs: 'Paseo de Descompresión con Correa Larga (5m)',
+    titleEn: 'Decompression Walk with Long Line (5m)',
+    protocolEs: 'Salida a campo abierto o parque tranquilo con arnés en Y y correa de rastreo de 5 metros. Dejar que el perro guíe el ritmo y olfatee cada brizna de hierba sin interrupciones.',
+    protocolEn: 'Walk in open nature with a Y-harness and 5m long line. Let the dog lead pace and sniff freely without interruptions.',
+    recommendedTime: '18:30',
+    icon: '🌿',
+    benefitsEs: 'Descompresión sensorial profunda. Olfatear a su ritmo equilibra la frecuencia cardíaca y evita la reactividad por frustración.',
+  },
+  {
+    dayIndex: 3,
+    titleEs: 'Alfombra de Olfato (Snuffle Mat) de Precisión',
+    titleEn: 'Precision Snuffle Mat Session',
+    protocolEs: 'Esparcir dados microscópicos de pavo deshidratado o galletas caseras entre las tiras de la alfombra. Exigir discriminación olfativa fina antes de comer.',
+    protocolEn: 'Hide tiny dehydrated turkey bites within snuffle mat fleece strips. Requires fine scent discrimination before eating.',
+    recommendedTime: '12:00',
+    icon: '👃',
+    benefitsEs: 'Cansa al cerebro 4 veces más que un sprint físico, desarrollando paciencia y tolerancia a la frustración.',
+  },
+  {
+    dayIndex: 4,
+    titleEs: 'Entrenamiento de Autocontrol & "Espera Dinámica"',
+    titleEn: 'Impulse Control & Dynamic Wait Training',
+    protocolEs: 'Sesión de 10 minutos con el plato de comida en mano. Marcar la calma y contacto visual antes de liberar el cuenco. Premiar la quietud con calma.',
+    protocolEn: '10-minute session with meal bowl. Mark eye contact and calmness before releasing the bowl. Reward stillness quietly.',
+    recommendedTime: '19:00',
+    icon: '🛑',
+    benefitsEs: 'Refuerza la corteza prefrontal canina, disminuyendo la impulsividad y la anticipación ansiosa previa a las comidas.',
+  },
+  {
+    dayIndex: 5,
+    titleEs: 'Circuito de Propiocepción & Coordinación Lenta',
+    titleEn: 'Proprioception & Slow Coordination Circuit',
+    protocolEs: 'Guiar al perro muy lentamente sobre troncos bajos, cojines o superficies inestables con luring suave. Cada pata debe apoyarse de forma consciente.',
+    protocolEn: 'Guide the dog very slowly over low logs or balance cushions. Each paw must step with conscious awareness.',
+    recommendedTime: '10:30',
+    icon: '🪵',
+    benefitsEs: 'Conexión neuromuscular propioceptiva. Fortalece la musculatura estabilizadora profunda y previene lesiones deportivas en ligamentos.',
+  },
+  {
+    dayIndex: 6,
+    titleEs: 'Regla de Oro Anti-Torsión & Masaje TTouch Somático',
+    titleEn: 'Anti-Torsion Golden Rule & Somatic TTouch Massage',
+    protocolEs: 'Reposo estricto de 60 minutos antes y después de comidas principales. Realizar círculos lentos de 1 vuelta y cuarto con las yemas de los dedos sobre sienes, base del cuello y orejas.',
+    protocolEn: 'Strict 60-minute rest before and after main meals. Perform gentle 1.25 circular strokes with fingertips on temples and neck base.',
+    recommendedTime: '20:30',
+    icon: '💆',
+    benefitsEs: 'Prevención clínica vital del síndrome de dilatación/torsión de estómago y descenso integral del tono muscular antes del sueño nocturno.',
+  },
+];
+
 /**
  * Returns the Monday-based real calendar dates for the current week.
  * Output: array of 7 dates { dateStr: "YYYY-MM-DD", dayIndex: 0..6, isToday: boolean, formattedLabel: string }
@@ -78,6 +185,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
   const isWeightControl = pet.clinicalCondition === 'weight_loss' || pet.bodyConditionScore >= 6;
   const isJoint = pet.clinicalCondition === 'joint_support';
   const isSensitive = pet.clinicalCondition === 'sensitive_digestive';
+  const isHighPerf = isHighPerformancePet(pet);
 
   // Base multiplier per 10kg
   const weightFactor = Math.max(0.4, pet.weightKg / 10);
@@ -634,17 +742,27 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
 
     const dish1: DailyMealItem = {
       id: `dish-d${dayIndex}-1`,
-      title: isEn ? template.dish1.titleEn : template.dish1.titleEs,
+      title: isHighPerf
+        ? (dayIndex === 0 ? 'Súper Guiso Energético de Res con Arroz Integral'
+          : dayIndex === 1 ? 'Súper Guiso de Cerdo Energético para Perros Atletas'
+          : dayIndex === 2 ? 'Plato de Potencia Canina: Pollo y Quinoa con Verduras'
+          : dayIndex === 3 ? 'Menú Deportivo de Pavo y Boniato: Combustible Muscular'
+          : dayIndex === 4 ? 'Festín de Cordero Energético con Calabaza y Arroz'
+          : dayIndex === 5 ? 'Cazuela Marina de Salmón y Boniato para Perros Deportistas'
+          : 'Cazuela de Pescado Blanco y Arroz: Digestión Ligera para Atletas')
+        : (isEn ? template.dish1.titleEn : template.dish1.titleEs),
       category: 'dish1',
       mealSlot: 'morning',
-      description: isEn ? template.dish1.descEn : template.dish1.descEs,
+      description: isHighPerf
+        ? 'Aporte calórico denso (3.5% peso corporal) con aminoácidos ramificados BCAA, grasas nobles MCT y carbohidratos de bajo índice glucémico para energía sostenida sin sobreexcitación.'
+        : (isEn ? template.dish1.descEn : template.dish1.descEs),
       portionGrams: morningGrams,
       kcal: Math.round(merData.mer * 0.5),
       ingredients: [
         { name: template.dish1.proteinSourceEs, grams: template.dish1.proteinGrams, category: 'protein' },
         { name: isDog ? 'Verdura al vapor (Calabacín/Zanahoria)' : 'Caldo clarificado de colágeno', grams: template.dish1.vegGrams, category: 'vegetable' },
         { name: isDog ? 'Boniato / Arroz cocido' : 'Proteína noble / Taurina', grams: template.dish1.carbGrams, category: 'fiber_carb' },
-        { name: isPuppyOrKitten ? `${template.dish1.supplementsEs} + Calcio Crecimiento` : isSenior ? `${template.dish1.supplementsEs} + Condroprotectores` : template.dish1.supplementsEs, grams: Math.round(weightFactor * 5), category: 'supplement_calcium' },
+        { name: isHighPerf ? 'Aceite MCT + Caldo de médula + Calcio' : (isPuppyOrKitten ? `${template.dish1.supplementsEs} + Calcio Crecimiento` : isSenior ? `${template.dish1.supplementsEs} + Condroprotectores` : template.dish1.supplementsEs), grams: Math.round(weightFactor * 5), category: 'supplement_calcium' },
       ],
       instructions: [
         isEn ? `Step 1: Steam the protein source gently (${template.dish1.proteinGrams}g) without adding salt or spices.` : `Paso 1: Cocer al vapor la proteína (${template.dish1.proteinGrams}g) a baja temperatura (80°C) sin sal añadida.`,
@@ -652,25 +770,35 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
         isEn ? `Step 3: Mix the supplements (${template.dish1.supplementsEs}) and serve warm at body temperature (~37°C).` : `Paso 3: Integrar los suplementos (${template.dish1.supplementsEs}) y servir tibio a temperatura ambiente/corporal (~37°C).`,
       ],
       clinicalBenefits: [
-        stageBenefit,
+        isHighPerf ? '⚡ Ratio proteico/lipídico de alto rendimiento (BCAA + MCT)' : stageBenefit,
         ...(isEn ? template.dish1.benefitsEn : template.dish1.benefitsEs)
       ],
-      chefTip: template.dish1.chefTipEs,
+      chefTip: isHighPerf ? '⚠️ Reposo obligatorio: Esperar 60 min antes y después de comer antes de iniciar cualquier carrera o entrenamiento.' : template.dish1.chefTipEs,
     };
 
     const dish2: DailyMealItem = {
       id: `dish-d${dayIndex}-2`,
-      title: isEn ? template.dish2.titleEn : template.dish2.titleEs,
+      title: isHighPerf
+        ? (dayIndex === 0 ? 'Potaje de Res y Arroz Integral para Perros Deportistas'
+          : dayIndex === 1 ? 'Estofado Dinámico de Pollo y Avena Atleta'
+          : dayIndex === 2 ? 'Plato de Pavo y Avena: Energía Limpia para Perros Activos'
+          : dayIndex === 3 ? 'Estofado de Cordero y Quinoa: Recuperación y Masa Muscular'
+          : dayIndex === 4 ? 'Guiso de Salmón y Patatas: Resistencia y Salud Articular'
+          : dayIndex === 5 ? 'Súper Salmón Atleta: Fuerza, Pelo Brillante y Agilidad'
+          : 'Plato de Res y Avena: Potencia y Resistencia para Canes Activos')
+        : (isEn ? template.dish2.titleEn : template.dish2.titleEs),
       category: 'dish2',
       mealSlot: 'night',
-      description: isEn ? template.dish2.descEn : template.dish2.descEs,
+      description: isHighPerf
+        ? 'Cena regenerativa rica en colágeno soluble, glicina y antioxidantes marinos para restaurar micro-fibras musculares y lubricar cartílagos durante el descanso.'
+        : (isEn ? template.dish2.descEn : template.dish2.descEs),
       portionGrams: nightGrams,
       kcal: Math.round(merData.mer * 0.5),
       ingredients: [
         { name: template.dish2.proteinSourceEs, grams: template.dish2.proteinGrams, category: 'protein' },
         { name: isDog ? 'Calabaza asada / Calabacín' : 'Caldo de médula ósea', grams: template.dish2.vegGrams, category: 'vegetable' },
         { name: isDog ? 'Fibra soluble / Chía' : 'Clara de huevo / Taurina', grams: template.dish2.carbGrams, category: 'fiber_carb' },
-        { name: isPuppyOrKitten ? `${template.dish2.supplementsEs} + DHA Cachorro` : isSenior ? `${template.dish2.supplementsEs} + Omega-3 Senior` : template.dish2.supplementsEs, grams: Math.round(weightFactor * 5), category: 'supplement_calcium' },
+        { name: isHighPerf ? 'Omega-3 EPA/DHA + Colágeno bioasimilable' : (isPuppyOrKitten ? `${template.dish2.supplementsEs} + DHA Cachorro` : isSenior ? `${template.dish2.supplementsEs} + Omega-3 Senior` : template.dish2.supplementsEs), grams: Math.round(weightFactor * 5), category: 'supplement_calcium' },
       ],
       instructions: [
         isEn ? `Step 1: Gently poach the fish/meat (${template.dish2.proteinGrams}g) preserving the natural juices.` : `Paso 1: Pochar suavemente la proteína (${template.dish2.proteinGrams}g) preservando sus jugos naturales.`,
@@ -678,10 +806,10 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
         isEn ? `Step 3: Combine with ${template.dish2.supplementsEs} and serve in two separate calm bowls.` : `Paso 3: Mezclar con ${template.dish2.supplementsEs} y servir en tazón cómodo.`,
       ],
       clinicalBenefits: [
-        stageBenefit,
+        isHighPerf ? '⚡ Regeneración nocturna de tejido conectivo y glucógeno muscular' : stageBenefit,
         ...(isEn ? template.dish2.benefitsEn : template.dish2.benefitsEs)
       ],
-      chefTip: template.dish2.chefTipEs,
+      chefTip: isHighPerf ? 'Servir con una cucharada de caldo de huesos templado para hidratación isotónica.' : template.dish2.chefTipEs,
     };
 
     const snack1: DailySnackItem = {
@@ -750,6 +878,20 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       kcal: Math.round(merData.mer * 0.04),
     };
 
+    const exerciseTarget = isHighPerf ? {
+      durationMin: 80,
+      activityTypeEs: 'Entrenamiento Deportivo / Trabajo & Olfateo de Descompresión',
+      activityTypeEn: 'Sport / Work Training & Decompression Scent Session',
+      notesEs: '⚠️ Regla de Oro Anti-Torsión: Reposo estricto de 60 min antes y después de comidas. 15-20 min de olfateo autónomo para modular el cortisol.',
+      notesEn: '⚠️ Anti-Torsion Golden Rule: Strict 60 min rest before and after meals. 15-20 min autonomous scent search to balance cortisol.',
+    } : {
+      durationMin: template.exercise.durationMin,
+      activityTypeEs: template.exercise.typeEs,
+      activityTypeEn: template.exercise.typeEn,
+      notesEs: template.exercise.notesEs,
+      notesEn: template.exercise.notesEn,
+    };
+
     return {
       dayIndex,
       dayNameEs: daysEs[dayIndex],
@@ -760,13 +902,9 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       snack2,
       dessert1,
       dessert2,
-      exerciseTarget: {
-        durationMin: template.exercise.durationMin,
-        activityTypeEs: template.exercise.typeEs,
-        activityTypeEn: template.exercise.typeEn,
-        notesEs: template.exercise.notesEs,
-        notesEn: template.exercise.notesEn,
-      },
+      exerciseTarget,
+      cognitiveHabitTarget: isHighPerf ? HIGH_PERFORMANCE_COGNITIVE_HABITS[dayIndex] : undefined,
+      isHighPerformancePlan: isHighPerf,
     };
   });
 }

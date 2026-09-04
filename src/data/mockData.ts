@@ -1,9 +1,20 @@
 import { Pet, HealthEvent, Recipe, ToxicFood } from '../types';
+import { MASTER_RECIPES, MASTER_SNACKS_DESSERTS } from './recipesDatabase';
+import { EXTENDED_RECIPES } from './extendedRecipes';
+import { REMAINING_RECIPES } from './allRemainingRecipes';
+import { DOG_PUPPY_RECIPES } from './recipesDogsPuppies';
+import { DOG_ADULT_RECIPES } from './recipesDogsAdults';
+import { DOG_SENIOR_RECIPES } from './recipesDogsSeniors';
+import { CAT_KITTEN_RECIPES } from './recipesCatsKittens';
+import { CAT_ADULT_RECIPES } from './recipesCatsAdults';
+import { CAT_SENIOR_RECIPES } from './recipesCatsSeniors';
+import { HIGH_PERFORMANCE_DOG_RECIPES } from './recipesHighPerformanceDogs';
 
 export const EVENT_CATEGORIES = [
   { id: 'medication', label: 'Medicación / Pastillas', icon: '💊' },
   { id: 'water_broth', label: 'Agua / Caldos', icon: '💧' },
   { id: 'walk', label: 'Pasear / Ejercicio', icon: '🐕' },
+  { id: 'cognitive_enrichment', label: 'Estimulación Mental & Olfato', icon: '🧠' },
   { id: 'veterinary', label: 'Veterinario / Cita', icon: '🏥' },
   { id: 'vaccine_deworm', label: 'Vacunas / Desparasitación', icon: '💉' },
   { id: 'treatment', label: 'Tratamiento / Curas', icon: '🩹' },
@@ -99,10 +110,84 @@ export const INITIAL_PETS: Pet[] = [
         totalKcal: 780,
       }
     ],
+  },
+  {
+    id: 'pet-3',
+    name: 'Thor von Valkyrie',
+    species: 'dog',
+    breed: 'Border Collie (Línea de Trabajo)',
+    ageYears: 2,
+    ageMonths: 4,
+    gender: 'male',
+    isNeutered: false,
+    weightKg: 20.0,
+    targetWeightKg: 20.0,
+    bodyConditionScore: 5,
+    activityLevel: 'high_performance',
+    clinicalCondition: 'high_performance_hyperactivity',
+    allergies: 'Ninguna detectada. Tolerancia digestiva óptima a carne fresca.',
+    avatarUrl: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&q=80',
+    avatarIcon: '🐕',
+    avatarColor: 'from-blue-600 to-indigo-900',
+    bathFrequencyDays: 30,
+    lastBathDate: new Date(Date.now() - 10 * 86400000).toISOString().split('T')[0],
+    todayWaterMl: 1400,
+    todayBrothMl: 400,
+    todayWaterTargetMl: 1600,
+    weightHistory: [
+      { date: '2026-06-01', weightKg: 19.5, note: 'Inicio de pauta de alta energía (3.5% peso corporal)' },
+      { date: '2026-07-01', weightKg: 19.8, note: 'Tono muscular excelente, gran resistencia' },
+      { date: '2026-08-01', weightKg: 20.0, note: 'Masa magra definida y energía equilibrada' },
+      { date: '2026-08-28', weightKg: 20.0, note: 'Peso óptimo mantenido' },
+    ],
+    walksHistory: [
+      { id: 'walk-thor-1', date: new Date().toISOString().split('T')[0], time: '07:30', durationMin: 60, distanceKm: 6.5, notes: 'Canicross y series de carrera con recuperación' },
+      { id: 'walk-thor-2', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], time: '18:00', durationMin: 50, distanceKm: 4.8, notes: 'Circuito de agility y obediencia' },
+    ],
+    cookedRecipesHistory: [
+      {
+        id: 'cook-thor-1',
+        recipeId: 'hp-dog-31',
+        recipeTitle: 'Súper Guiso Energético de Res con Arroz Integral',
+        date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+        daysPrepared: 3,
+        totalGrams: 2100,
+        totalKcal: 3255,
+      }
+    ],
   }
 ];
 
 export const INITIAL_EVENTS: HealthEvent[] = [
+  {
+    id: 'evt-thor-1',
+    petId: 'pet-3',
+    petName: 'Thor von Valkyrie',
+    title: '🧠 Sesión de Olfato: Juego de Cajas Autónomo',
+    category: 'cognitive_enrichment',
+    date: new Date().toISOString().split('T')[0],
+    time: '11:00',
+    recurrence: 'daily',
+    dosage: '15-20 minutos',
+    notes: '5 cajas de cartón con premios de alto valor ocultos. Disminuye cortisol y canaliza la hiperactividad mediante búsqueda olfativa.',
+    completed: true,
+    completedAt: '11:20',
+    alarmSound: true,
+  },
+  {
+    id: 'evt-thor-2',
+    petId: 'pet-3',
+    petName: 'Thor von Valkyrie',
+    title: '🧊 Kong Congelado Terapéutico (Mousse Luna)',
+    category: 'cognitive_enrichment',
+    date: new Date().toISOString().split('T')[0],
+    time: '16:00',
+    recurrence: 'daily',
+    dosage: '1 Kong relleno de Mousse Receta 41 congelado 4h',
+    notes: 'El lamido prolongado libera endorfinas, relajando el sistema nervioso simpático hacia el descanso reparador.',
+    completed: false,
+    alarmSound: true,
+  },
   {
     id: 'evt-1',
     petId: 'pet-1',
@@ -205,7 +290,7 @@ export const INITIAL_EVENTS: HealthEvent[] = [
   }
 ];
 
-export const RECIPES_CATALOG: Recipe[] = [
+const INITIAL_BASE_RECIPES: Recipe[] = [
   {
     id: 'rec-joint-dog',
     title: 'Estofado Royale de Salmón Salvaje & Patas con Colágeno',
@@ -604,6 +689,84 @@ export const RECIPES_CATALOG: Recipe[] = [
     }
   }
 ];
+
+// Convert snacks, treats and desserts into standard Recipe models
+const CONVERTED_SNACKS_DESSERTS: Recipe[] = MASTER_SNACKS_DESSERTS.map((snk) => {
+  const isDessert = snk.type === 'dessert';
+  const isBroth = snk.type === 'broth';
+  
+  return {
+    id: snk.id,
+    title: snk.title,
+    frenchTitle: isDessert 
+      ? `Dessert: ${snk.title}` 
+      : (isBroth ? `Bouillon: ${snk.title}` : `Friandise: ${snk.title}`),
+    species: snk.species,
+    growthStage: 'all',
+    category: isBroth ? 'collagen_broth' : 'healthy_snacks',
+    categoryLabel: isDessert 
+      ? 'Postre Casero Saludable' 
+      : (isBroth ? 'Caldo & Gelatina Funcional' : 'Snack & Premio Saludable'),
+    description: `${snk.description} ${snk.benefits}`,
+    imageUrl: isDessert 
+      ? 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80'
+      : (isBroth 
+          ? 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80'
+          : 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80'),
+    kcalPer100g: snk.isFrozenOrGelatin ? 35 : (isDessert ? 85 : (isBroth ? 40 : 160)),
+    prepTimeMin: 10,
+    cookTimeMin: snk.isFrozenOrGelatin ? 0 : 20,
+    difficulty: 'Fácil',
+    suitability: snk.species === 'dog' 
+      ? 'Perros de todas las edades y tamaños' 
+      : (snk.species === 'cat' ? 'Gatos de todas las edades' : 'Perros y gatos de todas las edades'),
+    clinicalBenefits: [
+      snk.benefits,
+      'Ingredientes 100% frescos y naturales sin conservantes ni aditivos industriales',
+      'Excelente digestibilidad y palatabilidad probiótica / prebiótica'
+    ],
+    ingredients: snk.ingredients.map((ingStr, idx) => ({
+      name: ingStr,
+      category: ingStr.toLowerCase().includes('pollo') || ingStr.toLowerCase().includes('pavo') || ingStr.toLowerCase().includes('carne') 
+        ? 'protein' 
+        : (ingStr.toLowerCase().includes('caldo') ? 'broth_liquid' : (ingStr.toLowerCase().includes('yogur') ? 'healthy_fat' : 'vegetable')),
+      baseGramsFor10kgPetPerDay: 20 + idx * 10,
+      notes: 'Premio o complemento saludable'
+    })),
+    instructions: [
+      snk.preparation,
+      'Servir en raciones moderadas como premio positivo, enriquecimiento olfativo o postre equilibrado tras la comida.'
+    ],
+    chefTips: 'Los snacks y postres deben suponer como máximo un 10% de la energía diaria total de tu mascota.',
+    storageInfo: snk.isFrozenOrGelatin 
+      ? 'Conservar en congelador hasta 3 meses' 
+      : 'Conservar en recipiente hermético de cristal en nevera hasta 5 días',
+    macronutrients: {
+      proteinPct: isDessert ? 25 : (isBroth ? 70 : 45),
+      fatPct: 15,
+      fiberCarbPct: 20,
+      moisturePct: snk.isFrozenOrGelatin || isBroth ? 88 : 55
+    }
+  };
+});
+
+// Build consolidated master catalog with deduplication guarantee (304 total recipes including the complete 180 guide recipes, desserts & snacks)
+const consolidatedRecipesMap = new Map<string, Recipe>();
+
+INITIAL_BASE_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+MASTER_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+EXTENDED_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+REMAINING_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+CONVERTED_SNACKS_DESSERTS.forEach(r => consolidatedRecipesMap.set(r.id, r));
+DOG_PUPPY_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+DOG_ADULT_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+DOG_SENIOR_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+CAT_KITTEN_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+CAT_ADULT_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+CAT_SENIOR_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+HIGH_PERFORMANCE_DOG_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+
+export const RECIPES_CATALOG: Recipe[] = Array.from(consolidatedRecipesMap.values());
 
 export const TOXIC_FOODS_CATALOG: ToxicFood[] = [
   {

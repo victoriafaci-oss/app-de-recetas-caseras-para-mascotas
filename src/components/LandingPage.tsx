@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { RECIPES_CATALOG } from '../data/mockData';
+import { FloatingPawsBackground } from './FloatingPawsBackground';
 import { 
   ChefHat, 
   Sparkles, 
@@ -176,6 +177,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           className="absolute inset-0 opacity-[0.035] dark:opacity-[0.045] bg-[radial-gradient(#C49A45_1px,transparent_1px)] [background-size:24px_24px]" 
         />
       </div>
+
+      {/* Partículas brillantes flotantes en forma de patitas de mascota (oro y champán) */}
+      <FloatingPawsBackground />
 
       {/* ========================================================================= */}
       {/* HEADER: LOGO, SELECTOR DÍA/NOCHE, IDIOMA Y ACCESO                          */}

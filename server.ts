@@ -12,32 +12,47 @@ const PORT = 3000;
 
 app.use(express.json({ limit: "5mb" }));
 
+// Helper to safely extract and clean environment variables
+function getEnvVar(...keys: string[]): string {
+  for (const key of keys) {
+    const val = process.env[key];
+    if (val && typeof val === "string") {
+      const cleaned = val.trim().replace(/^['"]|['"]$/g, "");
+      if (cleaned.length > 0 && !cleaned.startsWith("MY_")) {
+        return cleaned;
+      }
+    }
+  }
+  return "";
+}
+
 // Lazy initialize Stripe client
 let stripeClient: Stripe | null = null;
 function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (!secretKey || secretKey.trim().length === 0 || secretKey.startsWith("MY_")) {
+  const secretKey = getEnvVar("STRIPE_SECRET_KEY", "STRIPE_API_KEY", "STRIPE_KEY", "STRIPE_SECRET", "STRIPE_LIVE_KEY");
+  if (!secretKey) {
     return null;
   }
   if (!stripeClient) {
-    stripeClient = new Stripe(secretKey.trim());
+    stripeClient = new Stripe(secretKey);
   }
   return stripeClient;
 }
 
 // Lazy PayPal helper
 async function getPayPalAccessToken(): Promise<string | null> {
-  const clientId = process.env.PAYPAL_CLIENT_ID;
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-  if (!clientId || !clientSecret || clientId.startsWith("MY_") || clientSecret.startsWith("MY_")) {
+  const clientId = getEnvVar("PAYPAL_CLIENT_ID", "PAYPAL_ID", "PAYPAL_CLIENT", "PAYPAL_KEY", "PAYPAL_APP_ID");
+  const clientSecret = getEnvVar("PAYPAL_CLIENT_SECRET", "PAYPAL_SECRET", "PAYPAL_SECRET_KEY", "PAYPAL_KEY_SECRET");
+  if (!clientId || !clientSecret) {
     return null;
   }
 
-  const isLive = (process.env.PAYPAL_MODE || "live").toLowerCase() === "live";
+  const mode = (getEnvVar("PAYPAL_MODE", "PAYPAL_ENV") || "live").toLowerCase();
+  const isLive = mode === "live" || mode === "production";
   const baseUrl = isLive ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 
   try {
-    const auth = Buffer.from(`${clientId.trim()}:${clientSecret.trim()}`).toString("base64");
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
     const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: "POST",
       headers: {
@@ -81,7 +96,7 @@ const PLAN_CATALOG: Record<string, { price: number; period: string; title: strin
     description: "Cuota anual de 19,99 €/año con 58% de ahorro",
   },
   lifetime: {
-    price: 49.99,
+    price: 39.99,
     period: "lifetime",
     title: "Tarifa Vitalicia",
     description: "Acceso de por vida en un único pago permanente sin cuotas futuras",
@@ -218,18 +233,26 @@ app.post("/api/payment/verify-sms-code", (req, res) => {
 
 // 3. Payment Gateway Configuration Status (Stripe & PayPal)
 app.get("/api/payment/config", (_req, res) => {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  const paypalClientId = process.env.PAYPAL_CLIENT_ID;
-  const isStripeLive = Boolean(stripeKey && stripeKey.trim().length > 0 && !stripeKey.startsWith("MY_"));
-  const isPayPalLive = Boolean(paypalClientId && paypalClientId.trim().length > 0 && !paypalClientId.startsWith("MY_"));
+  const stripe = getStripeClient();
+  const paypalClientId = getEnvVar("PAYPAL_CLIENT_ID", "PAYPAL_ID", "PAYPAL_CLIENT", "PAYPAL_KEY", "VITE_PAYPAL_CLIENT_ID");
+  const paypalSecret = getEnvVar("PAYPAL_CLIENT_SECRET", "PAYPAL_SECRET", "PAYPAL_SECRET_KEY");
+  const publishableKey = getEnvVar("STRIPE_PUBLISHABLE_KEY", "STRIPE_PUBLIC_KEY", "STRIPE_PUB_KEY", "VITE_STRIPE_PUBLISHABLE_KEY");
+  
+  const isStripeLive = Boolean(stripe);
+  const isPayPalLive = Boolean(paypalClientId && paypalSecret);
 
   res.json({
     stripeConfigured: isStripeLive,
     paypalConfigured: isPayPalLive,
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
-    paypalClientId: process.env.PAYPAL_CLIENT_ID || "",
-    paypalMode: process.env.PAYPAL_MODE || "live",
+    publishableKey,
+    paypalClientId,
+    paypalMode: getEnvVar("PAYPAL_MODE", "PAYPAL_ENV") || "live",
     currency: "EUR",
+    paymentLinks: {
+      monthly: getEnvVar("STRIPE_PAYMENT_LINK_MONTHLY", "STRIPE_LINK_MONTHLY", "VITE_STRIPE_PAYMENT_LINK_MONTHLY"),
+      annual: getEnvVar("STRIPE_PAYMENT_LINK_ANNUAL", "STRIPE_LINK_ANNUAL", "VITE_STRIPE_PAYMENT_LINK_ANNUAL"),
+      lifetime: getEnvVar("STRIPE_PAYMENT_LINK_LIFETIME", "STRIPE_LINK_LIFETIME", "VITE_STRIPE_PAYMENT_LINK_LIFETIME"),
+    },
   });
 });
 
@@ -240,6 +263,21 @@ app.post("/api/payment/stripe/create-checkout-session", async (req, res) => {
     const plan = PLAN_CATALOG[planId];
     if (!plan || plan.price <= 0) {
       return res.status(400).json({ error: "Plan no válido para pago con Stripe" });
+    }
+
+    // Check if a direct payment link is configured for this plan
+    const directLink = getEnvVar(
+      `STRIPE_PAYMENT_LINK_${planId.toUpperCase()}`,
+      `STRIPE_LINK_${planId.toUpperCase()}`,
+      `VITE_STRIPE_PAYMENT_LINK_${planId.toUpperCase()}`
+    );
+    if (directLink) {
+      return res.json({
+        success: true,
+        live: true,
+        url: directLink,
+        directLink: true,
+      });
     }
 
     const stripe = getStripeClient();
@@ -302,7 +340,8 @@ app.post("/api/payment/paypal/create-order", async (req, res) => {
     }
 
     const token = await getPayPalAccessToken();
-    const isLive = (process.env.PAYPAL_MODE || "live").toLowerCase() === "live";
+    const mode = (getEnvVar("PAYPAL_MODE", "PAYPAL_ENV") || "live").toLowerCase();
+    const isLive = mode === "live" || mode === "production";
     const baseUrl = isLive ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 
     if (token) {
@@ -333,7 +372,7 @@ app.post("/api/payment/paypal/create-order", async (req, res) => {
 
       const orderData = (await orderRes.json()) as any;
       if (orderRes.ok && orderData.id) {
-        const approveLink = orderData.links?.find((l: any) => l.rel === "approve")?.href;
+        const approveLink = orderData.links?.find((l: any) => l.rel === "approve" || l.rel === "payer-action")?.href;
         return res.json({
           success: true,
           live: true,

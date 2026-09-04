@@ -12,9 +12,10 @@ export type ClinicalCondition =
   | 'sensitive_digestive'
   | 'allergies'
   | 'cardiac'
-  | 'senior_vitality';
+  | 'senior_vitality'
+  | 'high_performance_hyperactivity';
 
-export type ActivityLevel = 'sedentary' | 'moderate' | 'active' | 'working';
+export type ActivityLevel = 'sedentary' | 'moderate' | 'active' | 'working' | 'high_performance';
 
 export interface WeightRecord {
   date: string;
@@ -76,7 +77,8 @@ export type EventCategory =
   | 'veterinary' 
   | 'vaccine_deworm' 
   | 'treatment' 
-  | 'grooming_bath';
+  | 'grooming_bath'
+  | 'cognitive_enrichment';
 
 export interface HealthEvent {
   id: string;
@@ -96,12 +98,12 @@ export interface HealthEvent {
 
 export interface RecipeIngredient {
   name: string;
-  category: 'protein' | 'vegetable' | 'fiber_carb' | 'healthy_fat' | 'supplement_calcium' | 'broth_liquid';
+  category: 'protein' | 'vegetable' | 'fiber_carb' | 'healthy_fat' | 'supplement_calcium' | 'broth_liquid' | 'organ_meat';
   baseGramsFor10kgPetPerDay: number;
   notes?: string;
 }
 
-export type GrowthStage = 'puppy_kitten' | 'adult' | 'senior' | 'all';
+export type GrowthStage = 'puppy_kitten' | 'adult' | 'senior' | 'all' | 'puppy' | 'kitten';
 
 export type PetSection = 'overview' | 'recipes' | 'hydration' | 'walks' | 'agenda' | 'weight' | 'hygiene' | 'edit';
 
@@ -111,7 +113,7 @@ export interface Recipe {
   frenchTitle?: string;
   species: 'dog' | 'cat' | 'both';
   growthStage?: GrowthStage;
-  category: 'renal' | 'weight_control' | 'sensitive_digestion' | 'collagen_broth' | 'healthy_snacks' | 'joint_omega3' | 'vitality_gourmet';
+  category: 'renal' | 'weight_control' | 'sensitive_digestion' | 'collagen_broth' | 'healthy_snacks' | 'joint_omega3' | 'vitality_gourmet' | 'high_performance';
   categoryLabel: string;
   description: string;
   imageUrl?: string;
@@ -219,6 +221,16 @@ export interface DayDietPlan {
     notesEs: string;
     notesEn: string;
   };
+  cognitiveHabitTarget?: {
+    titleEs: string;
+    titleEn: string;
+    protocolEs: string;
+    protocolEn: string;
+    recommendedTime: string;
+    icon: string;
+    benefitsEs: string;
+  };
+  isHighPerformancePlan?: boolean;
 }
 
 export interface DailyTrackingRecord {
