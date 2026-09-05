@@ -195,8 +195,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               </div>
             </div>
             <div>
-              <div className="font-editorial text-lg sm:text-xl font-black tracking-wider text-stone-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#FFF8E7] dark:via-[#E8B84A] dark:to-[#F3C35B]">
-                PAWLOVE • CUIDARTE360
+              <div className="font-editorial text-lg sm:text-xl font-black tracking-wider text-stone-900 dark:text-[#E8B84A]">
+                PAWLOVE - MASCOTAS
               </div>
               <div className="text-[9px] uppercase font-bold tracking-[0.18em] text-amber-700 dark:text-[#E8B84A]/80">
                 Alimentación Real & Salud Animal
@@ -261,7 +261,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
         {/* Título principal enfocado en el concepto único */}
         <h1 className="font-editorial text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 dark:text-white leading-tight max-w-4xl mx-auto">
           Cada mascota es única. <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 dark:from-[#FFF8E7] dark:via-[#E8B84A] dark:to-[#F3C35B]">
+          <span className="text-amber-700 dark:text-[#E8B84A]">
             Su alimentación y cuidados también deben serlo.
           </span>
         </h1>

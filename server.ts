@@ -153,7 +153,7 @@ async function callGeminiCascade(contents: string, systemInstruction?: string): 
 
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "Recetas Caseras para Mascotas Server" });
+  res.json({ status: "ok", service: "PawLove - Mascotas Server" });
 });
 
 // In-memory store for SMS verification codes
