@@ -1,0 +1,418 @@
+import { Recipe } from '../types';
+
+/**
+ * RECETAS COMPLEMENTARIAS DESDUPLICADAS (HASTA ALCANZAR LAS 91 RECETAS PRINCIPALES ÚNICAS)
+ * Cada una con perfil nutricional, método de cocción, adecuación de especie y etapa.
+ */
+export const EXTENDED_RECIPES: Recipe[] = [
+  // --- SUBGRUPO AVES VARIADAS ---
+  {
+    id: 'rec-e37-pollo-boniato-judias',
+    title: 'Pollo Campero con Boniato Asado y Judías Verdes Tiernas',
+    frenchTitle: 'Poulet Fermier à la Patate Douce & Haricots Verts',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Fibra Digestiva & Energía Sostenida',
+    description: 'Pechuga magra con boniato dulce y judías verdes desprovistas de hebras.',
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 126,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos adultos y seniors.',
+    clinicalBenefits: ['Fibra saciante sin fermentación', 'Carbohidratos complejos de absorción lenta', 'Proteína magra'],
+    ingredients: [
+      { name: 'Pechuga de pollo', category: 'protein', baseGramsFor10kgPetPerDay: 190, notes: 'Cocer 20 min' },
+      { name: 'Boniato en cubos', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 18 min' },
+      { name: 'Judías verdes al vapor', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 10 min' },
+      { name: 'Aceite de linaza y cáscara de huevo', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Cocer pollo 20 min, boniato 18 min y judías verdes 10 min.', 'Mezclar con suplementos en templado.'],
+    macronutrients: { proteinPct: 53, fatPct: 17, fiberCarbPct: 30, moisturePct: 77 }
+  },
+  {
+    id: 'rec-e38-pavo-arroz-calabacin',
+    title: 'Pavo Suave con Arroz Blanco y Calabacín al Vapor',
+    frenchTitle: 'Dinde Délicate au Riz Blanc & Courgettes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Convalecencia & Estómago Delicado',
+    description: 'Plato ultraligero para días de recuperación o tránsito acelerado.',
+    imageUrl: 'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 122,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Todas las edades, perros y gatos.',
+    clinicalBenefits: ['Cero irritación de la mucosa gástrica', 'Mucílagos de calabacín', 'Rápida digestión'],
+    ingredients: [
+      { name: 'Pavo magro', category: 'protein', baseGramsFor10kgPetPerDay: 195, notes: 'Cocer 20 min' },
+      { name: 'Arroz blanco', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 20 min' },
+      { name: 'Calabacín tierno', category: 'vegetable', baseGramsFor10kgPetPerDay: 45, notes: 'Vapor 10 min' },
+      { name: 'Cáscara de huevo y aceite de salmón', category: 'supplement_calcium', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Hervir pavo 20 min y arroz 20 min.', 'Cocer calabacín 10 min al vapor.', 'Mezclar con los suplementos.'],
+    macronutrients: { proteinPct: 54, fatPct: 16, fiberCarbPct: 30, moisturePct: 78 }
+  },
+  {
+    id: 'rec-e39-pollo-avena-zanahoria',
+    title: 'Pollo con Copos de Avena Suaves y Dados de Zanahoria',
+    frenchTitle: 'Poulet aux Flocons d\'Avoine & Carottes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Fibra Soluble & Betaglucanos',
+    description: 'La avena cocida forma una crema reconfortante que envuelve el pollo desmenuzado.',
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 128,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos con tendencia al estreñimiento o pelo apelmazado.',
+    clinicalBenefits: ['Betaglucanos para el sistema inmune', 'Tránsito regular', 'Betacarotenos'],
+    ingredients: [
+      { name: 'Pechuga de pollo', category: 'protein', baseGramsFor10kgPetPerDay: 190, notes: 'Hervir 20 min' },
+      { name: 'Copos de avena cocidos', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 45, notes: 'Cocer 10 min' },
+      { name: 'Zanahoria tierna', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 15 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Hervir pollo 20 min.', 'Cocer copos de avena en agua limpia 10 min hasta formar una crema suave.', 'Mezclar con zanahoria y suplementos.'],
+    macronutrients: { proteinPct: 52, fatPct: 18, fiberCarbPct: 30, moisturePct: 76 }
+  },
+  {
+    id: 'rec-e40-pavo-boniato-brocoli',
+    title: 'Pavo al Vapor con Boniato Asado y Ramilletes de Brócoli',
+    frenchTitle: 'Dinde Vapeur au Boniato & Brocoli',
+    species: 'both',
+    growthStage: 'all',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Antioxidantes & Protección Celular',
+    description: 'Pavo jugoso con antioxidantes naturales de brócoli y energía no procesada.',
+    imageUrl: 'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 132,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos adultos de actividad media a alta.',
+    clinicalBenefits: ['Glucosinolatos anticancerígenos del brócoli', 'Vitamina C y carotenoides', 'Triptófano para calma nerviosa'],
+    ingredients: [
+      { name: 'Pavo magro', category: 'protein', baseGramsFor10kgPetPerDay: 195, notes: 'Cocer 20 min' },
+      { name: 'Boniato cocido', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 18 min' },
+      { name: 'Brócoli al vapor', category: 'vegetable', baseGramsFor10kgPetPerDay: 35, notes: 'Cocer 8 min' },
+      { name: 'Aceite de linaza y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Cocer pavo 20 min, boniato 18 min y brócoli 8 min.', 'Mezclar con suplementos en templado.'],
+    macronutrients: { proteinPct: 53, fatPct: 18, fiberCarbPct: 29, moisturePct: 76 }
+  },
+
+  // --- SUBGRUPO PESCADOS VARIADOS ---
+  {
+    id: 'rec-e41-merluza-boniato-espinaca',
+    title: 'Merluza Austral con Boniato Dorado y Espinacas Baby',
+    frenchTitle: 'Merluche au Boniato Doré & Pousses d\'Épinards',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Proteína Blanca & Minerales',
+    description: 'Pescado blanco magro con carbohidratos saludables de boniato y hierro vegetal.',
+    imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 118,
+    prepTimeMin: 15,
+    cookTimeMin: 18,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos con sensibilidad dérmica o digestiva.',
+    clinicalBenefits: ['Fácil asimilación intestinal', 'Vitamina A y luteína', 'Grasa mínima'],
+    ingredients: [
+      { name: 'Merluza fresca sin espinas', category: 'protein', baseGramsFor10kgPetPerDay: 205, notes: 'Vapor 10 min' },
+      { name: 'Boniato cocido', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 18 min' },
+      { name: 'Espinacas escaldadas', category: 'vegetable', baseGramsFor10kgPetPerDay: 30, notes: 'Escaldar 3 min' },
+      { name: 'Aceite de salmón y cáscara de huevo', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Cocer merluza al vapor 10 min.', 'Hervir boniato 18 min y escaldar espinaca 3 min.', 'Mezclar con suplementos.'],
+    macronutrients: { proteinPct: 54, fatPct: 15, fiberCarbPct: 31, moisturePct: 80 }
+  },
+  {
+    id: 'rec-e42-salmon-calabaza-zanahoria',
+    title: 'Salmón Rosado con Puré de Calabaza Asada y Zanahorias',
+    frenchTitle: 'Saumon Rosé & Duo Potiron-Carottes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'joint_omega3',
+    categoryLabel: 'Piel & Pelaje de Concurso',
+    description: 'Salmón jugoso rico en astaxantina natural con hortalizas naranjas.',
+    imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 144,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Todas las razas de pelo denso o mascotas con muda estacional.',
+    clinicalBenefits: ['Astaxantina marina antioxidante', 'Refuerzo de la barrera dérmica', 'Omega 3 EPA/DHA'],
+    ingredients: [
+      { name: 'Salmón sin espinas', category: 'protein', baseGramsFor10kgPetPerDay: 180, notes: 'Hornear 12-15 min' },
+      { name: 'Calabaza asada', category: 'vegetable', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 15 min' },
+      { name: 'Zanahoria en dados', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 15 min' },
+      { name: 'Arroz blanco cocido', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 35, notes: 'Cocer 18 min' },
+      { name: 'Cáscara de huevo en polvo', category: 'supplement_calcium', baseGramsFor10kgPetPerDay: 4, notes: 'Calcio' }
+    ],
+    instructions: ['Hornear salmón 15 min.', 'Hervir calabaza, zanahoria y arroz.', 'Mezclar con cáscara de huevo molida.'],
+    macronutrients: { proteinPct: 49, fatPct: 26, fiberCarbPct: 25, moisturePct: 74 }
+  },
+  {
+    id: 'rec-e43-bacalao-arroz-espinaca',
+    title: 'Bacalao Desmigado con Arroz Blanco y Espinacas Baby',
+    frenchTitle: 'Cabillaud Émietté au Riz & Épinards',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Pescado Blanco & Digestión Rápida',
+    description: 'Bacalao cocido al vapor desespinado con arroz suave y espinacas tiernas.',
+    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 114,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos convalecientes o con digestiones lentas.',
+    clinicalBenefits: ['Absorción inmediata de aminoácidos', 'Bajo residuo fecal', 'Yodo y selenio'],
+    ingredients: [
+      { name: 'Bacalao fresco desmigado', category: 'protein', baseGramsFor10kgPetPerDay: 200, notes: 'Cocer 8-10 min' },
+      { name: 'Arroz blanco', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 18 min' },
+      { name: 'Espinacas escaldadas', category: 'vegetable', baseGramsFor10kgPetPerDay: 30, notes: 'Escaldar 3 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Cocer bacalao 10 min y arroz 18 min.', 'Escaldar espinacas 3 min.', 'Mezclar con suplementos.'],
+    macronutrients: { proteinPct: 55, fatPct: 15, fiberCarbPct: 30, moisturePct: 81 }
+  },
+  {
+    id: 'rec-e44-bacalao-arroz-germinado-espinaca',
+    title: 'Bacalao Salvaje con Arroz Germinado y Espinacas ⭐',
+    frenchTitle: 'Cabillaud Sauvage au Riz Germé & Épinards',
+    species: 'both',
+    growthStage: 'all',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Receta Premium Enzimas Vivas',
+    description: 'Arroz germinado rico en GABA natural combinado con bacalao atlántico.',
+    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 118,
+    prepTimeMin: 15,
+    cookTimeMin: 25,
+    difficulty: 'Media',
+    suitability: 'Perros con ansiedad por separación, hiperactividad o senior.',
+    clinicalBenefits: ['GABA endógeno tranquilizante', 'Enzimas activadas en germinación', 'Pescado magro purificante'],
+    ingredients: [
+      { name: 'Bacalao fresco', category: 'protein', baseGramsFor10kgPetPerDay: 200, notes: 'Vapor 10 min' },
+      { name: 'Arroz germinado cocido', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 45, notes: 'Cocer 20 min' },
+      { name: 'Espinacas escaldadas', category: 'vegetable', baseGramsFor10kgPetPerDay: 30, notes: 'Escaldar 3 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Cocer bacalao al vapor 10 min.', 'Hervir arroz germinado 20 min.', 'Escaldar espinacas y mezclar.'],
+    macronutrients: { proteinPct: 53, fatPct: 16, fiberCarbPct: 31, moisturePct: 80 }
+  },
+  {
+    id: 'rec-e45-salmon-calabaza-probioticos',
+    title: 'Salmón al Horno con Crema de Calabaza y Probióticos ⭐',
+    frenchTitle: 'Saumon & Velouté de Potiron Probiotique',
+    species: 'both',
+    growthStage: 'all',
+    category: 'joint_omega3',
+    categoryLabel: 'Receta Premium Microbiota & Omega 3',
+    description: 'Salmón jugoso con puré templado de calabaza y bacterias vivas simbióticas.',
+    imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 145,
+    prepTimeMin: 15,
+    cookTimeMin: 20,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos con inflamación intestinal o alergias crónicas.',
+    clinicalBenefits: ['Sinergia de ácidos EPA/DHA y probióticos', 'Reducción de permeabilidad intestinal', 'Alta digestión'],
+    ingredients: [
+      { name: 'Lomo de salmón', category: 'protein', baseGramsFor10kgPetPerDay: 180, notes: 'Hornear 12 min' },
+      { name: 'Calabaza cocida triturada', category: 'vegetable', baseGramsFor10kgPetPerDay: 60, notes: 'Cocer 15 min' },
+      { name: 'Arroz blanco', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 35, notes: 'Cocer 18 min' },
+      { name: 'Probióticos y cáscara de huevo', category: 'supplement_calcium', baseGramsFor10kgPetPerDay: 5, notes: 'Añadir en templado' }
+    ],
+    instructions: ['Hornear salmón 12 min.', 'Triturar la calabaza con el arroz cocido.', 'Añadir probióticos y calcio cuando baje de 38°C.'],
+    macronutrients: { proteinPct: 48, fatPct: 27, fiberCarbPct: 25, moisturePct: 75 }
+  },
+
+  // --- SUBGRUPO CAZA, CONEJO Y PATO ---
+  {
+    id: 'rec-e46-conejo-arroz-integral-verduras',
+    title: 'Conejo del Valle con Arroz Integral y Verduras de Huerto',
+    frenchTitle: 'Lapin de la Vallée au Riz Complet & Légumes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Hipoalergénico & Grano Entero',
+    description: 'Conejo estofado con arroz integral para perros que necesitan fibra completa.',
+    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 132,
+    prepTimeMin: 15,
+    cookTimeMin: 30,
+    difficulty: 'Media',
+    suitability: 'Perros adultos que toleran grano entero y precisan fibra natural.',
+    clinicalBenefits: ['Proteína magra sin alérgenos', 'Magnesio del arroz integral', 'Salud del colon'],
+    ingredients: [
+      { name: 'Carne de conejo deshuesada', category: 'protein', baseGramsFor10kgPetPerDay: 195, notes: 'Guisar 30 min' },
+      { name: 'Arroz integral cocido', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 30 min' },
+      { name: 'Zanahoria y calabacín', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 10 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Guisar conejo 30 min.', 'Cocer arroz integral 30 min y verduras 10 min.', 'Mezclar con suplementos.'],
+    macronutrients: { proteinPct: 53, fatPct: 18, fiberCarbPct: 29, moisturePct: 76 }
+  },
+  {
+    id: 'rec-e47-pato-quinoa-manzana',
+    title: 'Pato Silvestre con Quinoa Real y Puré de Manzana Golden',
+    frenchTitle: 'Canard Sauvage au Quinoa Royal & Compote de Pomme',
+    species: 'both',
+    growthStage: 'all',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Sabor Intenso & Pectinas',
+    description: 'Pato tierno con la versatilidad de la quinoa y la digestibilidad de la manzana.',
+    imageUrl: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 140,
+    prepTimeMin: 15,
+    cookTimeMin: 25,
+    difficulty: 'Media',
+    suitability: 'Perros y gatos exigentes con apetito selectivo.',
+    clinicalBenefits: ['Equilibrio de aminoácidos esenciales', 'Pectina que arrastra toxinas', 'Palatabilidad sobresaliente'],
+    ingredients: [
+      { name: 'Pato desgrasado cocido', category: 'protein', baseGramsFor10kgPetPerDay: 185, notes: 'Cocinar 20 min' },
+      { name: 'Quinoa cocida', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 45, notes: 'Cocer 15 min' },
+      { name: 'Manzana pelada cocida', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 5 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Cocinar pato 20 min.', 'Hervir quinoa 15 min y manzana 5 min.', 'Mezclar con suplementos.'],
+    macronutrients: { proteinPct: 50, fatPct: 24, fiberCarbPct: 26, moisturePct: 75 }
+  },
+
+  // --- SUBGRUPO CORDERO Y TERNERA ADICIONALES ---
+  {
+    id: 'rec-e48-cordero-patata-calabacin',
+    title: 'Cordero Lechal con Patata Cocida y Calabacín en Dados',
+    frenchTitle: 'Agneau Fondant aux Pommes de Terre & Courgettes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Zinc & Digestibilidad Rápida',
+    description: 'Cordero tierno desgrasado con patata en dados suaves y calabacín.',
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 138,
+    prepTimeMin: 15,
+    cookTimeMin: 30,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos que requieren variedad de carnes rojas suaves.',
+    clinicalBenefits: ['L-carnitina y zinc bioasimilable', 'Digestión fácil de la patata cocida', 'Calidad muscular'],
+    ingredients: [
+      { name: 'Cordero magro desgrasado', category: 'protein', baseGramsFor10kgPetPerDay: 185, notes: 'Guisar 30 min' },
+      { name: 'Patata cocida pelada', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 55, notes: 'Cocer 20 min' },
+      { name: 'Calabacín en dados', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 10 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Guisar cordero 30 min desechando grasa de superficie.', 'Cocer patata 20 min y calabacín 10 min.', 'Mezclar con suplementos.'],
+    macronutrients: { proteinPct: 51, fatPct: 22, fiberCarbPct: 27, moisturePct: 76 }
+  },
+  {
+    id: 'rec-e49-estofado-cordero-mediterraneo',
+    title: 'Estofado de Cordero con Quinoa y Hierbas Mediterráneas',
+    frenchTitle: 'Ragoût d\'Agneau Méditerranéen au Quinoa',
+    species: 'both',
+    growthStage: 'adult',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Aromas Naturales & Nutrición Noble',
+    description: 'Guiso lento con un toque sutil de orégano o romero en infusión suave (antioxidantes naturales).',
+    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 144,
+    prepTimeMin: 15,
+    cookTimeMin: 35,
+    difficulty: 'Media',
+    suitability: 'Perros adultos que disfrutan de guisos aromáticos tradicionales.',
+    clinicalBenefits: ['Ácido rosmarínico antioxidante', 'Zinc muscular', 'Alta absorción'],
+    ingredients: [
+      { name: 'Cordero magro', category: 'protein', baseGramsFor10kgPetPerDay: 180, notes: 'Guisar 35 min' },
+      { name: 'Quinoa cocida', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 45, notes: 'Cocer 15 min' },
+      { name: 'Zanahoria y calabaza', category: 'vegetable', baseGramsFor10kgPetPerDay: 45, notes: 'Cocer 12 min' },
+      { name: 'Aceite de salmón y calcio', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Guisar cordero 35 min con una brizna de romero retirándola al final.', 'Hervir quinoa y verduras.', 'Mezclar con suplementos.'],
+    macronutrients: { proteinPct: 50, fatPct: 24, fiberCarbPct: 26, moisturePct: 75 }
+  },
+
+  // --- SUBGRUPO RECETAS EXPRESS & CRUDA SEGURA (PDF 1 & 2) ---
+  {
+    id: 'rec-e50-cruda-molida-calabaza-salmon',
+    title: 'Carne Magra Molida con Calabaza y Aceite de Salmón (Express)',
+    frenchTitle: 'Tartare Minute au Potiron & Huile de Saumon',
+    species: 'both',
+    growthStage: 'adult',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Express & Cruda Segura Previamente Congelada',
+    description: 'Preparación express de carne fresca previamente congelada 3 semanas a -20°C con puré de calabaza.',
+    imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 145,
+    prepTimeMin: 10,
+    cookTimeMin: 0,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos adaptados a dietas crudas o mixtas.',
+    clinicalBenefits: ['Enzimas crudas intactas', 'Calabaza para tránsito equilibrado', 'Omega 3 activo'],
+    ingredients: [
+      { name: 'Carne magra de ternera o pavo molida (congelada previamente)', category: 'protein', baseGramsFor10kgPetPerDay: 200, notes: 'Descongelar en frío' },
+      { name: 'Puré de calabaza cocida al vapor', category: 'vegetable', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer previamente' },
+      { name: 'Aceite de salmón salvaje', category: 'healthy_fat', baseGramsFor10kgPetPerDay: 3, notes: 'Omega 3' },
+      { name: 'Cáscara de huevo en polvo', category: 'supplement_calcium', baseGramsFor10kgPetPerDay: 4, notes: 'Calcio' }
+    ],
+    instructions: ['Descongelar la carne picada en nevera durante 24 horas.', 'Mezclar en frío con el puré de calabaza, el calcio y el aceite de salmón.', 'Servir de inmediato.'],
+    macronutrients: { proteinPct: 55, fatPct: 23, fiberCarbPct: 22, moisturePct: 75 }
+  },
+  {
+    id: 'rec-e51-express-pollo-arroz-verduras-vapor',
+    title: 'Pollo Cocido Express con Arroz y Verduras al Vapor (15 min)',
+    frenchTitle: 'Poulet Express Vapeur au Riz & Légumes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'sensitive_digestion',
+    categoryLabel: 'Express 15 Minutos',
+    description: 'Fórmula rápida cocinando todo en una sola olla en 15 minutos para dueños con poco tiempo.',
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 128,
+    prepTimeMin: 5,
+    cookTimeMin: 15,
+    difficulty: 'Fácil',
+    suitability: 'Cualquier perro o gato.',
+    clinicalBenefits: ['Cocción unificada rápida', 'Conservación de vitaminas en el caldo propio', 'Comodidad'],
+    ingredients: [
+      { name: 'Pechuga de pollo en dados pequeños', category: 'protein', baseGramsFor10kgPetPerDay: 190, notes: 'Cocer 15 min' },
+      { name: 'Arroz precocido o cocido rápido', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 15 min' },
+      { name: 'Verduras en dados finos (calabacín, zanahoria)', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 12 min' },
+      { name: 'Cáscara de huevo y aceite de salmón', category: 'supplement_calcium', baseGramsFor10kgPetPerDay: 6, notes: 'Suplementos' }
+    ],
+    instructions: ['Poner el arroz, los dados de pollo y las verduras finas en olla con agua hirviendo durante 15 min.', 'Escurrir conservando un poco de caldo.', 'Añadir calcio y servir.'],
+    macronutrients: { proteinPct: 53, fatPct: 17, fiberCarbPct: 30, moisturePct: 78 }
+  },
+  {
+    id: 'rec-e52-atun-fresco-patata-zanahoria',
+    title: 'Atún Fresco al Vapor con Patata y Zanahoria Dulce (Sin Sal)',
+    frenchTitle: 'Thon Frais Vapeur aux Pommes de Terre & Carottes',
+    species: 'both',
+    growthStage: 'all',
+    category: 'vitality_gourmet',
+    categoryLabel: 'Pescado Azul Noble & Vitamina D',
+    description: 'Atún fresco de pescadería (nunca en conserva con sal) cocido brevemente con patata y zanahoria.',
+    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    kcalPer100g: 135,
+    prepTimeMin: 15,
+    cookTimeMin: 18,
+    difficulty: 'Fácil',
+    suitability: 'Perros y gatos adultos.',
+    clinicalBenefits: ['Alta concentración de selenio y omega 3', 'Carbohidratos limpios de patata', 'Aceptación insuperable'],
+    ingredients: [
+      { name: 'Atún fresco de pescadería limpio', category: 'protein', baseGramsFor10kgPetPerDay: 185, notes: 'Vapor 8-10 min' },
+      { name: 'Patata cocida en cubos', category: 'fiber_carb', baseGramsFor10kgPetPerDay: 50, notes: 'Cocer 20 min' },
+      { name: 'Zanahoria en dados tiernos', category: 'vegetable', baseGramsFor10kgPetPerDay: 40, notes: 'Cocer 15 min' },
+      { name: 'Cáscara de huevo en polvo', category: 'supplement_calcium', baseGramsFor10kgPetPerDay: 4, notes: 'Calcio' }
+    ],
+    instructions: ['Cocer el atún fresco 8-10 min al vapor.', 'Hervir la patata y la zanahoria.', 'Mezclar con el suplemento de calcio al templar.'],
+    macronutrients: { proteinPct: 55, fatPct: 18, fiberCarbPct: 27, moisturePct: 77 }
+  }
+];
