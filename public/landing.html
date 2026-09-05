@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pawlove</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f4d03f;
+            --gold-dark: #b8860b;
+            --green-deep: #0d2818;
+            --green-dark: #1a3d2e;
+            --green-medium: #2d5a3d;
+            --cream: #faf8f0;
+            --cream-dark: #f0ebe0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            color: var(--cream);
+            overflow-x: hidden;
+            background: var(--green-deep);
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #0d2818 0%, #1a3d2e 25%, #0d2818 50%, #2d5a3d 75%, #0d2818 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .particle:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 20%; left: 80%; animation-delay: 2s; }
+        .particle:nth-child(3) { top: 40%; left: 30%; animation-delay: 4s; }
+        .particle:nth-child(4) { top: 60%; left: 70%; animation-delay: 6s; }
+        .particle:nth-child(5) { top: 80%; left: 20%; animation-delay: 8s; }
+        .particle:nth-child(6) { top: 30%; left: 60%; animation-delay: 10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.25; }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(13, 40, 24, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: none;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+            border: 2px solid var(--gold);
+        }
+
+        .cta-button:hover {
+            background: transparent;
+            color: var(--gold);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 6rem 1.5rem 3rem;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            background: linear-gradient(135deg, var(--cream), var(--gold), var(--cream));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: rgba(250, 248, 240, 0.8);
+            margin-bottom: 2rem;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border: 2px solid var(--gold);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--gold);
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid var(--gold);
+            display: inline-block;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: var(--green-deep);
+        }
+
+        /* Phone Mockup */
+        .phone-mockup {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phone {
+            width: 260px;
+            height: 520px;
+            background: linear-gradient(135deg, var(--green-dark), var(--green-deep));
+            border-radius: 35px;
+            padding: 10px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(212, 175, 55, 0.2);
+            position: relative;
+            animation: float 4s ease-in-out infinite;
+            border: 2px solid var(--gold);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, var(--green-deep) 0%, var(--green-dark) 100%);
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .app-header {
+            padding: 1.2rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            text-align: center;
+        }
+
+        .app-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .app-content {
+            padding: 1.2rem;
+        }
+
+        .pet-profile {
+            background: rgba(250, 248, 240, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .pet-name {
+            font-family: 'Playfair Display', serif;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
+        }
+
+        .pet-info {
+            font-size: 0.75rem;
+            color: rgba(250, 248, 240, 0.7);
+        }
+
+        .recipe-card {
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 10px;
+            padding: 0.8rem;
+            margin-top: 0.8rem;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .recipe-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            color: var(--cream);
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .recipe-stats {
+            display: flex;
+            gap: 0.8rem;
+            font-size: 0.7rem;
+            color: var(--gold);
+            margin-top: 0.4rem;
+        }
+
+        /* Recipe Gallery Section */
+        .recipe-gallery {
+            padding: 4rem 1.5rem;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, var(--cream), var(--gold), var(--cream));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: rgba(250, 248, 240, 0.7);
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .gallery-grid {
+            max-width: 800px;
+            margin: 2rem auto 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            transition: all 0.3s;
+            aspect-ratio: 4/3;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.3);
+            border-color: var(--gold);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(13, 40, 24, 0.95), transparent);
+            padding: 1.5rem 1.2rem 1.2rem;
+            color: var(--cream);
+        }
+
+        .gallery-overlay h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            margin-bottom: 0.4rem;
+            color: var(--gold);
+            text-shadow: 
+                -2px -2px 0 var(--green-deep),
+                2px -2px 0 var(--green-deep),
+                -2px 2px 0 var(--green-deep),
+                2px 2px 0 var(--green-deep),
+                -2px 0 0 var(--green-deep),
+                2px 0 0 var(--green-deep),
+                0 -2px 0 var(--green-deep),
+                0 2px 0 var(--green-deep),
+                0 3px 8px rgba(0, 0, 0, 0.7);
+            letter-spacing: 0.3px;
+        }
+
+        .gallery-overlay p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+            color: var(--cream);
+            text-shadow: 
+                -1px -1px 0 var(--green-deep),
+                1px -1px 0 var(--green-deep),
+                -1px 1px 0 var(--green-deep),
+                1px 1px 0 var(--green-deep),
+                -1px 0 0 var(--green-deep),
+                1px 0 0 var(--green-deep),
+                0 -1px 0 var(--green-deep),
+                0 1px 0 var(--green-deep),
+                0 2px 6px rgba(0, 0, 0, 0.7);
+            line-height: 1.4;
+        }
+
+        .gallery-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.35rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 1.5rem;
+            position: relative;
+        }
+
+        .features-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: rgba(250, 248, 240, 0.03);
+            backdrop-filter: blur(20px);
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+            transition: all 0.3s;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--green-deep);
+        }
+
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--gold);
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card p {
+            color: rgba(250, 248, 240, 0.7);
+            line-height: 1.6;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Video Section */
+        .video-section {
+            padding: 4rem 1.5rem;
+            position: relative;
+        }
+
+        .video-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .video-container {
+            margin-top: 2.5rem;
+            background: rgba(250, 248, 240, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .video-placeholder {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .video-placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 1.2rem;
+            opacity: 0.6;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .video-placeholder h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+
+        .video-placeholder p {
+            font-family: 'Cormorant Garamond', serif;
+            color: rgba(250, 248, 240, 0.7);
+            font-size: 1.1rem;
+        }
+
+        .video-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Pricing Section - OPTIMIZADO PARA MÓVIL */
+        .pricing {
+            padding: 4rem 1.5rem;
+            position: relative;
+        }
+
+        .pricing-grid {
+            max-width: 800px;
+            margin: 2rem auto 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
+
+        .pricing-card {
+            background: rgba(250, 248, 240, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 18px;
+            padding: 1.8rem 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2);
+        }
+
+        .pricing-card.featured {
+            border: 2px solid var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.4rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .pricing-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pricing-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--gold);
+        }
+
+        .pricing-description {
+            color: rgba(250, 248, 240, 0.7);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .pricing-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            color: rgba(250, 248, 240, 0.6);
+            font-weight: 400;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .pricing-period {
+            color: rgba(250, 248, 240, 0.6);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            color: rgba(250, 248, 240, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+        }
+
+        .pricing-features li:before {
+            content: '✓';
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .pricing-card .btn-primary {
+            width: 100%;
+            text-align: center;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Theme Section */
+        .theme-section {
+            padding: 4rem 1.5rem;
+            position: relative;
+        }
+
+        .theme-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .theme-text h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, var(--cream), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .theme-text p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: rgba(250, 248, 240, 0.7);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .theme-preview {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .mini-phone {
+            width: 140px;
+            height: 280px;
+            border-radius: 22px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 2px solid var(--gold);
+        }
+
+        .mini-phone.light {
+            background: linear-gradient(135deg, var(--cream), var(--cream-dark));
+        }
+
+        .mini-phone.dark {
+            background: linear-gradient(135deg, var(--green-dark), var(--green-deep));
+        }
+
+        .mini-screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .mini-phone.light .mini-screen {
+            background: white;
+        }
+
+        .mini-phone.dark .mini-screen {
+            background: var(--green-deep);
+        }
+
+        .mini-header {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-bottom: 0.6rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .mini-item {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.65rem;
+            color: var(--green-deep);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .dark .mini-item {
+            background: rgba(250, 248, 240, 0.05);
+            color: var(--cream);
+        }
+
+        /* AI Section */
+        .ai-section {
+            padding: 4rem 1.5rem;
+            position: relative;
+        }
+
+        .ai-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .ai-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, var(--cream), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ai-features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+            margin-top: 2.5rem;
+        }
+
+        .ai-feature {
+            background: rgba(250, 248, 240, 0.03);
+            backdrop-filter: blur(20px);
+            padding: 1.8rem 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.3s;
+        }
+
+        .ai-feature:hover {
+            border-color: var(--gold);
+            transform: translateY(-3px);
+        }
+
+        .ai-feature h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            margin-bottom: 0.6rem;
+            font-size: 1.2rem;
+        }
+
+        .ai-feature p {
+            color: rgba(250, 248, 240, 0.7);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 4rem 1.5rem;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .cta-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, var(--cream), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta-section p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(250, 248, 240, 0.8);
+        }
+
+        .cta-section .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--green-deep);
+            font-size: 0.9rem;
+            padding: 1.2rem 3rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--green-deep);
+            color: var(--cream);
+            padding: 3rem 1.5rem;
+            text-align: center;
+            border-top: 2px solid var(--gold);
+        }
+
+        footer p {
+            color: rgba(250, 248, 240, 0.6);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+        }
+
+        /* Desktop - Solo para pantallas grandes */
+        @media (min-width: 768px) {
+            .nav-links {
+                display: flex;
+                gap: 2.5rem;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .hero-text h1 {
+                font-size: 3.5rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ai-features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .theme-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .pricing-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .ai-features {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles">
+        <svg class="particle" width="60" height="60" viewBox="0 0 60 60">
+            <path d="M30 5 C35 15, 45 15, 45 25 C45 35, 35 35, 30 45 C25 35, 15 35, 15 25 C15 15, 25 15, 30 5 Z" fill="url(#goldGradient)"/>
+            <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#f4d03f;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+        </svg>
+        <svg class="particle" width="40" height="40" viewBox="0 0 60 60">
+            <path d="M30 5 C35 15, 45 15, 45 25 C45 35, 35 35, 30 45 C25 35, 15 35, 15 25 C15 15, 25 15, 30 5 Z" fill="url(#goldGradient)"/>
+        </svg>
+        <svg class="particle" width="50" height="50" viewBox="0 0 60 60">
+            <path d="M30 5 C35 15, 45 15, 45 25 C45 35, 35 35, 30 45 C25 35, 15 35, 15 25 C15 15, 25 15, 30 5 Z" fill="url(#goldGradient)"/>
+        </svg>
+        <svg class="particle" width="35" height="35" viewBox="0 0 60 60">
+            <path d="M30 5 C35 15, 45 15, 45 25 C45 35, 35 35, 30 45 C25 35, 15 35, 15 25 C15 15, 25 15, 30 5 Z" fill="url(#goldGradient)"/>
+        </svg>
+        <svg class="particle" width="45" height="45" viewBox="0 0 60 60">
+            <path d="M30 5 C35 15, 45 15, 45 25 C45 35, 35 35, 30 45 C25 35, 15 35, 15 25 C15 15, 25 15, 30 5 Z" fill="url(#goldGradient)"/>
+        </svg>
+        <svg class="particle" width="55" height="55" viewBox="0 0 60 60">
+            <path d="M30 5 C35 15, 45 15, 45 25 C45 35, 35 35, 30 45 C25 35, 15 35, 15 25 C15 15, 25 15, 30 5 Z" fill="url(#goldGradient)"/>
+        </svg>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">PAWLOVE</div>
+            <ul class="nav-links">
+                <li><a href="#features">Funciones</a></li>
+                <li><a href="#recipes">Recetario</a></li>
+                <li><a href="#pricing">Precios</a></li>
+                <li><a href="#ai">Nutri IA</a></li>
+            </ul>
+            <a href="https://recetas-caseras-para-mascotas.ai.studio" class="cta-button">Comenzar</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Nutrición Gourmet para tu Mascota</h1>
+                <p>Recetas caseras adaptadas con precisión veterinaria. Planificación nutricional inteligente, menús personalizados y asistencia IA.</p>
+                <div class="hero-buttons">
+                    <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Comenzar Ahora</a>
+                    <a href="#features" class="btn-secondary">Ver Más</a>
+                </div>
+            </div>
+            <div class="phone-mockup">
+                <div class="phone">
+                    <div class="phone-screen">
+                        <div class="app-header">
+                            <h2>PAWLOVE</h2>
+                            <small style="font-size: 0.7rem; letter-spacing: 1px;">PLAN SEMANAL</small>
+                        </div>
+                        <div class="app-content">
+                            <div class="pet-profile">
+                                <div class="pet-name">Sir Leopold</div>
+                                <div class="pet-info">Golden Retriever • 28.5 kg<br>BCS 6/9</div>
+                            </div>
+                            <div class="recipe-card">
+                                <div class="recipe-title">Pollo con Judías</div>
+                                <div class="recipe-stats">
+                                    <span>352g</span>
+                                    <span>475 kcal</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recipe Gallery Section -->
+    <section class="recipe-gallery" id="recipes">
+        <h2 class="section-title">Recetario Gourmet</h2>
+        <p class="section-subtitle">Descubre la calidad de nuestras recetas</p>
+        
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=600&h=450&fit=crop" alt="Plato completo">
+                <span class="gallery-badge">Plato Completo</span>
+                <div class="gallery-overlay">
+                    <h3>Pollo de Corral con Judías</h3>
+                    <p>Proteína completa para energía constante</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb939a9d?w=600&h=450&fit=crop" alt="Postre">
+                <span class="gallery-badge">Postre</span>
+                <div class="gallery-overlay">
+                    <h3>Mousse de Plátano</h3>
+                    <p>Alternativa segura al chocolate</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1582798358481-d199fb7347bb?w=600&h=450&fit=crop" alt="Snack">
+                <span class="gallery-badge">Snack</span>
+                <div class="gallery-overlay">
+                    <h3>Tiras de Pavo</h3>
+                    <p>Proteína pura desgrasada</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2 class="section-title">Funciones Premium</h2>
+        <p class="section-subtitle">Todo para el bienestar de tu mascota</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                </div>
+                <h3>Ficha Mascota</h3>
+                <p>Registro completo con bio-métricas, BCS y ficha médica. Perfiles ilimitados.</p>
+                <span class="feature-tag">BCS 5/9</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+                </div>
+                <h3>Recetas Gourmet</h3>
+                <p>Menús personalizados según perfil nutricional con ingredientes premium.</p>
+                <span class="feature-tag">9 Recetas</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <h3>Plan Semanal</h3>
+                <p>Dieta equilibrada para 7 días con control visual y seguimiento.</p>
+                <span class="feature-tag">7 Días</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1-2.73 2.71-2.73 7.08 0 9.79s7.15 2.71 9.88 0C18.32 15.65 19 14.08 19 12.1h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.5-9.11 0-12.58 3.51-3.47 9.14-3.49 12.65-.06L21 3v7.12zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8h1.5z"/></svg>
+                </div>
+                <h3>Nutri IA</h3>
+                <p>Asistente IA 24/7 para dudas sobre nutrición y recomendaciones.</p>
+                <span class="feature-tag">AI</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </div>
+                <h3>Agenda</h3>
+                <p>Recordatorios de medicación, vacunas y citas veterinarias.</p>
+                <span class="feature-tag">Avisos</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-3-2.53-4.5-5.01-5.5C8.53 8.5 6 7 6 4H1c0 4 3.5 6 6.01 7 2.48 1 5.01 2.5 5.01 5.5h3.01z"/></svg>
+                </div>
+                <h3>Recetario</h3>
+                <p>Catálogo completo con batch cooking para máxima eficiencia.</p>
+                <span class="feature-tag">Batch</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <h3>Alimentos Seguros</h3>
+                <p>Guía de alimentos permitidos y prohibidos con buscador.</p>
+                <span class="feature-tag">Pet-Safe</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 6 1.3z"/></svg>
+                </div>
+                <h3>Ejercicio</h3>
+                <p>Control de actividad física y paseos diarios personalizados.</p>
+                <span class="feature-tag">45 min</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <h2 class="section-title">Planes</h2>
+        <p class="section-subtitle">Elige el mejor para ti</p>
+        
+        <div class="pricing-grid">
+            <!-- Free Trial -->
+            <div class="pricing-card">
+                <div class="pricing-icon">✦</div>
+                <h3>Prueba</h3>
+                <p class="pricing-description">Sin compromiso</p>
+                <div class="pricing-price">0€</div>
+                <p class="pricing-period">48 horas</p>
+                <ul class="pricing-features">
+                    <li>Acceso completo</li>
+                    <li>1 perfil mascota</li>
+                    <li>Recetas personalizadas</li>
+                    <li>Plan 7 días</li>
+                    <li>Nutri IA</li>
+                </ul>
+                <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Probar</a>
+            </div>
+
+            <!-- Monthly -->
+            <div class="pricing-card">
+                <div class="pricing-icon">◆</div>
+                <h3>Mensual</h3>
+                <p class="pricing-description">Flexible</p>
+                <div class="pricing-price">3,99€<span>/mes</span></div>
+                <p class="pricing-period">Mes a mes</p>
+                <ul class="pricing-features">
+                    <li>Perfiles ilimitados</li>
+                    <li>Recetas ilimitadas</li>
+                    <li>Plan semanal</li>
+                    <li>Agenda</li>
+                    <li>Nutri IA 24/7</li>
+                </ul>
+                <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Elegir</a>
+            </div>
+
+            <!-- Annual -->
+            <div class="pricing-card featured">
+                <div class="pricing-badge">Más Popular</div>
+                <div class="pricing-icon">★</div>
+                <h3>Anual</h3>
+                <p class="pricing-description">Ahorra 58%</p>
+                <div class="pricing-price">19,99€<span>/año</span></div>
+                <p class="pricing-period">1,67€/mes</p>
+                <ul class="pricing-features">
+                    <li>Perfiles ilimitados</li>
+                    <li>Recetas ilimitadas</li>
+                    <li>Plan semanal</li>
+                    <li>Agenda</li>
+                    <li>Nutri IA 24/7</li>
+                    <li>Actualizaciones</li>
+                </ul>
+                <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Elegir</a>
+            </div>
+
+            <!-- Lifetime -->
+            <div class="pricing-card">
+                <div class="pricing-icon">♾</div>
+                <h3>Vitalicio</h3>
+                <p class="pricing-description">Pago único</p>
+                <div class="pricing-price">49,99€</div>
+                <p class="pricing-period">Para siempre</p>
+                <ul class="pricing-features">
+                    <li>Acceso total</li>
+                    <li>Perfiles ilimitados</li>
+                    <li>Recetas ilimitadas</li>
+                    <li>Actualizaciones</li>
+                    <li>Nutri IA 24/7</li>
+                </ul>
+                <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Obtener</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Theme Section -->
+    <section class="theme-section" id="theme">
+        <div class="theme-content">
+            <div class="theme-text">
+                <h2>Modo Claro y Oscuro</h2>
+                <p>Cambia entre temas según tu preferencia. Interfaz optimizada para cualquier momento del día.</p>
+                <ul style="list-style: none; margin-bottom: 1.5rem;">
+                    <li style="margin-bottom: 0.8rem; font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: rgba(250, 248, 240, 0.8);"> Cambio instantáneo</li>
+                    <li style="margin-bottom: 0.8rem; font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: rgba(250, 248, 240, 0.8);">✦ Colores optimizados</li>
+                    <li style="margin-bottom: 0.8rem; font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: rgba(250, 248, 240, 0.8);"> Ahorro batería</li>
+                </ul>
+                <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Probar</a>
+            </div>
+            <div class="theme-preview">
+                <div class="mini-phone light">
+                    <div class="mini-screen">
+                        <div class="mini-header">Claro</div>
+                        <div class="mini-item">Sir Leopold<br><small>28.5 kg</small></div>
+                        <div class="mini-item">Pollo<br><small>475 kcal</small></div>
+                    </div>
+                </div>
+                <div class="mini-phone dark">
+                    <div class="mini-screen">
+                        <div class="mini-header">Oscuro</div>
+                        <div class="mini-item">Minette<br><small>4.2 kg</small></div>
+                        <div class="mini-item">Trucha<br><small>108 kcal</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Section -->
+    <section class="ai-section" id="ai">
+        <div class="ai-content">
+            <div class="ai-badge">Nutri IA</div>
+            <h2>Asistente Veterinario IA</h2>
+            <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: rgba(250, 248, 240, 0.7); margin-bottom: 1.5rem; line-height: 1.6;">
+                Consultas instantáneas sobre nutrición y cuidados
+            </p>
+            <div class="ai-features">
+                <div class="ai-feature">
+                    <h3>Ingredientes</h3>
+                    <p>¿Qué alimentos son seguros? Respuestas basadas en evidencia veterinaria.</p>
+                </div>
+                <div class="ai-feature">
+                    <h3>Raciones</h3>
+                    <p>Cálculo automático según peso, edad y objetivos de salud.</p>
+                </div>
+                <div class="ai-feature">
+                    <h3>Recetas</h3>
+                    <p>Sugerencias de caldos, snacks y postres adaptados.</p>
+                </div>
+                <div class="ai-feature">
+                    <h3>Nutrición</h3>
+                    <p>Recomendaciones para condiciones especiales.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="download">
+        <h2>Empieza Hoy</h2>
+        <p>Únete a dueños que alimentan con excelencia</p>
+        <a href="https://recetas-caseras-para-mascotas.ai.studio" class="btn-primary">Acceder Gratis</a>
+        <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.7; font-family: 'Cormorant Garamond', serif;">
+            Web • Sin descarga • Acceso inmediato
+        </p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--gold);">PAWLOVE</p>
+        <p style="font-size: 1rem; margin-bottom: 0.5rem;">Nutrición Gourmet</p>
+        <p style="margin-top: 1rem;">&copy; 2026 Pawlove</p>
+    </footer>
+</body>
+</html>
