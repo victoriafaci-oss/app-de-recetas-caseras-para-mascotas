@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { PRICING_PLANS, LEGAL_TERMS_SUMMARY } from '../data/pricingData';
+import { PRICING_PLANS, LEGAL_TERMS_SUMMARY, STRIPE_PAYMENT_LINKS, redirectToStripeCheckout } from '../data/pricingData';
 import { PricingPlan, PaymentMethodType } from '../types';
 import { PhoneVerificationModal } from './PhoneVerificationModal';
 import { PaymentCheckoutModal } from './PaymentCheckoutModal';
@@ -41,7 +41,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PricingPlan | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
 
-  // If initialSelectedPlanId is passed, open it immediately
+  // If initialSelectedPlanId is passed, handle immediately
   React.useEffect(() => {
     if (initialSelectedPlanId) {
       const foundPlan = PRICING_PLANS.find(p => p.id === initialSelectedPlanId);
@@ -49,17 +49,27 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
         if (foundPlan.id === 'free_trial_48h') {
           setShowPhoneModal(true);
         } else {
+          const directStripeUrl = foundPlan.stripePaymentLink || (STRIPE_PAYMENT_LINKS as Record<string, string>)[foundPlan.id];
+          if (directStripeUrl) {
+            redirectToStripeCheckout(directStripeUrl);
+            return;
+          }
           setSelectedPlanForCheckout(foundPlan);
         }
       }
     }
   }, [initialSelectedPlanId]);
 
-  // Handle plan click
+  // Handle plan click: redirect directly to Stripe checkout for paid plans
   const handleSelectPlan = (plan: PricingPlan) => {
     if (plan.id === 'free_trial_48h') {
       setShowPhoneModal(true);
     } else {
+      const directStripeUrl = plan.stripePaymentLink || (STRIPE_PAYMENT_LINKS as Record<string, string>)[plan.id];
+      if (directStripeUrl) {
+        redirectToStripeCheckout(directStripeUrl);
+        return;
+      }
       setSelectedPlanForCheckout(plan);
     }
   };
@@ -277,8 +287,8 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
                         <CreditCard className="w-4 h-4" />
                         <span>
                           {language === 'es'
-                            ? `Pagar ${plan.priceFormatted}`
-                            : `Pay ${plan.priceFormatted}`}
+                            ? `Pagar ${plan.priceFormatted} (Stripe)`
+                            : `Pay ${plan.priceFormatted} (Stripe)`}
                         </span>
                       </button>
                     )}

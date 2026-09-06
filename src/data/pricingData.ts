@@ -1,5 +1,24 @@
 import { PricingPlan } from '../types';
 
+export const STRIPE_PAYMENT_LINKS = {
+  monthly: 'https://buy.stripe.com/3cI8wRdfV1ID9J9gFb1ZS00',
+  annual: 'https://buy.stripe.com/eVq8wR6Rxaf93kL1Kh1ZS01',
+  lifetime: 'https://buy.stripe.com/3cI3cx6Rxaf97B1fB71ZS02',
+} as const;
+
+export const redirectToStripeCheckout = (planIdOrUrl: string): boolean => {
+  const link = (STRIPE_PAYMENT_LINKS as Record<string, string>)[planIdOrUrl] || planIdOrUrl;
+  if (link && link.startsWith('http')) {
+    // Open in a new tab to prevent iframe blocking (Stripe Checkout cannot be loaded inside an iframe)
+    const win = window.open(link, '_blank', 'noopener,noreferrer');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = link;
+    }
+    return true;
+  }
+  return false;
+};
+
 export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'lifetime',
@@ -11,6 +30,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     badge: 'Para siempre • Sin renovaciones',
     billingModeSummary: 'Pago único vitalicio',
     quotaDescription: 'Cuota vitalicia de 39,99 € en un solo pago. Disfruta de acceso permanente e ilimitado para siempre, sin suscripciones ni cuotas futuras.',
+    stripePaymentLink: 'https://buy.stripe.com/3cI3cx6Rxaf97B1fB71ZS02',
     features: [
       'Acceso permanente de por vida a toda la plataforma',
       'Único pago para siempre, sin cuotas ni renovaciones',
@@ -30,6 +50,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     popular: true,
     billingModeSummary: 'Suscripción anual con 58% de ahorro',
     quotaDescription: 'Cuota anual de 19,99 € cobrada una sola vez al año. Equivale a solo ~1,66 €/mes, ahorrando un 58% respecto a la modalidad mensual.',
+    stripePaymentLink: 'https://buy.stripe.com/eVq8wR6Rxaf93kL1Kh1ZS01',
     features: [
       'Mismas funciones completas que todos los planes',
       'Ahorro superior al 58% respecto al pago mensual',
@@ -48,6 +69,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     badge: 'Cuota mensual flexible',
     billingModeSummary: 'Suscripción mensual recurrente',
     quotaDescription: 'Cuota mensual de 3,99 € facturada mes a mes. Renovación automática que puedes cancelar en cualquier momento sin permanencia ni penalización.',
+    stripePaymentLink: 'https://buy.stripe.com/3cI8wRdfV1ID9J9gFb1ZS00',
     features: [
       'Acceso total a todas las herramientas de la app',
       'Recetario completo con escalador de gramos por peso',

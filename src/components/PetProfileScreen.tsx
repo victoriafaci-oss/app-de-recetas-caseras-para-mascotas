@@ -32,8 +32,11 @@ import {
   X,
   Check,
   CalendarRange,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck,
+  Camera
 } from 'lucide-react';
+import { COMMON_FOOD_ALLERGENS, extractPetAllergens } from '../data/allergensData';
 
 export const PetProfileScreen: React.FC = () => {
   const { 
@@ -219,7 +222,11 @@ export const PetProfileScreen: React.FC = () => {
           
           {/* Avatar Picture */}
           <div className="relative shrink-0">
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-gradient-to-br from-amber-500 via-[#D4AF37] to-emerald-600 shadow-xl">
+            <div 
+              onClick={() => setShowEditModal(true)}
+              className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-gradient-to-br from-amber-500 via-[#D4AF37] to-emerald-600 shadow-xl cursor-pointer group relative transition-transform hover:scale-105"
+              title={language === 'es' ? 'Toca para cambiar la foto de la mascota' : 'Tap to change pet photo'}
+            >
               {selectedPet.avatarUrl && !avatarError ? (
                 <img
                   src={selectedPet.avatarUrl}
@@ -233,6 +240,12 @@ export const PetProfileScreen: React.FC = () => {
                   {selectedPet.avatarIcon || (selectedPet.species === 'dog' ? '🐕' : '🐈')}
                 </div>
               )}
+
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[11px] font-bold rounded-[20px] transition-opacity backdrop-blur-2xs">
+                <Camera className="w-5 h-5 mb-0.5 text-[#F3E5AB]" />
+                <span>{language === 'es' ? 'Editar foto' : 'Edit photo'}</span>
+              </div>
             </div>
             <span className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-xs font-bold bg-stone-900 text-[#D4AF37] border border-[#D4AF37]/40 shadow-md">
               {selectedPet.avatarIcon} {selectedPet.species === 'dog' ? 'Canino' : 'Felino'}
@@ -240,7 +253,7 @@ export const PetProfileScreen: React.FC = () => {
           </div>
 
           {/* Details */}
-          <div className="flex-1 text-center md:text-left space-y-2">
+          <div className="flex-1 text-center md:text-left space-y-2.5">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${clinicalData.badgeColor}`}>
                 {clinicalData.badgeLabel}
@@ -258,10 +271,35 @@ export const PetProfileScreen: React.FC = () => {
               {selectedPet.breed} &bull; {selectedPet.ageYears} años {selectedPet.ageMonths > 0 ? `y ${selectedPet.ageMonths} meses` : ''} &bull; Sexo: {selectedPet.gender === 'male' ? 'Macho' : 'Hembra'}
             </p>
 
-            {selectedPet.allergies && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 text-xs font-medium">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>Restricciones: {selectedPet.allergies}</span>
+            {/* Allergens & Intolerances Display */}
+            {selectedPet.allergies ? (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5">
+                  <span className="text-[11px] font-bold text-rose-800 dark:text-rose-400 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>Alergias excluidas:</span>
+                  </span>
+                  {extractPetAllergens(selectedPet.allergies, selectedPet.allergensList).map((alg) => {
+                    const matchedDef = COMMON_FOOD_ALLERGENS.find(d => d.id === alg);
+                    return (
+                      <span
+                        key={alg}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/30 shadow-2xs"
+                      >
+                        {matchedDef?.icon || '⚠️'} {matchedDef ? matchedDef.nameEs.split('/')[0].trim() : alg}
+                      </span>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium flex items-center justify-center md:justify-start gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Menús semanales 100% personalizados y protegidos de estos ingredientes.</span>
+                </p>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Sin alergias conocidas registradas (tolerancia completa).</span>
               </div>
             )}
           </div>

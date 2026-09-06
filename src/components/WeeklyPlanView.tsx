@@ -23,9 +23,12 @@ import {
   Award,
   Printer,
   Heart,
-  ChevronLeft
+  ChevronLeft,
+  ShieldCheck,
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { RecipeDetailModal } from './RecipeDetailModal';
 
 export const WeeklyPlanView: React.FC = () => {
   const { 
@@ -53,8 +56,10 @@ export const WeeklyPlanView: React.FC = () => {
 
   const [inspectingItem, setInspectingItem] = useState<{
     type: 'dish' | 'snack' | 'dessert';
+    mealKey?: 'dish1' | 'dish2' | 'snack1' | 'snack2' | 'dessert1' | 'dessert2';
     title: string;
     portionLabel: string;
+    portionGrams?: number;
     kcal?: number;
     ingredients: string[];
     description: string;
@@ -368,6 +373,21 @@ export const WeeklyPlanView: React.FC = () => {
           </div>
         </div>
 
+        {/* Allergen Protection Notice if pet has declared allergies */}
+        {activeDay.allergyAdaptationNote && (
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border border-emerald-500/30 text-emerald-900 dark:text-emerald-300 text-xs font-semibold shadow-xs">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex-1">
+              <div className="font-bold text-emerald-950 dark:text-emerald-200">
+                {language === 'es' ? 'Menú Hipoalergénico Verificado' : 'Hypoallergenic Verified Menu'}
+              </div>
+              <div className="text-[11px] text-emerald-800/90 dark:text-emerald-300/90 font-normal mt-0.5">
+                {activeDay.allergyAdaptationNote}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Section 1: 2 Platos Recomendados del Día */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -395,8 +415,10 @@ export const WeeklyPlanView: React.FC = () => {
               onSetStatus={(status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, 'dish1', status)}
               onInspect={() => setInspectingItem({
                 type: 'dish',
+                mealKey: 'dish1',
                 title: activeDay.dish1.title,
                 portionLabel: `${activeDay.dish1.portionGrams}g`,
+                portionGrams: activeDay.dish1.portionGrams,
                 kcal: activeDay.dish1.kcal,
                 ingredients: activeDay.dish1.ingredients.map(ing => ing.grams > 0 ? `${ing.name} (${ing.grams}g)` : ing.name),
                 description: activeDay.dish1.description,
@@ -422,8 +444,10 @@ export const WeeklyPlanView: React.FC = () => {
               onSetStatus={(status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, 'dish2', status)}
               onInspect={() => setInspectingItem({
                 type: 'dish',
+                mealKey: 'dish2',
                 title: activeDay.dish2.title,
                 portionLabel: `${activeDay.dish2.portionGrams}g`,
+                portionGrams: activeDay.dish2.portionGrams,
                 kcal: activeDay.dish2.kcal,
                 ingredients: activeDay.dish2.ingredients.map(ing => ing.grams > 0 ? `${ing.name} (${ing.grams}g)` : ing.name),
                 description: activeDay.dish2.description,
@@ -463,11 +487,15 @@ export const WeeklyPlanView: React.FC = () => {
               onSetStatus={(status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, 'snack1', status)}
               onInspect={() => setInspectingItem({
                 type: 'snack',
+                mealKey: 'snack1',
                 title: activeDay.snack1.title,
                 portionLabel: activeDay.snack1.portion,
+                kcal: activeDay.snack1.kcal,
                 ingredients: activeDay.snack1.ingredients,
                 description: activeDay.snack1.description,
                 clinicalBenefits: [activeDay.snack1.benefits],
+                instructions: activeDay.snack1.instructions,
+                chefTip: activeDay.snack1.chefTip,
               })}
               language={language}
               t={t}
@@ -486,11 +514,15 @@ export const WeeklyPlanView: React.FC = () => {
               onSetStatus={(status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, 'snack2', status)}
               onInspect={() => setInspectingItem({
                 type: 'snack',
+                mealKey: 'snack2',
                 title: activeDay.snack2.title,
                 portionLabel: activeDay.snack2.portion,
+                kcal: activeDay.snack2.kcal,
                 ingredients: activeDay.snack2.ingredients,
                 description: activeDay.snack2.description,
                 clinicalBenefits: [activeDay.snack2.benefits],
+                instructions: activeDay.snack2.instructions,
+                chefTip: activeDay.snack2.chefTip,
               })}
               language={language}
               t={t}
@@ -524,11 +556,13 @@ export const WeeklyPlanView: React.FC = () => {
               onSetStatus={(status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, 'dessert1', status)}
               onInspect={() => setInspectingItem({
                 type: 'dessert',
+                mealKey: 'dessert1',
                 title: activeDay.dessert1.title,
                 portionLabel: activeDay.dessert1.portion,
                 ingredients: activeDay.dessert1.ingredients,
                 description: activeDay.dessert1.description,
                 clinicalBenefits: [activeDay.dessert1.benefits],
+                instructions: activeDay.dessert1.instructions,
               })}
               language={language}
               t={t}
@@ -547,11 +581,13 @@ export const WeeklyPlanView: React.FC = () => {
               onSetStatus={(status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, 'dessert2', status)}
               onInspect={() => setInspectingItem({
                 type: 'dessert',
+                mealKey: 'dessert2',
                 title: activeDay.dessert2.title,
                 portionLabel: activeDay.dessert2.portion,
                 ingredients: activeDay.dessert2.ingredients,
                 description: activeDay.dessert2.description,
                 clinicalBenefits: [activeDay.dessert2.benefits],
+                instructions: activeDay.dessert2.instructions,
               })}
               language={language}
               t={t}
@@ -808,119 +844,56 @@ export const WeeklyPlanView: React.FC = () => {
         </div>
       </div>
 
-      {/* Detail Recipe Inspection Modal */}
-      <AnimatePresence>
-        {inspectingItem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0e1d17] border border-[#E8DCCB] dark:border-[#D4AF37]/30 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-2xl bg-[#B8860B]/15 dark:bg-[#D4AF37]/20 text-[#B8860B] dark:text-[#D4AF37]">
-                    <ChefHat className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-stone-900 dark:text-[#F3E5AB]">
-                      {inspectingItem.title}
-                    </h3>
-                    <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-2 mt-0.5">
-                      <span className="font-bold text-[#B8860B] dark:text-[#D4AF37]">
-                        {inspectingItem.portionLabel} {language === 'es' ? 'por ración' : 'per serving'}
-                      </span>
-                      {inspectingItem.kcal && (
-                        <>
-                          •
-                          <span>{inspectingItem.kcal} kcal</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setInspectingItem(null)}
-                  className="p-2 rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Rationale / Description */}
-              <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
-                <span className="font-bold text-amber-700 dark:text-amber-300">
-                  {language === 'es' ? 'Beneficio Nutricional:' : 'Nutritional Benefit:'}
-                </span>{' '}
-                {inspectingItem.description}
-              </div>
-
-              {/* Clinical Benefits if present */}
-              {inspectingItem.clinicalBenefits && inspectingItem.clinicalBenefits.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {inspectingItem.clinicalBenefits.map((b, i) => (
-                    <span key={i} className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                      ✓ {b}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Ingredients */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200 mb-2">
-                  {language === 'es' ? 'Ingredientes Porcionados' : 'Portioned Ingredients'}
-                </h4>
-                <ul className="space-y-1.5">
-                  {inspectingItem.ingredients.map((ing, i) => (
-                    <li key={i} className="flex items-center gap-2 text-xs text-stone-700 dark:text-stone-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] dark:bg-[#D4AF37]" />
-                      <span>{ing}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Instructions if available */}
-              {inspectingItem.instructions && inspectingItem.instructions.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200 mb-2">
-                    {language === 'es' ? 'Preparación Rápida' : 'Preparation Instructions'}
-                  </h4>
-                  <ol className="space-y-2">
-                    {inspectingItem.instructions.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                        <span className="w-4 h-4 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold flex items-center justify-center shrink-0 text-[10px]">
-                          {i + 1}
-                        </span>
-                        <span>{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              )}
-
-              {/* Chef Tip */}
-              {inspectingItem.chefTip && (
-                <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-900 dark:text-indigo-200">
-                  <span className="font-bold">👨‍🍳 Tip:</span> {inspectingItem.chefTip}
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button
-                  onClick={() => setInspectingItem(null)}
-                  className="w-full py-2.5 rounded-2xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-bold text-xs shadow-md transition-all hover:opacity-90"
-                >
-                  {t('closeRecipeModal')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Detail Recipe Inspection Modal with Nutri IA & Large Typography */}
+      {inspectingItem && (
+        <RecipeDetailModal
+          isOpen={!!inspectingItem}
+          onClose={() => setInspectingItem(null)}
+          title={inspectingItem.title}
+          categoryLabel={
+            inspectingItem.type === 'dish'
+              ? (language === 'es' ? 'Plato Principal Recomendado' : 'Recommended Main Dish')
+              : inspectingItem.type === 'snack'
+              ? (language === 'es' ? 'Snack Saludable' : 'Healthy Functional Snack')
+              : (language === 'es' ? 'Postre Digestivo' : 'Digestive Dessert')
+          }
+          portionLabel={inspectingItem.portionLabel}
+          portionGrams={inspectingItem.portionGrams}
+          kcal={inspectingItem.kcal}
+          description={inspectingItem.description}
+          ingredients={inspectingItem.ingredients}
+          instructions={
+            inspectingItem.instructions && inspectingItem.instructions.length > 0
+              ? inspectingItem.instructions
+              : [
+                  language === 'es' 
+                    ? 'Lavar y porcionar con precisión los ingredientes según la báscula.' 
+                    : 'Wash and portion ingredients precisely according to the scale.',
+                  language === 'es'
+                    ? 'Cocinar al vapor suave (75°C - 80°C) o servir fresco según corresponda, preservando nutrientes y jugos naturales.'
+                    : 'Gently steam (75°C - 80°C) or serve fresh as appropriate, preserving nutrients.',
+                  language === 'es'
+                    ? 'Dejar atemperar y servir en tazón cómodo y limpio a temperatura ambiente o templado.'
+                    : 'Allow to cool and serve at comfortable room temperature in a clean bowl.'
+                ]
+          }
+          clinicalBenefits={inspectingItem.clinicalBenefits}
+          chefTip={inspectingItem.chefTip}
+          species={selectedPet.species}
+          petName={selectedPet.name}
+          status={
+            inspectingItem.mealKey
+              ? (activeDayTracking[`${inspectingItem.mealKey}Given` as keyof typeof activeDayTracking] as boolean | null)
+              : null
+          }
+          onSetStatus={
+            inspectingItem.mealKey
+              ? (status) => setMealStatus(selectedPet.id, activeDateInfo.dateStr, inspectingItem.mealKey!, status)
+              : undefined
+          }
+          language={language}
+        />
+      )}
 
       {/* Exercise Modal */}
       <AnimatePresence>
@@ -1095,8 +1068,17 @@ const MealCard: React.FC<MealCardProps> = ({
         {ingredients.slice(0, 3).map(i => i.name).join(', ')}...
       </div>
 
-      {/* Dual Controls: Green (Yes, Given) / Red (No, Not Given) / Inspect */}
-      <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+      {/* Prominent Recipe & Prep Button */}
+      <button
+        onClick={onInspect}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-[#B8860B] dark:text-[#D4AF37] border border-[#B8860B]/25 font-bold text-xs transition-all shadow-xs group"
+      >
+        <BookOpen className="w-4 h-4 transition-transform group-hover:scale-110" />
+        <span>{language === 'es' ? 'Ver Receta Completa & Preparación' : 'View Full Recipe & Prep'}</span>
+      </button>
+
+      {/* Dual Controls: Green (Yes, Given) / Red (No, Not Given) */}
+      <div className="flex items-center gap-2 pt-1 border-t border-stone-100 dark:border-stone-800/80">
         {/* Yes Button (Green) */}
         <button
           onClick={() => onSetStatus(status === true ? null : true)}
@@ -1121,15 +1103,6 @@ const MealCard: React.FC<MealCardProps> = ({
         >
           <X className="w-3.5 h-3.5" />
           <span>{language === 'es' ? 'No se dio' : 'Not served'}</span>
-        </button>
-
-        {/* Inspect Recipe */}
-        <button
-          onClick={onInspect}
-          className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
-          title={t('ingredientsAndRecipe')}
-        >
-          <Info className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -1203,8 +1176,17 @@ const SnackDessertCard: React.FC<SnackDessertCardProps> = ({
         ✓ {benefits}
       </div>
 
+      {/* Prominent View Recipe Button */}
+      <button
+        onClick={onInspect}
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 font-bold text-[11px] transition-colors"
+      >
+        <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+        <span>{language === 'es' ? 'Ver Ingredientes y Preparación' : 'View Ingredients & Prep'}</span>
+      </button>
+
       {/* Control Buttons */}
-      <div className="flex items-center gap-1.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+      <div className="flex items-center gap-1.5 pt-1 border-t border-stone-100 dark:border-stone-800">
         <button
           onClick={() => onSetStatus(status === true ? null : true)}
           className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
@@ -1227,14 +1209,6 @@ const SnackDessertCard: React.FC<SnackDessertCardProps> = ({
         >
           <X className="w-3 h-3" />
           <span>{language === 'es' ? 'No' : 'No'}</span>
-        </button>
-
-        <button
-          onClick={onInspect}
-          className="p-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
-          title="Ver detalles"
-        >
-          <Info className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

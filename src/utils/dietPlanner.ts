@@ -1,5 +1,6 @@
 import { Pet, DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem } from '../types';
 import { calculateMER } from './nutrition';
+import { extractPetAllergens, COMMON_FOOD_ALLERGENS } from '../data/allergensData';
 
 export const HIGH_PERFORMANCE_BREEDS = [
   'border collie',
@@ -892,7 +893,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       notesEn: template.exercise.notesEn,
     };
 
-    return {
+    const dayPlan: DayDietPlan = {
       dayIndex,
       dayNameEs: daysEs[dayIndex],
       dayNameEn: daysEn[dayIndex],
@@ -906,7 +907,185 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       cognitiveHabitTarget: isHighPerf ? HIGH_PERFORMANCE_COGNITIVE_HABITS[dayIndex] : undefined,
       isHighPerformancePlan: isHighPerf,
     };
+
+    return filterDayPlanForAllergies(dayPlan, pet, language);
   });
+}
+
+/**
+ * Adapts dishes, snacks, and desserts to eliminate any allergen specified by the pet owner.
+ */
+function filterDayPlanForAllergies(dayPlan: DayDietPlan, pet: Pet, language: 'es' | 'en'): DayDietPlan {
+  const allergens = extractPetAllergens(pet.allergies, pet.allergensList);
+  if (!allergens || allergens.length === 0) {
+    return dayPlan;
+  }
+
+  const isEn = language === 'en';
+  const hasAllergen = (text: string, allergenKeys: string[]) => {
+    const lower = text.toLowerCase();
+    return allergenKeys.some(key => {
+      const def = COMMON_FOOD_ALLERGENS.find(d => d.id === key);
+      const keywords = def ? def.keywords : [key.toLowerCase()];
+      return keywords.some(kw => lower.includes(kw));
+    });
+  };
+
+  const modifiedDish1 = { ...dayPlan.dish1 };
+  const modifiedDish2 = { ...dayPlan.dish2 };
+  const modifiedSnack1 = { ...dayPlan.snack1, ingredients: [...dayPlan.snack1.ingredients] };
+  const modifiedSnack2 = { ...dayPlan.snack2, ingredients: [...dayPlan.snack2.ingredients] };
+  const modifiedDessert1 = { ...dayPlan.dessert1, ingredients: [...dayPlan.dessert1.ingredients] };
+  const modifiedDessert2 = { ...dayPlan.dessert2, ingredients: [...dayPlan.dessert2.ingredients] };
+
+  // Check proteins and ingredients in dishes
+  const checkAndSubstituteDish = (dish: DailyMealItem) => {
+    const dishText = `${dish.title} ${dish.description} ${dish.ingredients.map(i => i.name).join(' ')}`;
+
+    // Pollo
+    if (hasAllergen(dishText, ['pollo'])) {
+      dish.title = dish.title.replace(/pollo|chicken/gi, isEn ? 'Country Turkey' : 'Pavo Campesino');
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/pollo|chicken/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Fresh Lean Turkey Breast' : 'Pechuga de Pavo fresca hipoalergénica' };
+        }
+        return ing;
+      });
+      dish.description = `${dish.description} (🛡️ ${isEn ? 'Adapted: 100% poultry-free' : 'Adaptado: 100% libre de pollo'})`;
+    }
+
+    // Ternera
+    if (hasAllergen(dishText, ['ternera'])) {
+      dish.title = dish.title.replace(/ternera|beef|res/gi, isEn ? 'Country Turkey' : 'Pavo Magro Campesino');
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/ternera|beef|res/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Lean Turkey or Steamed Whitefish' : 'Pavo magro o Merluza blanca' };
+        }
+        return ing;
+      });
+      dish.description = `${dish.description} (🛡️ ${isEn ? 'Adapted: 100% beef-free' : 'Adaptado: 100% libre de ternera'})`;
+    }
+
+    // Pescado / Salmón
+    if (hasAllergen(dishText, ['pescado'])) {
+      dish.title = dish.title.replace(/salmón|salmon|pescado|fish|merluza|trucha/gi, isEn ? 'Noble Duck & Sweet Potato' : 'Pato Noble o Pavo');
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/salmón|salmon|pescado|fish|merluza|trucha/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Noble Duck Breast' : 'Magret de Pato o Pavo Campesino' };
+        }
+        if (/aceite de salmón/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Olive Oil & Golden Flax' : 'Aceite de oliva y lino dorado' };
+        }
+        return ing;
+      });
+      dish.description = `${dish.description} (🛡️ ${isEn ? 'Adapted: 100% fish-free' : 'Adaptado: 100% libre de pescado y salmón'})`;
+    }
+
+    // Cerdo
+    if (hasAllergen(dishText, ['cerdo'])) {
+      dish.title = dish.title.replace(/cerdo|pork/gi, isEn ? 'Farm Turkey' : 'Pavo Campesino');
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/cerdo|pork/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Fresh Turkey' : 'Pavo magro campesino' };
+        }
+        return ing;
+      });
+    }
+
+    // Cordero
+    if (hasAllergen(dishText, ['cordero'])) {
+      dish.title = dish.title.replace(/cordero|lamb/gi, isEn ? 'Tender Turkey' : 'Pavo Tierno');
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/cordero|lamb/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Fresh Turkey' : 'Pavo fresco' };
+        }
+        return ing;
+      });
+    }
+
+    // Cereales / Gluten
+    if (hasAllergen(dishText, ['cereales'])) {
+      dish.title = dish.title.replace(/arroz|avena|rice|oat/gi, isEn ? 'Sweet Potato' : 'Boniato asado');
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/arroz|avena|trigo|gluten|cereal/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Steamed Sweet Potato or Pumpkin Puree' : 'Boniato asado o Puré de calabaza (Grain-Free)' };
+        }
+        return ing;
+      });
+      dish.description = `${dish.description} (🌾 100% Grain-Free)`;
+    }
+
+    // Huevo
+    if (hasAllergen(dishText, ['huevo'])) {
+      dish.ingredients = dish.ingredients.map(ing => {
+        if (/huevo|cáscara de huevo/gi.test(ing.name)) {
+          return { ...ing, name: isEn ? 'Pure mineral calcium carbonate (Egg-Free)' : 'Carbonato cálcico mineral puro (sin huevo)' };
+        }
+        return ing;
+      });
+    }
+  };
+
+  checkAndSubstituteDish(modifiedDish1);
+  checkAndSubstituteDish(modifiedDish2);
+
+  // Check snacks
+  const checkAndSubstituteSnack = (snack: DailySnackItem) => {
+    if (hasAllergen(`${snack.title} ${snack.description} ${snack.ingredients.join(' ')}`, ['pollo'])) {
+      snack.title = snack.title.replace(/pollo|chicken/gi, isEn ? 'Turkey' : 'Pavo');
+      snack.ingredients = snack.ingredients.map(ing => ing.replace(/pollo|chicken/gi, isEn ? 'Turkey' : 'Pechuga de pavo'));
+    }
+    if (hasAllergen(`${snack.title} ${snack.description} ${snack.ingredients.join(' ')}`, ['ternera'])) {
+      snack.title = snack.title.replace(/ternera|beef/gi, isEn ? 'Duck' : 'Pato');
+      snack.ingredients = snack.ingredients.map(ing => ing.replace(/ternera|beef/gi, isEn ? 'Duck' : 'Pato'));
+    }
+    if (hasAllergen(`${snack.title} ${snack.description} ${snack.ingredients.join(' ')}`, ['pescado'])) {
+      snack.title = snack.title.replace(/pescado|fish|salmón|salmon/gi, isEn ? 'Duck' : 'Pato crujiente');
+      snack.ingredients = snack.ingredients.map(ing => ing.replace(/pescado|salmón/gi, isEn ? 'Duck' : 'Pato'));
+    }
+    if (hasAllergen(`${snack.title} ${snack.ingredients.join(' ')}`, ['huevo'])) {
+      snack.title = isEn ? 'Dehydrated Duck & Apple Bites' : 'Bocaditos de Pato & Manzana';
+      snack.ingredients = [isEn ? 'Duck breast' : 'Pechuga de pato', isEn ? 'Apple' : 'Manzana'];
+    }
+  };
+
+  checkAndSubstituteSnack(modifiedSnack1);
+  checkAndSubstituteSnack(modifiedSnack2);
+
+  // Check desserts (especially dairy & broth)
+  const checkAndSubstituteDessert = (dessert: DailyDessertItem) => {
+    if (hasAllergen(`${dessert.title} ${dessert.description} ${dessert.ingredients.join(' ')}`, ['lacteos'])) {
+      dessert.title = isEn ? 'Roasted Pumpkin Puree with Chia Gel & Bone Broth' : 'Puré de Calabaza Asada con Semillas de Chía & Caldo';
+      dessert.description = isEn 
+        ? '100% dairy-free, hypoallergenic gut-soothing digestive puree.' 
+        : 'Postre 100% libre de lácteos, hipoalergénico y reconfortante para la microbiota digestiva.';
+      dessert.benefits = isEn ? 'Anti-inflammatory intestinal comfort without lactose.' : 'Alivio antiinflamatorio intestinal 100% libre de lactosa.';
+      dessert.ingredients = isEn 
+        ? ['Roasted sweet pumpkin', 'Activated chia gel', 'Purified bone broth']
+        : ['Puré de calabaza dulce asada', 'Gel de chía hidratada', 'Caldo de huesos clarificado'];
+    }
+    if (hasAllergen(`${dessert.ingredients.join(' ')}`, ['pollo'])) {
+      dessert.ingredients = dessert.ingredients.map(ing => ing.replace(/pollo/gi, 'pavo o ternera'));
+    }
+  };
+
+  checkAndSubstituteDessert(modifiedDessert1);
+  checkAndSubstituteDessert(modifiedDessert2);
+
+  const allergyTag = isEn
+    ? `🛡️ 100% Allergen-Free for ${pet.name}: Excluded [${allergens.join(', ')}]`
+    : `🛡️ 100% Libre de Alérgenos para ${pet.name}: Excluido [${allergens.join(', ')}]`;
+
+  return {
+    ...dayPlan,
+    dish1: modifiedDish1,
+    dish2: modifiedDish2,
+    snack1: modifiedSnack1,
+    snack2: modifiedSnack2,
+    dessert1: modifiedDessert1,
+    dessert2: modifiedDessert2,
+    allergyAdaptationNote: allergyTag,
+  };
 }
 
 /**

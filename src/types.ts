@@ -57,6 +57,7 @@ export interface Pet {
   activityLevel: ActivityLevel;
   clinicalCondition: ClinicalCondition;
   allergies: string;
+  allergensList?: string[];
   avatarUrl: string;
   avatarIcon: string;
   avatarColor: string;
@@ -231,6 +232,7 @@ export interface DayDietPlan {
     benefitsEs: string;
   };
   isHighPerformancePlan?: boolean;
+  allergyAdaptationNote?: string;
 }
 
 export interface DailyTrackingRecord {
@@ -285,4 +287,5 @@ export interface PricingPlan {
   quotaDescription: string;
   billingModeSummary: string;
   features: string[];
+  stripePaymentLink?: string;
 }

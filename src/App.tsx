@@ -20,6 +20,8 @@ const MainLayout: React.FC = () => {
     isSubscribed, 
     showPaymentModal, 
     setShowPaymentModal, 
+    showLandingPreview,
+    setShowLandingPreview,
     activeTab, 
     toast 
   } = useApp();
@@ -27,7 +29,44 @@ const MainLayout: React.FC = () => {
   const [guestView, setGuestView] = React.useState<'landing' | 'pricing'>('landing');
   const [selectedPlanId, setSelectedPlanId] = React.useState<string | undefined>(undefined);
 
-  // If user has not subscribed or verified trial yet, display Landing Page by default or Welcome Payment Gateway
+  // If user requested to preview the landing page
+  if (showLandingPreview) {
+    return (
+      <div className="relative">
+        <div className="sticky top-0 z-50 bg-[#121B15] text-[#F3E5AB] py-2.5 px-4 flex items-center justify-between border-b border-[#D4AF37]/30 text-xs shadow-lg">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+            <span className="font-semibold">Vista Previa de Landing Page & Tarifas</span>
+          </div>
+          <button
+            onClick={() => setShowLandingPreview(false)}
+            className="px-3.5 py-1 rounded-xl bg-[#D4AF37] text-stone-950 font-bold hover:bg-[#E5C358] transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+          >
+            Volver a la App Abierta &rarr;
+          </button>
+        </div>
+        {guestView === 'landing' ? (
+          <LandingPage 
+            onGoToPricing={(planId) => {
+              setSelectedPlanId(planId);
+              setGuestView('pricing');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }} 
+          />
+        ) : (
+          <WelcomePaymentGateway 
+            onBackToLanding={() => {
+              setGuestView('landing');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            initialSelectedPlanId={selectedPlanId}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // If user has not subscribed or verified trial yet, display Landing Page by default
   if (!isSubscribed) {
     return (
       <>

@@ -4,6 +4,7 @@ import { calculateMER, calculateRER } from '../utils/nutrition';
 import { generateWeeklyDietPlan, getCurrentWeekDates } from '../utils/dietPlanner';
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { AddPetModal } from './AddPetModal';
+import { RecipeDetailModal } from './RecipeDetailModal';
 import { RECIPES_CATALOG } from '../data/mockData';
 import { 
   HeartPulse, 
@@ -16,6 +17,7 @@ import {
   Bell,
   Edit3,
   ShieldAlert, 
+  AlertTriangle,
   Plus, 
   Trash2, 
   Scale, 
@@ -199,6 +201,13 @@ export const HomeScreen: React.FC = () => {
                       <span>MER: {merData.mer} kcal/día</span>
                     </div>
                   </div>
+
+                  {selectedPet.allergies && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 text-[11px] font-semibold mt-1">
+                      <AlertTriangle className="w-3 h-3 text-rose-500 shrink-0" />
+                      <span>{language === 'es' ? `Alergias excluidas en menús: ${selectedPet.allergies}` : `Allergies excluded in menus: ${selectedPet.allergies}`}</span>
+                    </div>
+                  )}
                 </div>
 
               </div>
@@ -1259,221 +1268,38 @@ export const HomeScreen: React.FC = () => {
         <AddPetModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
       )}
 
-      {/* Recipe Detail & Preparation Method Modal */}
+      {/* Recipe Detail & Preparation Method Modal with Nutri IA & Dish Image */}
       {inspectingRecipe && selectedPet && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setInspectingRecipe(null)}
-        >
-          <div 
-            className="bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/35 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-5 sm:p-6 border-b border-stone-200 dark:border-stone-800 bg-gradient-to-r from-amber-500/10 via-transparent to-emerald-500/5 dark:from-[#D4AF37]/10 flex items-start justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${inspectingRecipe.badgeColor}`}>
-                    <span>{inspectingRecipe.typeIcon}</span>
-                    <span>{inspectingRecipe.typeLabel}</span>
-                  </span>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    {todayDateObj.dayNameEs}, {todayDateObj.dateFormatted}
-                  </span>
-                </div>
-                <h3 className="font-editorial text-xl sm:text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-                  {inspectingRecipe.title}
-                </h3>
-                <p className="text-xs text-stone-600 dark:text-stone-300">
-                  {inspectingRecipe.description}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setInspectingRecipe(null)}
-                className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200 transition-colors"
-                title={language === 'es' ? 'Cerrar' : 'Close'}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Scrollable Body */}
-            <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
-              
-              {/* Pet Adaptation & Portion Meta Strip */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span className="font-bold text-stone-800 dark:text-stone-200">
-                    {language === 'es' ? `Porción adaptada a ${selectedPet.name} (${selectedPet.weightKg} kg):` : `Portion for ${selectedPet.name}:`}
-                  </span>
-                  <span className="font-mono font-bold text-[#B8860B] dark:text-[#D4AF37]">
-                    {inspectingRecipe.portion}
-                  </span>
-                </div>
-                {inspectingRecipe.kcal && (
-                  <div className="flex items-center gap-1.5 text-stone-600 dark:text-stone-400 font-mono">
-                    <Flame className="w-4 h-4 text-amber-500" />
-                    <span>~{inspectingRecipe.kcal} kcal</span>
-                  </div>
-                )}
-              </div>
-
-              {/* 1. Ingredientes Adaptados */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-[#F3E5AB] flex items-center gap-2">
-                  <Utensils className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
-                  <span>{language === 'es' ? 'Ingredientes exactos y pesados' : 'Exact Weighted Ingredients'}</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {Array.isArray(inspectingRecipe.ingredients) && inspectingRecipe.ingredients.map((ing, idx) => {
-                    if (typeof ing === 'string') {
-                      return (
-                        <div key={idx} className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 text-xs font-medium text-stone-800 dark:text-stone-200 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] dark:bg-[#D4AF37]"></span>
-                          <span>{ing}</span>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div key={idx} className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 font-medium text-stone-800 dark:text-stone-200">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] dark:bg-[#D4AF37]"></span>
-                          <span>{ing.name}</span>
-                        </div>
-                        {ing.grams !== undefined && ing.grams > 0 && (
-                          <span className="font-mono font-bold text-[#B8860B] dark:text-[#D4AF37] px-2 py-0.5 rounded-md bg-white dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700 text-[11px]">
-                            {ing.grams}g
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 2. Modo de Preparación Paso a Paso */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-[#F3E5AB] flex items-center gap-2">
-                  <ChefHat className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
-                  <span>{language === 'es' ? 'Modo de Preparación Paso a Paso' : 'Step-by-Step Preparation Method'}</span>
-                </h4>
-
-                <div className="space-y-2.5">
-                  {inspectingRecipe.instructions.map((step, idx) => (
-                    <div 
-                      key={idx}
-                      className="p-3 rounded-2xl bg-amber-50/30 dark:bg-[#16271F]/50 border border-[#E8DCCB] dark:border-[#D4AF37]/15 flex items-start gap-3"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-[#B8860B] text-white dark:bg-[#D4AF37] dark:text-stone-950 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 shadow-2xs">
-                        {idx + 1}
-                      </div>
-                      <p className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed font-normal">
-                        {step}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 3. Beneficios Clínicos y Nutricionales */}
-              {inspectingRecipe.clinicalBenefits && inspectingRecipe.clinicalBenefits.length > 0 && (
-                <div className="space-y-2.5">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>{language === 'es' ? 'Beneficios Nutricionales & Clínicos' : 'Nutritional & Clinical Benefits'}</span>
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {inspectingRecipe.clinicalBenefits.map((ben, i) => (
-                      <span key={i} className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{ben}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 4. Consejo del Chef Nutricionista */}
-              {inspectingRecipe.chefTip && (
-                <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-[#D4AF37]/10 border border-[#B8860B]/20 dark:border-[#D4AF37]/30 text-xs text-stone-700 dark:text-stone-300 space-y-1">
-                  <span className="font-bold text-[#B8860B] dark:text-[#D4AF37] flex items-center gap-1.5">
-                    💡 {language === 'es' ? 'Consejo del Chef Nutricionista:' : 'Chef & Storage Tip:'}
-                  </span>
-                  <p>{inspectingRecipe.chefTip}</p>
-                </div>
-              )}
-
-            </div>
-
-            {/* Modal Footer with OK / Done Action Bar */}
-            <div className="p-4 sm:p-5 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-[#0E1A14] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-stone-500 dark:text-stone-400">
-                  {language === 'es' ? 'Estado de hoy:' : "Today's status:"}
-                </span>
-                <span className="font-bold">
-                  {todayTracking[`${inspectingRecipe.type}Given` as keyof typeof todayTracking] === true ? (
-                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4" /> {language === 'es' ? 'Hecha y dada hoy (OK) ✅' : 'Made & given today (OK) ✅'}
-                    </span>
-                  ) : todayTracking[`${inspectingRecipe.type}Given` as keyof typeof todayTracking] === false ? (
-                    <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                      <XCircle className="w-4 h-4" /> {language === 'es' ? 'Marcada como No hecha 🔴' : 'Marked as not done 🔴'}
-                    </span>
-                  ) : (
-                    <span className="text-stone-500 flex items-center gap-1">
-                      <Clock className="w-4 h-4" /> {language === 'es' ? 'Pendiente' : 'Pending'}
-                    </span>
-                  )}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setMealStatus(selectedPet.id, todayDateObj.dateStr, inspectingRecipe.type, false);
-                    showToast(language === 'es' ? '🔴 Marcada como no hecha' : '🔴 Marked as not done');
-                  }}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                    todayTracking[`${inspectingRecipe.type}Given` as keyof typeof todayTracking] === false
-                      ? 'bg-rose-600 text-white'
-                      : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-rose-100 hover:text-rose-900'
-                  }`}
-                >
-                  <X className="w-3.5 h-3.5 inline mr-1" />
-                  <span>{language === 'es' ? 'No hecha' : 'Not done'}</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setMealStatus(selectedPet.id, todayDateObj.dateStr, inspectingRecipe.type, true);
-                    playLuxuryChime();
-                    showToast(language === 'es' ? '✅ ¡Receta marcada como hecha hoy (OK)!' : '✅ Recipe marked as done today (OK)!');
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    todayTracking[`${inspectingRecipe.type}Given` as keyof typeof todayTracking] === true
-                      ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400/40'
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
-                  }`}
-                >
-                  <Check className="w-4 h-4" />
-                  <span>{language === 'es' ? 'Dar OK / Hecha Hoy ✅' : 'Give OK / Made Today ✅'}</span>
-                </button>
-
-                <button
-                  onClick={() => setInspectingRecipe(null)}
-                  className="px-3 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold hover:bg-stone-300"
-                >
-                  {language === 'es' ? 'Cerrar' : 'Close'}
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
+        <RecipeDetailModal
+          isOpen={!!inspectingRecipe}
+          onClose={() => setInspectingRecipe(null)}
+          title={inspectingRecipe.title}
+          categoryLabel={inspectingRecipe.typeLabel}
+          portionLabel={inspectingRecipe.portion}
+          kcal={inspectingRecipe.kcal}
+          description={inspectingRecipe.description}
+          ingredients={inspectingRecipe.ingredients.map(ing =>
+            typeof ing === 'string'
+              ? ing
+              : (ing.grams !== undefined && ing.grams > 0 ? `${ing.name} (${ing.grams}g)` : ing.name)
+          )}
+          instructions={inspectingRecipe.instructions}
+          clinicalBenefits={inspectingRecipe.clinicalBenefits}
+          chefTip={inspectingRecipe.chefTip}
+          species={selectedPet.species}
+          petName={selectedPet.name}
+          status={todayTracking[`${inspectingRecipe.type}Given` as keyof typeof todayTracking] as boolean | null}
+          onSetStatus={(status) => {
+            setMealStatus(selectedPet.id, todayDateObj.dateStr, inspectingRecipe.type as any, status);
+            if (status === true) {
+              playLuxuryChime();
+              showToast(language === 'es' ? '✅ ¡Receta marcada como hecha hoy (OK)!' : '✅ Recipe marked as done today (OK)!');
+            } else if (status === false) {
+              showToast(language === 'es' ? '🔴 Marcada como no hecha' : '🔴 Marked as not done');
+            }
+          }}
+          language={language}
+        />
       )}
 
     </div>

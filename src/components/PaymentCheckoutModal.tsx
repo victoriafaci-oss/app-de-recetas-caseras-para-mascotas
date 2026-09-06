@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { PricingPlan, PaymentMethodType } from '../types';
+import { redirectToStripeCheckout } from '../data/pricingData';
 import { 
   CreditCard, 
   ShieldCheck, 
@@ -108,9 +109,9 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
     setErrorMessage('');
 
     // Check if there is a direct Stripe Payment Link for this plan
-    const directPlanLink = gatewayConfig?.paymentLinks?.[plan.id as keyof typeof gatewayConfig.paymentLinks];
-    if (selectedMethod === 'stripe' && directPlanLink && directPlanLink.startsWith('http')) {
-      window.location.href = directPlanLink;
+    const directPlanLink = plan.stripePaymentLink || gatewayConfig?.paymentLinks?.[plan.id as keyof typeof gatewayConfig.paymentLinks];
+    if (directPlanLink && directPlanLink.startsWith('http')) {
+      redirectToStripeCheckout(directPlanLink);
       return;
     }
 

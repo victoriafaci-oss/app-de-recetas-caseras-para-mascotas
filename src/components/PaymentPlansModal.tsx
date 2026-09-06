@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { PRICING_PLANS, LEGAL_TERMS_SUMMARY } from '../data/pricingData';
+import { PRICING_PLANS, LEGAL_TERMS_SUMMARY, STRIPE_PAYMENT_LINKS, redirectToStripeCheckout } from '../data/pricingData';
 import { PricingPlan, PaymentMethodType } from '../types';
 import { PhoneVerificationModal } from './PhoneVerificationModal';
 import { PaymentCheckoutModal } from './PaymentCheckoutModal';
@@ -55,6 +55,11 @@ export const PaymentPlansModal: React.FC<PaymentPlansModalProps> = ({
     if (plan.id === 'free_trial_48h') {
       setShowPhoneModal(true);
     } else {
+      const directStripeUrl = plan.stripePaymentLink || (STRIPE_PAYMENT_LINKS as Record<string, string>)[plan.id];
+      if (directStripeUrl) {
+        redirectToStripeCheckout(directStripeUrl);
+        return;
+      }
       setSelectedPlanForCheckout(plan);
     }
   };

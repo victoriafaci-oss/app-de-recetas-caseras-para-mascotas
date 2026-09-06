@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { RECIPES_CATALOG } from '../data/mockData';
+import { PRICING_PLANS, STRIPE_PAYMENT_LINKS, redirectToStripeCheckout } from '../data/pricingData';
 import { FloatingPawsBackground } from './FloatingPawsBackground';
 import { 
   ChefHat, 
@@ -20,6 +21,11 @@ import {
   HeartCrack, 
   CircleDollarSign, 
   BookOpen,
+  CreditCard,
+  Lock,
+  ShieldCheck,
+  Zap,
+  Phone,
   Apple,
   Droplets,
   Heart,
@@ -235,12 +241,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               <span>48h Gratis</span>
             </button>
 
-            {/* Botón Acceso */}
+            {/* Botón Tarifas */}
             <button
-              onClick={() => onGoToPricing()}
+              onClick={() => {
+                const el = document.getElementById('tarifas');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  onGoToPricing();
+                }
+              }}
               className="px-3.5 sm:px-4 py-2 rounded-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#07130E] font-bold text-xs tracking-wide shadow-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <span>Acceder a la App</span>
+              <span>Ver Tarifas</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -282,10 +295,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
-            onClick={() => onGoToPricing()}
+            onClick={() => {
+              const el = document.getElementById('tarifas');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                onGoToPricing();
+              }
+            }}
             className="w-full sm:w-auto px-6 py-4 rounded-xl bg-white dark:bg-[#131F18] border border-stone-200 dark:border-[#E8B84A]/40 text-stone-800 dark:text-[#EDE8DF] font-semibold text-sm hover:border-amber-500 dark:hover:border-[#E8B84A] shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <BookOpen className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
+            <CreditCard className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
             <span>Ver Tarifas Oficiales</span>
           </button>
         </div>
@@ -787,7 +807,255 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 9. LLAMADA A LA ACCIÓN FINAL: COMPRA / PRUEBA DIRECTA                     */}
+      {/* 9. TARIFAS Y PLANES DE SUSCRIPCIÓN OFICIALES (CHECKOUT DIRECTO STRIPE)    */}
+      {/* ========================================================================= */}
+      <section id="tarifas" className="relative z-10 py-16 px-4 sm:px-6 max-w-6xl mx-auto border-t border-stone-200 dark:border-[#E8B84A]/20">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-[#E8B84A]/35 text-xs font-bold text-amber-900 dark:text-[#F3E5AB] mb-3 shadow-xs">
+            <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-[#E8B84A]" />
+            <span>Suscripción Oficial • Checkout Seguro con Stripe</span>
+          </div>
+          <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 dark:text-white leading-tight">
+            Tarifas Transparentes para el Cuidado de tu Mascota
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-stone-600 dark:text-stone-300 leading-relaxed font-light">
+            Todas las tarifas incluyen acceso completo a las recetas al gramo, NutriIA, agenda médica y cálculo metabólico. Al hacer clic accederás directamente a la pasarela oficial y encriptada de <strong>Stripe</strong>.
+          </p>
+        </div>
+
+        {/* Las 3 tarjetas de pago oficiales de Stripe */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+          
+          {/* 1. PLAN MENSUAL */}
+          <div className="rounded-3xl p-6 sm:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex flex-col justify-between shadow-md hover:shadow-xl transition-all">
+            <div className="space-y-4">
+              <div className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+                Cuota mensual flexible
+              </div>
+              <div>
+                <h3 className="font-editorial text-2xl font-bold text-stone-900 dark:text-white">
+                  Tarifa Mensual
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                  Suscripción mes a mes sin ataduras
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-editorial text-4xl font-extrabold text-stone-900 dark:text-[#E8B84A]">
+                    3,99 €
+                  </span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                    / al mes
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[50px]">
+                Cuota mensual de 3,99 € facturada mes a mes. Renovación automática que puedes cancelar en cualquier momento sin permanencia ni penalización.
+              </p>
+
+              <ul className="space-y-2 pt-2 text-xs text-stone-700 dark:text-stone-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Acceso total e ilimitado a todas las recetas</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Cálculo metabólico exacto RER / MER</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Cancelación libre con un solo clic</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* BOTÓN PLAN MENSUAL -> STRIPE */}
+            <div className="pt-6 mt-4 border-t border-stone-100 dark:border-stone-800">
+              <button
+                onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.monthly); }}
+                id="btn-stripe-monthly"
+                className="w-full py-3.5 px-4 rounded-2xl bg-stone-900 dark:bg-[#1C2C23] hover:bg-stone-800 dark:hover:bg-[#253A2F] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              >
+                <CreditCard className="w-4 h-4 text-amber-400" />
+                <span>Pagar Plan Mensual (3,99 €)</span>
+                <ArrowRight className="w-4 h-4 ml-auto" />
+              </button>
+            </div>
+          </div>
+
+          {/* 2. PLAN ANUAL (MÁS POPULAR) */}
+          <div className="relative rounded-3xl p-6 sm:p-7 bg-white dark:bg-[#13231B] border-2 border-amber-500 dark:border-[#E8B84A] shadow-xl ring-2 ring-amber-500/20 dark:ring-[#E8B84A]/20 flex flex-col justify-between md:-translate-y-2 transition-all">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#0A0F0D] shadow-md whitespace-nowrap">
+              ⭐ Más Popular • Ahorra 58%
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-[#F3E5AB]">
+                Un solo pago al año
+              </div>
+              <div>
+                <h3 className="font-editorial text-2xl font-bold text-stone-900 dark:text-white">
+                  Tarifa Anual
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                  Máximo ahorro continuo todo el año
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-[#192C23] border border-amber-200/80 dark:border-[#E8B84A]/30">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-editorial text-4xl font-extrabold text-amber-700 dark:text-[#E8B84A]">
+                    19,99 €
+                  </span>
+                  <span className="text-xs text-stone-600 dark:text-stone-300 font-medium">
+                    / al año (~1,66 €/mes)
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[50px]">
+                Cuota anual de 19,99 € cobrada una sola vez al año. Equivale a solo ~1,66 €/mes, ahorrando un 58% respecto a la modalidad mensual.
+              </p>
+
+              <ul className="space-y-2 pt-2 text-xs text-stone-700 dark:text-stone-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Mismas funciones completas que todos los planes</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Consultas ilimitadas con Nutri IA veterinaria</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Planificación semanal y avisos acústicos</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* BOTÓN PLAN ANUAL -> STRIPE */}
+            <div className="pt-6 mt-4 border-t border-amber-100 dark:border-stone-800">
+              <button
+                onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.annual); }}
+                id="btn-stripe-annual"
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] hover:opacity-95 text-white dark:text-[#0A0F0D] font-black text-sm shadow-lg shadow-amber-500/25 dark:shadow-[0_0_25px_rgba(232,184,74,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Pagar Plan Anual (19,99 €)</span>
+                <ArrowRight className="w-4 h-4 ml-auto" />
+              </button>
+            </div>
+          </div>
+
+          {/* 3. PLAN VITALICIO */}
+          <div className="rounded-3xl p-6 sm:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex flex-col justify-between shadow-md hover:shadow-xl transition-all">
+            <div className="space-y-4">
+              <div className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300">
+                Pago único de por vida
+              </div>
+              <div>
+                <h3 className="font-editorial text-2xl font-bold text-stone-900 dark:text-white">
+                  Tarifa Vitalicia
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                  Acceso definitivo sin renovaciones
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-editorial text-4xl font-extrabold text-stone-900 dark:text-[#E8B84A]">
+                    39,99 €
+                  </span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                    / pago único para siempre
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[50px]">
+                Cuota vitalicia de 39,99 € en un solo pago. Disfruta de acceso permanente e ilimitado para siempre, sin suscripciones ni cuotas futuras.
+              </p>
+
+              <ul className="space-y-2 pt-2 text-xs text-stone-700 dark:text-stone-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Acceso permanente de por vida a la plataforma</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Sin cuotas futuras ni renovaciones jamás</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Gestión de hasta 4 mascotas con perfiles</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* BOTÓN PLAN VITALICIO -> STRIPE */}
+            <div className="pt-6 mt-4 border-t border-stone-100 dark:border-stone-800">
+              <button
+                onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.lifetime); }}
+                id="btn-stripe-lifetime"
+                className="w-full py-3.5 px-4 rounded-2xl bg-stone-900 dark:bg-[#1C2C23] hover:bg-stone-800 dark:hover:bg-[#253A2F] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              >
+                <CreditCard className="w-4 h-4 text-emerald-400" />
+                <span>Pagar Plan Vitalicio (39,99 €)</span>
+                <ArrowRight className="w-4 h-4 ml-auto" />
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Banner de alternativa: 48h gratis con verificación SMS */}
+        <div className="mt-8 p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-amber-100/60 dark:from-[#111C16] dark:to-[#16271F] border border-amber-300/80 dark:border-[#E8B84A]/30 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-5xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-[#E8B84A]/20 flex items-center justify-center text-amber-700 dark:text-[#E8B84A] shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-bold text-sm text-stone-900 dark:text-white">
+                ¿Prefieres probar la aplicación antes de contratar?
+              </div>
+              <div className="text-xs text-stone-600 dark:text-stone-300">
+                Dispones de 48 horas de prueba gratuita sin tarjeta de crédito, con confirmación rápida por SMS a tu móvil.
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onGoToPricing('free_trial_48h')}
+            id="btn-stripe-section-trial"
+            className="px-5 py-2.5 rounded-xl bg-white dark:bg-[#1C2C23] border border-amber-400 dark:border-[#E8B84A]/40 text-amber-900 dark:text-[#F3E5AB] font-bold text-xs hover:border-amber-600 shadow-sm transition-all whitespace-nowrap cursor-pointer shrink-0"
+          >
+            Activar 48h Gratis
+          </button>
+        </div>
+
+        {/* Garantías de seguridad oficiales de Stripe */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-stone-500 dark:text-stone-400">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Pago 100% Seguro con Stripe Checkout (256-bit SSL)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
+            <span>Acceso Inmediato tras la confirmación del pago</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Lock className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+            <span>Sin permanencia en cuotas mensuales</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 10. LLAMADA A LA ACCIÓN FINAL: COMPRA / PRUEBA DIRECTA                    */}
       {/* ========================================================================= */}
       <section className="relative z-10 py-14 px-4 sm:px-6 max-w-3xl mx-auto text-center border-t border-stone-200 dark:border-[#E8B84A]/20">
         <h2 className="font-editorial text-3xl sm:text-5xl font-black text-stone-900 dark:text-white leading-tight">
@@ -798,36 +1066,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           "No puedes seguir delegando su alimentación en productos que no controlas."
         </p>
 
-        {/* Bloque de planes oficiales de la app */}
-        <div className="mt-6 mb-8 inline-flex flex-wrap items-center justify-center gap-3">
-          <div className="px-4 py-2 rounded-xl bg-amber-50 dark:bg-[#121B16] border border-amber-300 dark:border-[#E8B84A]/30 text-xs font-medium text-stone-700 dark:text-stone-300">
-            ✨ <strong className="text-stone-900 dark:text-white">48h de prueba gratuita</strong>
-          </div>
-          <div className="px-4 py-2 rounded-xl bg-white dark:bg-[#121B16] border border-stone-200 dark:border-stone-800 text-xs font-medium text-stone-700 dark:text-stone-300">
-            💳 <strong className="text-stone-900 dark:text-white">Planes mensuales, anuales o vitalicios</strong>
-          </div>
-        </div>
-
-        {/* Botones finales */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        {/* Enlaces de pago directos en la sección final */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
-            onClick={() => onGoToPricing('free_trial_48h')}
+            onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.annual); }}
+            id="btn-final-stripe-annual"
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#0A0F0D] font-black text-base shadow-lg shadow-amber-500/25 dark:shadow-[0_0_30px_rgba(232,184,74,0.3)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Obtener Acceso — 48h Gratis</span>
+            <CreditCard className="w-5 h-5" />
+            <span>Contratar Plan Anual (19,99 €)</span>
             <ArrowRight className="w-5 h-5" />
           </button>
+          
           <button
-            onClick={() => onGoToPricing()}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white dark:bg-[#142019] border border-stone-200 dark:border-[#E8B84A]/40 text-stone-800 dark:text-[#EDE8DF] font-bold text-sm hover:border-amber-500 dark:hover:border-[#E8B84A] shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            onClick={() => onGoToPricing('free_trial_48h')}
+            id="btn-final-trial"
+            className="w-full sm:w-auto px-6 py-4 rounded-xl bg-white dark:bg-[#142019] border border-stone-200 dark:border-[#E8B84A]/40 text-stone-800 dark:text-[#EDE8DF] font-bold text-sm hover:border-amber-500 dark:hover:border-[#E8B84A] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Ver Tarifas Oficiales</span>
-            <ArrowRight className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
+            <span>Probar 48h Gratis</span>
+          </button>
+        </div>
+
+        {/* Enlaces secundarios a los otros 2 planes */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs">
+          <button
+            onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.monthly); }}
+            className="text-stone-600 dark:text-stone-400 hover:text-amber-700 dark:hover:text-[#E8B84A] underline font-medium cursor-pointer"
+          >
+            Plan Mensual (3,99 €/mes)
+          </button>
+          <span className="text-stone-300 dark:text-stone-700">•</span>
+          <button
+            onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.lifetime); }}
+            className="text-stone-600 dark:text-stone-400 hover:text-amber-700 dark:hover:text-[#E8B84A] underline font-medium cursor-pointer"
+          >
+            Plan Vitalicio (39,99 € pago único)
           </button>
         </div>
 
         <p className="mt-5 text-xs text-stone-500 dark:text-gray-400">
-          Acceso instantáneo • Aplicación Web Progresiva (PWA) • Pago seguro con Stripe, Bizum y PayPal
+          Acceso instantáneo • Aplicación Web Progresiva (PWA) • Checkout oficial cifrado con Stripe
         </p>
       </section>
 
@@ -840,6 +1119,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           <a href="#privacidad" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Política de Privacidad</a>
           <span>•</span>
           <a href="#contacto" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Contacto</a>
+        </div>
+        
+        {/* Botón discreto de promoción */}
+        <div className="mt-4 flex justify-center">
+          <a
+            href="https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="btn-promo-stripe"
+            className="inline-block text-[11px] lowercase px-2.5 py-1 rounded bg-stone-200/50 dark:bg-stone-900/40 text-stone-500 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-400 transition-colors cursor-pointer border border-stone-300/40 dark:border-stone-800/50 text-center no-underline"
+          >
+            promoción
+          </a>
         </div>
       </footer>
 

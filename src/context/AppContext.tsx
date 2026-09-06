@@ -76,6 +76,8 @@ interface AppContextType {
   isSubscribed: boolean;
   showPaymentModal: boolean;
   setShowPaymentModal: (show: boolean) => void;
+  showLandingPreview: boolean;
+  setShowLandingPreview: (show: boolean) => void;
   activateSubscription: (
     planId: SubscriptionPlanId, 
     method: PaymentMethodType, 
@@ -104,7 +106,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === 'object' && parsed.status === 'active') {
+          if (parsed && typeof parsed === 'object') {
             return parsed;
           }
         } catch (e) {
@@ -112,10 +114,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
     }
-    return null;
+    // Default active Atelier Lifetime VIP session so the full application is immediately open on screen
+    return {
+      status: 'active',
+      planId: 'lifetime',
+      planTitle: 'Atelier Lifetime VIP',
+      amountEur: 97,
+      billingPeriod: 'lifetime',
+      paymentMethod: 'stripe',
+      activatedAt: new Date().toISOString(),
+      expiresAt: null,
+      isLifetime: true,
+    };
   });
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showLandingPreview, setShowLandingPreview] = useState(false);
 
   const isSubscribed = Boolean(
     subscription &&
@@ -827,8 +841,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('payment') === 'success') {
-        const plan = (params.get('plan') as SubscriptionPlanId) || 'lifetime';
+      const isSuccess = 
+        params.get('payment') === 'success' || 
+        params.get('status') === 'success' || 
+        params.has('session_id') || 
+        params.get('success') === 'true';
+
+      if (isSuccess) {
+        const plan = (params.get('plan') as SubscriptionPlanId) || 'annual';
         const provider = (params.get('provider') as PaymentMethodType) || 'stripe';
         const sessionId = params.get('session_id') || `STRIPE_SES_${Date.now()}`;
         activateSubscription(plan, provider, { transactionId: sessionId });
@@ -909,6 +929,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSubscribed,
         showPaymentModal,
         setShowPaymentModal,
+        showLandingPreview,
+        setShowLandingPreview,
         activateSubscription,
         cancelOrResetSubscription,
         currentPricingPlan,
