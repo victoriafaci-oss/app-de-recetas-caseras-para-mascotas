@@ -392,7 +392,7 @@ For a ${species} patient with an energy requirement of **${merVal}** and an esti
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowRecipeAiModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-600 to-[#D4AF37] text-stone-950 hover:brightness-110 transition-all shadow-md shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#D4AF37] hover:bg-[#C5A059] text-stone-950 transition-all shadow-xs shrink-0"
             >
               <ChefHat className="w-4 h-4" />
               <span>{language === 'es' ? 'Formular Receta IA' : 'Formulate AI Recipe'}</span>
@@ -615,7 +615,7 @@ For a ${species} patient with an energy requirement of **${merVal}** and an esti
                 type="button"
                 onClick={handleGenerateCustomRecipe}
                 disabled={isGeneratingRecipe || !recipeAiGoal.trim()}
-                className="px-5 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-600 to-[#D4AF37] text-stone-950 transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl font-bold text-xs bg-[#B8860B] dark:bg-[#D4AF37] hover:opacity-90 text-white dark:text-stone-950 transition-all shadow-xs flex items-center gap-2 disabled:opacity-50"
               >
                 {isGeneratingRecipe ? (
                   <>

@@ -2,9 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { calculateMER, getConditionClinicalAlerts } from '../utils/nutrition';
 import { RECIPES_CATALOG } from '../data/mockData';
-import { getCurrentWeekDates, generateDailyDietPlan } from '../utils/dietPlanner';
+import { getCurrentWeekDates, generateDailyDietPlan, isHighPerformancePet } from '../utils/dietPlanner';
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { AddPetModal } from './AddPetModal';
+import { PetAllergiesTab } from './PetAllergiesTab';
+import { HighPerformanceGuideCard } from './HighPerformanceGuideCard';
+import { HighPerformanceExerciseAlert } from './HighPerformanceExerciseAlert';
+import { parseAllergens } from '../utils/allergyUtils';
 import { 
   HeartPulse, 
   Droplet, 
@@ -18,6 +22,7 @@ import {
   Footprints, 
   Bath, 
   ShieldAlert, 
+  ShieldCheck,
   ChefHat, 
   CheckCircle, 
   Info,
@@ -33,10 +38,8 @@ import {
   Check,
   CalendarRange,
   ChevronRight,
-  ShieldCheck,
-  Camera
+  Zap
 } from 'lucide-react';
-import { COMMON_FOOD_ALLERGENS, extractPetAllergens } from '../data/allergensData';
 
 export const PetProfileScreen: React.FC = () => {
   const { 
@@ -44,6 +47,7 @@ export const PetProfileScreen: React.FC = () => {
     pets, 
     selectPet, 
     deletePet, 
+    updatePet,
     addWaterMl, 
     addBrothMl, 
     resetHydration, 
@@ -58,6 +62,9 @@ export const PetProfileScreen: React.FC = () => {
     getTrackingForDay,
     setMealStatus
   } = useApp();
+
+  type ProfileTabId = 'allergies' | 'high_performance' | 'overview' | 'nutrition' | 'wellness' | 'all';
+  const [activeProfileTab, setActiveProfileTab] = useState<ProfileTabId>('allergies');
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddPetModal, setShowAddPetModal] = useState(false);
@@ -160,6 +167,20 @@ export const PetProfileScreen: React.FC = () => {
     });
   };
 
+  const petAllergens = useMemo(() => parseAllergens(selectedPet?.allergies || ''), [selectedPet?.allergies]);
+  const isHighPerf = useMemo(() => isHighPerformancePet(selectedPet), [selectedPet]);
+
+  const handleUpdateAllergies = (newAllergies: string) => {
+    if (!selectedPet) return;
+    updatePet(selectedPet.id, { allergies: newAllergies });
+    showToast(
+      language === 'es'
+        ? `Alergias de ${selectedPet.name} actualizadas. Los menús y recetas se han recalculado automáticamente.`
+        : `Allergies for ${selectedPet.name} updated. Menus recalculated automatically.`,
+      'success'
+    );
+  };
+
   return (
     <div className="space-y-8 pb-12 animate-in fade-in duration-300">
       
@@ -217,16 +238,12 @@ export const PetProfileScreen: React.FC = () => {
       </div>
 
       {/* Main Pet Banner with Avatar & Identity */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-white to-stone-50 dark:from-[#121B15] dark:to-[#0A0F0D] border border-stone-200 dark:border-[#D4AF37]/30 shadow-lg">
+      <div className="rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#121B15] border border-stone-200 dark:border-[#D4AF37]/30 shadow-md">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           
           {/* Avatar Picture */}
           <div className="relative shrink-0">
-            <div 
-              onClick={() => setShowEditModal(true)}
-              className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-gradient-to-br from-amber-500 via-[#D4AF37] to-emerald-600 shadow-xl cursor-pointer group relative transition-transform hover:scale-105"
-              title={language === 'es' ? 'Toca para cambiar la foto de la mascota' : 'Tap to change pet photo'}
-            >
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-[#D4AF37] shadow-lg">
               {selectedPet.avatarUrl && !avatarError ? (
                 <img
                   src={selectedPet.avatarUrl}
@@ -240,12 +257,6 @@ export const PetProfileScreen: React.FC = () => {
                   {selectedPet.avatarIcon || (selectedPet.species === 'dog' ? '🐕' : '🐈')}
                 </div>
               )}
-
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[11px] font-bold rounded-[20px] transition-opacity backdrop-blur-2xs">
-                <Camera className="w-5 h-5 mb-0.5 text-[#F3E5AB]" />
-                <span>{language === 'es' ? 'Editar foto' : 'Edit photo'}</span>
-              </div>
             </div>
             <span className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-xs font-bold bg-stone-900 text-[#D4AF37] border border-[#D4AF37]/40 shadow-md">
               {selectedPet.avatarIcon} {selectedPet.species === 'dog' ? 'Canino' : 'Felino'}
@@ -253,7 +264,7 @@ export const PetProfileScreen: React.FC = () => {
           </div>
 
           {/* Details */}
-          <div className="flex-1 text-center md:text-left space-y-2.5">
+          <div className="flex-1 text-center md:text-left space-y-2">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${clinicalData.badgeColor}`}>
                 {clinicalData.badgeLabel}
@@ -271,70 +282,230 @@ export const PetProfileScreen: React.FC = () => {
               {selectedPet.breed} &bull; {selectedPet.ageYears} años {selectedPet.ageMonths > 0 ? `y ${selectedPet.ageMonths} meses` : ''} &bull; Sexo: {selectedPet.gender === 'male' ? 'Macho' : 'Hembra'}
             </p>
 
-            {/* Allergens & Intolerances Display */}
-            {selectedPet.allergies ? (
-              <div className="space-y-1.5 pt-1">
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5">
-                  <span className="text-[11px] font-bold text-rose-800 dark:text-rose-400 flex items-center gap-1">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Alergias excluidas:</span>
-                  </span>
-                  {extractPetAllergens(selectedPet.allergies, selectedPet.allergensList).map((alg) => {
-                    const matchedDef = COMMON_FOOD_ALLERGENS.find(d => d.id === alg);
-                    return (
-                      <span
-                        key={alg}
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/30 shadow-2xs"
-                      >
-                        {matchedDef?.icon || '⚠️'} {matchedDef ? matchedDef.nameEs.split('/')[0].trim() : alg}
-                      </span>
-                    );
-                  })}
-                </div>
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium flex items-center justify-center md:justify-start gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Menús semanales 100% personalizados y protegidos de estos ingredientes.</span>
-                </p>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Sin alergias conocidas registradas (tolerancia completa).</span>
-              </div>
-            )}
+            {/* Quick-access interactive allergy & high performance pills */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setActiveProfileTab('allergies')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  petAllergens.length > 0
+                    ? 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30 hover:bg-rose-500/25'
+                    : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'
+                }`}
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+                <span>
+                  {petAllergens.length > 0
+                    ? `Alergias: ${selectedPet.allergies}`
+                    : 'Sin alergias alimentarias'}
+                </span>
+                <span className="underline ml-0.5 text-[11px] opacity-80">(Gestionar)</span>
+              </button>
+
+              {isHighPerf && (
+                <button
+                  type="button"
+                  onClick={() => setActiveProfileTab('high_performance')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/15 text-amber-900 dark:text-[#D4AF37] hover:bg-amber-500/25 transition-all cursor-pointer shadow-2xs"
+                >
+                  <Zap className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                  <span>Guía: Alto Rendimiento & Hiperactividad</span>
+                  <span className="underline ml-0.5 text-[11px] opacity-80">(Activa)</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Summary Key Targets Card */}
-          <div className="w-full md:w-auto shrink-0 p-4 rounded-2xl bg-stone-100/80 dark:bg-[#0E1511] border border-stone-200 dark:border-stone-800 text-xs space-y-2.5 min-w-[220px]">
-            <div className="flex justify-between items-center">
+          {/* Summary Key Targets Card (Peso, BCS, RER, Alergias) */}
+          <div className="w-full md:w-auto shrink-0 p-4 rounded-2xl bg-stone-100/80 dark:bg-[#0E1511] border border-stone-200 dark:border-stone-800 text-xs space-y-2.5 min-w-[230px]">
+            <button
+              type="button"
+              onClick={() => setActiveProfileTab('overview')}
+              className="w-full flex justify-between items-center p-1 -mx-1 rounded-lg hover:bg-stone-200/60 dark:hover:bg-stone-800/60 transition-colors text-left"
+            >
               <span className="text-stone-700 dark:text-stone-300">Peso actual:</span>
               <span className="font-bold text-stone-900 dark:text-[#F3E5AB] text-sm">{selectedPet.weightKg} kg</span>
-            </div>
-            <div className="flex justify-between items-center">
+            </button>
+            <div className="flex justify-between items-center px-1">
               <span className="text-stone-700 dark:text-stone-300">Peso meta:</span>
               <span className="font-bold text-emerald-800 dark:text-emerald-400">{selectedPet.targetWeightKg} kg</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center px-1">
               <span className="text-stone-700 dark:text-stone-300">Condición Corporal:</span>
               <span className="font-semibold text-stone-800 dark:text-stone-200">BCS {selectedPet.bodyConditionScore}/9</span>
             </div>
-            <div className="flex justify-between items-center pt-2 border-t border-stone-200 dark:border-stone-800">
+            <div className="flex justify-between items-center px-1">
               <span className="text-stone-700 dark:text-stone-300">Gasto RER:</span>
               <span className="font-bold text-amber-700 dark:text-[#D4AF37]">{merData.rer} kcal/día</span>
             </div>
+            
+            {/* Quick Allergy status button */}
+            <button
+              type="button"
+              onClick={() => setActiveProfileTab('allergies')}
+              className="w-full flex justify-between items-center p-1.5 -mx-1.5 rounded-lg pt-2 border-t border-stone-200 dark:border-stone-800 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 transition-colors text-left"
+            >
+              <span className="text-stone-700 dark:text-stone-300 flex items-center gap-1 font-semibold">
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-700 dark:text-rose-400" />
+                <span>Alergias:</span>
+              </span>
+              <span className={`font-bold text-xs px-2 py-0.5 rounded-full ${
+                petAllergens.length > 0 
+                  ? 'bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-500/30' 
+                  : 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
+              }`}>
+                {petAllergens.length > 0 ? `${petAllergens.length} activas` : 'Ninguna'}
+              </span>
+            </button>
+
+            {isHighPerf && (
+              <button
+                type="button"
+                onClick={() => setActiveProfileTab('high_performance')}
+                className="w-full flex justify-between items-center p-1.5 -mx-1.5 rounded-lg border-t border-stone-200 dark:border-stone-800 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 transition-colors text-left"
+              >
+                <span className="text-stone-700 dark:text-stone-300 flex items-center gap-1 font-semibold">
+                  <Zap className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                  <span>Guía Rendimiento:</span>
+                </span>
+                <span className="font-bold text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-[#B8860B] dark:text-[#D4AF37] border border-amber-500/30">
+                  ⚡ 7 Días Activa
+                </span>
+              </button>
+            )}
           </div>
 
         </div>
       </div>
 
-      {/* SECTION 1: RECOMENDACIÓN NUTRICIONAL DIARIA (RER & MER FORMULAS) */}
-      <section className="space-y-4" id="section-nutritional-recommendation">
-        <div className="flex items-center gap-2">
-          <Utensils className="w-5 h-5 text-amber-500" />
-          <h2 className="font-editorial text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-            Recomendación Nutricional Diaria de Precisión
-          </h2>
-        </div>
+      {/* PESTAÑAS DE ACCESO HABITUAL JUNTO AL PESO, EDAD, RAZA, ETC */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-stone-200 dark:border-stone-800">
+        <button
+          type="button"
+          onClick={() => setActiveProfileTab('allergies')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all border ${
+            activeProfileTab === 'allergies'
+              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-900 border-[#B8860B] dark:border-[#D4AF37] shadow-sm'
+              : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+          }`}
+        >
+          <ShieldAlert className="w-4 h-4 shrink-0" />
+          <span>{language === 'es' ? 'Alergias & Alimentos' : 'Allergies & Foods'}</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+            activeProfileTab === 'allergies'
+              ? 'bg-black/20 text-white dark:text-stone-900'
+              : (petAllergens.length > 0 ? 'bg-rose-500/20 text-rose-800 dark:text-rose-300' : 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300')
+          }`}>
+            {petAllergens.length > 0 ? `${petAllergens.length} activas` : '0'}
+          </span>
+        </button>
+
+        {isHighPerf && (
+          <button
+            type="button"
+            onClick={() => setActiveProfileTab('high_performance')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all border ${
+              activeProfileTab === 'high_performance'
+                ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-900 border-[#B8860B] dark:border-[#D4AF37] shadow-sm'
+                : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+            }`}
+          >
+            <Zap className="w-4 h-4 shrink-0 text-amber-500" />
+            <span>{language === 'es' ? 'Guía Alto Rendimiento & Hiperactividad' : 'High Performance Guide'}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500/20 text-[#B8860B] dark:text-[#D4AF37]">
+              ⚡ 7 Días
+            </span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setActiveProfileTab('overview')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all border ${
+            activeProfileTab === 'overview'
+              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-900 border-[#B8860B] dark:border-[#D4AF37] shadow-sm'
+              : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+          }`}
+        >
+          <Scale className="w-4 h-4 shrink-0" />
+          <span>{language === 'es' ? 'Ficha & Peso' : 'Profile & Weight'}</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+            activeProfileTab === 'overview' ? 'bg-black/20 text-white dark:text-stone-900' : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
+          }`}>
+            {selectedPet.weightKg}kg
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveProfileTab('nutrition')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all border ${
+            activeProfileTab === 'nutrition'
+              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-900 border-[#B8860B] dark:border-[#D4AF37] shadow-sm'
+              : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+          }`}
+        >
+          <Utensils className="w-4 h-4 shrink-0" />
+          <span>{language === 'es' ? 'Menús & Nutrición Diaria' : 'Daily Menus & Nutrition'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveProfileTab('wellness')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all border ${
+            activeProfileTab === 'wellness'
+              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-900 border-[#B8860B] dark:border-[#D4AF37] shadow-sm'
+              : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+          }`}
+        >
+          <Footprints className="w-4 h-4 shrink-0" />
+          <span>{language === 'es' ? 'Actividad & Cuidados' : 'Activity & Care'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveProfileTab('all')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all border ${
+            activeProfileTab === 'all'
+              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-900 border-[#B8860B] dark:border-[#D4AF37] shadow-sm'
+              : 'bg-white dark:bg-[#121B15] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 shrink-0" />
+          <span>{language === 'es' ? 'Ver Todo' : 'View All'}</span>
+        </button>
+      </div>
+
+      {/* TAB CONTENT 1: ALERGIAS & ALIMENTOS */}
+      {(activeProfileTab === 'allergies' || activeProfileTab === 'all') && (
+        <PetAllergiesTab
+          pet={selectedPet}
+          language={language}
+          todayPlan={todayPlan}
+          onUpdateAllergies={handleUpdateAllergies}
+          onOpenEditPetModal={() => setShowEditModal(true)}
+        />
+      )}
+
+      {/* TAB CONTENT: GUÍA ESPECIAL DE ALTO RENDIMIENTO & HIPERACTIVIDAD */}
+      {(activeProfileTab === 'high_performance' || (isHighPerf && (activeProfileTab === 'wellness' || activeProfileTab === 'all'))) && (
+        <HighPerformanceGuideCard
+          pet={selectedPet}
+          todayPlan={todayPlan}
+          language={language}
+          onNavigateToRecipes={() => setActiveTab('recipes')}
+        />
+      )}
+
+      {/* TAB CONTENT 2: FICHA & PESO (SECTION 1: RECOMENDACIÓN NUTRICIONAL DIARIA) */}
+      {(activeProfileTab === 'overview' || activeProfileTab === 'all') && (
+        <section className="space-y-4" id="section-nutritional-recommendation">
+          <div className="flex items-center gap-2">
+            <Utensils className="w-5 h-5 text-amber-500" />
+            <h2 className="font-editorial text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+              Recomendación Nutricional Diaria de Precisión
+            </h2>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           
@@ -428,19 +599,21 @@ export const PetProfileScreen: React.FC = () => {
 
         </div>
       </section>
+      )}
 
-      {/* SECTION 2: RECETAS CASERAS ADAPTADAS DEL DÍA (2 COMPLETAS + 1 POSTRE + 1 SNACK) */}
-      <section className="space-y-4" id="section-suggested-recipes">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-amber-500/10 dark:from-[#16271F] dark:to-[#121B15] border border-amber-500/20 dark:border-[#D4AF37]/30">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/15 dark:bg-[#D4AF37]/20 text-[#B8860B] dark:text-[#D4AF37] flex items-center justify-center font-bold">
-                <ChefHat className="w-4 h-4" />
+      {/* TAB CONTENT 3: MENÚS & NUTRICIÓN DIARIA (SECTION 2: RECETAS CASERAS ADAPTADAS DEL DÍA) */}
+      {(activeProfileTab === 'nutrition' || activeProfileTab === 'all') && (
+        <section className="space-y-4" id="section-suggested-recipes">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-[#121B15] border border-stone-200 dark:border-[#D4AF37]/30 shadow-xs">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 dark:bg-[#D4AF37]/20 text-[#B8860B] dark:text-[#D4AF37] flex items-center justify-center font-bold">
+                  <ChefHat className="w-4 h-4" />
+                </div>
+                <h2 className="font-editorial text-xl sm:text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+                  {language === 'es' ? 'Recetas Caseras Adaptadas' : 'Adapted Homemade Recipes'}
+                </h2>
               </div>
-              <h2 className="font-editorial text-xl sm:text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-                {language === 'es' ? 'Recetas Caseras Adaptadas' : 'Adapted Homemade Recipes'}
-              </h2>
-            </div>
             <p className="text-xs text-stone-600 dark:text-stone-300 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1 font-semibold text-stone-900 dark:text-stone-100">
                 <Calendar className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
@@ -465,6 +638,9 @@ export const PetProfileScreen: React.FC = () => {
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* Digestive timing and portion alert for high performance dogs */}
+        <HighPerformanceExerciseAlert pet={selectedPet} language={language} variant="compact" />
 
         {/* 7-Day Day Selector Bar & Weekly Balance Indicator */}
         <div className="space-y-2.5">
@@ -922,20 +1098,23 @@ export const PetProfileScreen: React.FC = () => {
 
         </div>
       </section>
+      )}
 
-      {/* SECTION 3: MONITOR DE HÁBITOS DIARIOS */}
-      <section className="space-y-5" id="section-daily-habits">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <HeartPulse className="w-5 h-5 text-rose-500" />
-            <h2 className="font-editorial text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
-              Monitor de Hábitos Diarios
-            </h2>
-          </div>
-          <span className="text-xs text-stone-700 dark:text-stone-300 font-medium">
-            Seguimiento en tiempo real
-          </span>
-        </div>
+      {/* TAB CONTENT 4: ACTIVIDAD & CUIDADOS (SECTION 3: MONITOR DE HÁBITOS & ALERTAS CLÍNICAS) */}
+      {(activeProfileTab === 'wellness' || activeProfileTab === 'all') && (
+        <>
+          <section className="space-y-5" id="section-daily-habits">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HeartPulse className="w-5 h-5 text-rose-500" />
+                <h2 className="font-editorial text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+                  Monitor de Hábitos Diarios
+                </h2>
+              </div>
+              <span className="text-xs text-stone-700 dark:text-stone-300 font-medium">
+                Seguimiento en tiempo real
+              </span>
+            </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           
@@ -1082,6 +1261,9 @@ export const PetProfileScreen: React.FC = () => {
                 <span>+ Registrar Paseo</span>
               </button>
             </div>
+
+            {/* Critical digestive & activity warning for high performance dogs */}
+            <HighPerformanceExerciseAlert pet={selectedPet} language={language} variant="compact" />
 
             {/* Walk Logger Form */}
             {showWalkForm && (
@@ -1267,7 +1449,7 @@ export const PetProfileScreen: React.FC = () => {
                       </span>
                       <div className="w-full bg-stone-200 dark:bg-stone-800 rounded-t-lg h-14 relative flex items-end justify-center overflow-hidden">
                         <div
-                          className="w-full bg-gradient-to-t from-amber-600 to-[#D4AF37] rounded-t-lg transition-all duration-300"
+                          className="w-full bg-[#D4AF37] rounded-t-lg transition-all duration-300"
                           style={{ height: `${barHeightPct}%` }}
                         ></div>
                       </div>
@@ -1285,8 +1467,8 @@ export const PetProfileScreen: React.FC = () => {
         </div>
       </section>
 
-      {/* SECTION 3: ALERTAS CLÍNICAS RESTRICTIVAS */}
-      <section className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-amber-500/10 via-stone-50 to-emerald-500/5 dark:from-[#1A241D] dark:via-[#121B15] dark:to-[#0E1511] border border-amber-500/30 dark:border-[#D4AF37]/30 shadow-md space-y-4">
+      {/* SECTION 4: ALERTAS CLÍNICAS RESTRICTIVAS */}
+      <section className="rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#121B15] border border-amber-500/30 dark:border-[#D4AF37]/30 shadow-md space-y-4">
         <div className="flex items-center gap-2.5">
           <ShieldAlert className="w-6 h-6 text-amber-700 dark:text-[#D4AF37]" />
           <div>
@@ -1317,6 +1499,8 @@ export const PetProfileScreen: React.FC = () => {
           <span>{clinicalData.forbiddenAlert}</span>
         </div>
       </section>
+      </>
+      )}
 
       {/* Edit Pet Modal */}
       {showEditModal && (

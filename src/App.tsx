@@ -20,94 +20,74 @@ const MainLayout: React.FC = () => {
     isSubscribed, 
     showPaymentModal, 
     setShowPaymentModal, 
-    showLandingPreview,
-    setShowLandingPreview,
     activeTab, 
-    toast 
+    toast,
+    currentView,
+    setCurrentView
   } = useApp();
 
-  const [guestView, setGuestView] = React.useState<'landing' | 'pricing'>('landing');
   const [selectedPlanId, setSelectedPlanId] = React.useState<string | undefined>(undefined);
 
-  // If user requested to preview the landing page
-  if (showLandingPreview) {
+  const renderToast = () => {
+    if (!toast) return null;
     return (
-      <div className="relative">
-        <div className="sticky top-0 z-50 bg-[#121B15] text-[#F3E5AB] py-2.5 px-4 flex items-center justify-between border-b border-[#D4AF37]/30 text-xs shadow-lg">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-            <span className="font-semibold">Vista Previa de Landing Page & Tarifas</span>
-          </div>
-          <button
-            onClick={() => setShowLandingPreview(false)}
-            className="px-3.5 py-1 rounded-xl bg-[#D4AF37] text-stone-950 font-bold hover:bg-[#E5C358] transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
-          >
-            Volver a la App Abierta &rarr;
-          </button>
+      <div className="fixed bottom-6 right-4 sm:right-8 z-50 animate-in slide-in-from-bottom-5 fade-in duration-200">
+        <div className={`flex items-center gap-2.5 py-3 px-4 rounded-2xl shadow-xl border text-xs font-semibold backdrop-blur-md ${
+          toast.type === 'success'
+            ? 'bg-emerald-900/90 text-emerald-100 border-emerald-500/40 shadow-emerald-950/40'
+            : toast.type === 'warning'
+            ? 'bg-amber-900/90 text-amber-100 border-amber-500/40 shadow-amber-950/40'
+            : 'bg-stone-900/90 text-stone-100 border-[#D4AF37]/30 shadow-black/40'
+        }`}>
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          ) : toast.type === 'warning' ? (
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+          ) : (
+            <Sparkles className="w-4 h-4 text-[#D4AF37] shrink-0" />
+          )}
+          <span>{toast.message}</span>
         </div>
-        {guestView === 'landing' ? (
-          <LandingPage 
-            onGoToPricing={(planId) => {
-              setSelectedPlanId(planId);
-              setGuestView('pricing');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }} 
-          />
-        ) : (
-          <WelcomePaymentGateway 
-            onBackToLanding={() => {
-              setGuestView('landing');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            initialSelectedPlanId={selectedPlanId}
-          />
-        )}
       </div>
+    );
+  };
+
+  // 1. Landing Page View (Default first screen)
+  if (currentView === 'landing') {
+    return (
+      <>
+        <LandingPage 
+          onGoToPricing={(planId) => {
+            setSelectedPlanId(planId);
+            setCurrentView('pricing');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }} 
+          onEnterApp={() => {
+            setCurrentView('app');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+        {renderToast()}
+      </>
     );
   }
 
-  // If user has not subscribed or verified trial yet, display Landing Page by default
-  if (!isSubscribed) {
+  // 2. Welcome Payment Gateway View (Pricing plans & checkout)
+  if (currentView === 'pricing') {
     return (
       <>
-        {guestView === 'landing' ? (
-          <LandingPage 
-            onGoToPricing={(planId) => {
-              setSelectedPlanId(planId);
-              setGuestView('pricing');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }} 
-          />
-        ) : (
-          <WelcomePaymentGateway 
-            onBackToLanding={() => {
-              setGuestView('landing');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            initialSelectedPlanId={selectedPlanId}
-          />
-        )}
-
-        {toast && (
-          <div className="fixed bottom-6 right-4 sm:right-8 z-50 animate-in slide-in-from-bottom-5 fade-in duration-200">
-            <div className={`flex items-center gap-2.5 py-3 px-4 rounded-2xl shadow-xl border text-xs font-semibold backdrop-blur-md ${
-              toast.type === 'success'
-                ? 'bg-emerald-900/90 text-emerald-100 border-emerald-500/40 shadow-emerald-950/40'
-                : toast.type === 'warning'
-                ? 'bg-amber-900/90 text-amber-100 border-amber-500/40 shadow-amber-950/40'
-                : 'bg-stone-900/90 text-stone-100 border-[#D4AF37]/30 shadow-black/40'
-            }`}>
-              {toast.type === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              ) : toast.type === 'warning' ? (
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-[#D4AF37] shrink-0" />
-              )}
-              <span>{toast.message}</span>
-            </div>
-          </div>
-        )}
+        <WelcomePaymentGateway 
+          onBackToLanding={() => {
+            setCurrentView('landing');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onEnterApp={() => {
+            setCurrentView('app');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          initialSelectedPlanId={selectedPlanId}
+        />
+        {renderToast()}
       </>
     );
   }

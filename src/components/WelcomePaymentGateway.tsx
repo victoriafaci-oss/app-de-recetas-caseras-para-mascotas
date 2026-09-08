@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { PRICING_PLANS, LEGAL_TERMS_SUMMARY, STRIPE_PAYMENT_LINKS, redirectToStripeCheckout } from '../data/pricingData';
+import { PRICING_PLANS, LEGAL_TERMS_SUMMARY, STRIPE_PAYMENT_LINKS, openStripeCheckout } from '../data/pricingData';
 import { PricingPlan, PaymentMethodType } from '../types';
 import { PhoneVerificationModal } from './PhoneVerificationModal';
 import { PaymentCheckoutModal } from './PaymentCheckoutModal';
@@ -22,11 +22,13 @@ import {
 
 interface WelcomePaymentGatewayProps {
   onBackToLanding?: () => void;
+  onEnterApp?: () => void;
   initialSelectedPlanId?: string;
 }
 
 export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({ 
   onBackToLanding, 
+  onEnterApp,
   initialSelectedPlanId 
 }) => {
   const { 
@@ -40,36 +42,29 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
 
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PricingPlan | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [mobileActivePlanId, setMobileActivePlanId] = useState<string>(initialSelectedPlanId || 'annual');
+  const [mobileViewMode, setMobileViewMode] = useState<'tab' | 'all'>('tab');
 
   // If initialSelectedPlanId is passed, handle immediately
   React.useEffect(() => {
     if (initialSelectedPlanId) {
+      setMobileActivePlanId(initialSelectedPlanId);
       const foundPlan = PRICING_PLANS.find(p => p.id === initialSelectedPlanId);
       if (foundPlan) {
         if (foundPlan.id === 'free_trial_48h') {
           setShowPhoneModal(true);
         } else {
-          const directStripeUrl = foundPlan.stripePaymentLink || (STRIPE_PAYMENT_LINKS as Record<string, string>)[foundPlan.id];
-          if (directStripeUrl) {
-            redirectToStripeCheckout(directStripeUrl);
-            return;
-          }
           setSelectedPlanForCheckout(foundPlan);
         }
       }
     }
   }, [initialSelectedPlanId]);
 
-  // Handle plan click: redirect directly to Stripe checkout for paid plans
+  // Handle plan click: opens connected checkout modal with Stripe, PayPal, and Cards
   const handleSelectPlan = (plan: PricingPlan) => {
     if (plan.id === 'free_trial_48h') {
       setShowPhoneModal(true);
     } else {
-      const directStripeUrl = plan.stripePaymentLink || (STRIPE_PAYMENT_LINKS as Record<string, string>)[plan.id];
-      if (directStripeUrl) {
-        redirectToStripeCheckout(directStripeUrl);
-        return;
-      }
       setSelectedPlanForCheckout(plan);
     }
   };
@@ -102,12 +97,12 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
           
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-2xl bg-gradient-to-br from-[#B8860B] to-[#D4AF37] text-stone-950 shadow-md">
+            <div className="p-2 rounded-2xl bg-[#D4AF37] text-stone-950 shadow-xs">
               <ChefHat className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-editorial text-2xl sm:text-3xl font-extrabold tracking-wider text-[#B8860B] dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#D4AF37] dark:via-[#F3E5AB] dark:to-[#D4AF37]">
-                PAWLOVE
+              <div className="font-editorial text-2xl sm:text-3xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
+                PAWLOVE - MASCOTAS
               </div>
               <div className="text-[10px] uppercase font-bold tracking-widest text-stone-500 dark:text-[#D4AF37]/80 leading-none">
                 {language === 'es' ? 'Recetas Caseras & Nutrición para Mascotas' : 'Homemade Nutrition & Pet Care'}
@@ -117,6 +112,17 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
 
           {/* Minimal Controls: Language & Theme only */}
           <div className="flex items-center gap-2">
+            {onEnterApp && (
+              <button
+                onClick={onEnterApp}
+                id="gateway-btn-enter-app"
+                className="px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/50 dark:border-emerald-400/35 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                title={language === 'es' ? 'Entrar a la aplicación' : 'Enter application'}
+              >
+                <span>🐾 Entrar a la App</span>
+              </button>
+            )}
+
             {onBackToLanding && (
               <button
                 onClick={onBackToLanding}
@@ -193,39 +199,99 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
         {/* 2. LAS 4 OPCIONES DE PAGO REDUCIDAS DE INFORMACIÓN                        */}
         {/* (Solo modalidad de cuota, importe y botón que redirige al pago)            */}
         {/* ========================================================================= */}
-        <section className="space-y-4">
+        <section className="space-y-3 sm:space-y-4">
           
           <div className="text-center space-y-1">
-            <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+            <h2 className="font-editorial text-xl sm:text-3xl font-bold text-stone-900 dark:text-[#F3E5AB]">
               {language === 'es' ? 'Selecciona tu Modalidad de Pago' : 'Choose Your Payment Plan'}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
+            <p className="text-[11px] sm:text-sm text-stone-500 dark:text-stone-400">
               {language === 'es'
                 ? 'Acceso completo e ilimitado en todas las tarifas. Elige la modalidad de cuota que prefieras.'
                 : 'Full unlimited access across all plans. Select the quota mode that works best for you.'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* PESTAÑAS DE TARIFAS COMPACTAS PARA MÓVIL (< sm) */}
+          <div className="sm:hidden space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                {language === 'es' ? 'Pestañas de Tarifas:' : 'Tariff Tabs:'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileViewMode(prev => prev === 'tab' ? 'all' : 'tab')}
+                className="text-[10px] font-bold text-[#B8860B] dark:text-[#D4AF37] hover:underline cursor-pointer"
+              >
+                {mobileViewMode === 'tab' 
+                  ? (language === 'es' ? 'Ver las 4 tarifas' : 'View all 4') 
+                  : (language === 'es' ? 'Ver en pestañas' : 'View as tabs')}
+              </button>
+            </div>
+
+            {/* Pestañas horizontales reducidas y optimizadas para teléfono */}
+            <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-[#122019] border border-stone-200 dark:border-stone-800 text-[11px]">
+              {PRICING_PLANS.map((plan) => {
+                const isActive = mobileActivePlanId === plan.id;
+                const isPopular = plan.popular;
+                return (
+                  <button
+                    key={`tab-${plan.id}`}
+                    type="button"
+                    onClick={() => {
+                      setMobileActivePlanId(plan.id);
+                      setMobileViewMode('tab');
+                    }}
+                    className={`py-1.5 px-1 rounded-xl font-bold text-center transition-all flex flex-col items-center justify-center leading-tight cursor-pointer ${
+                      isActive
+                        ? isPopular
+                          ? 'bg-[#D4AF37] text-stone-950 shadow-xs font-black'
+                          : 'bg-white dark:bg-[#1A2E24] text-stone-900 dark:text-[#F3E5AB] shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span className="truncate text-[11px]">
+                      {plan.id === 'free_trial_48h' 
+                        ? '48h' 
+                        : plan.id === 'monthly' 
+                        ? 'Mes' 
+                        : plan.id === 'annual' 
+                        ? 'Año ⭐' 
+                        : 'Vitalicio'}
+                    </span>
+                    <span className="text-[9px] font-medium opacity-85">
+                      {plan.id === 'free_trial_48h' ? 'Gratis' : plan.priceFormatted}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CUADRÍCULA DE TARIFAS (COMPACTAS PARA MÓVIL Y EXPANDIDAS PARA TABLET/DESKTOP) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {PRICING_PLANS.map((plan) => {
               const isTrial = plan.id === 'free_trial_48h';
               const isPopular = plan.popular;
               const isLifetime = plan.id === 'lifetime';
+              const isHiddenOnMobile = mobileViewMode === 'tab' && mobileActivePlanId !== plan.id;
 
               return (
                 <div
                   key={plan.id}
-                  className={`relative rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 hover:shadow-xl ${
+                  className={`relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:shadow-xl ${
+                    isHiddenOnMobile ? 'hidden sm:flex' : 'flex'
+                  } ${
                     isPopular
-                      ? 'bg-white dark:bg-[#13231B] border-2 border-[#B8860B] dark:border-[#D4AF37] shadow-lg ring-2 ring-[#D4AF37]/20 scale-102 lg:-translate-y-1.5'
-                      : 'bg-white/95 dark:bg-[#0F1B15] border border-[#E8DCCB] dark:border-[#D4AF37]/25 hover:border-[#D4AF37]/50 shadow-sm'
+                      ? 'bg-white dark:bg-[#13231B] border-2 border-[#B8860B] dark:border-[#D4AF37] shadow-lg ring-1 sm:ring-2 ring-[#D4AF37]/20 sm:scale-102 lg:-translate-y-1.5'
+                      : 'bg-white/95 dark:bg-[#0F1B15] border border-[#E8DCCB] dark:border-[#D4AF37]/25 hover:border-[#D4AF37]/50 shadow-xs'
                   }`}
                 >
-                  {/* Badge de la modalidad */}
+                  {/* Badge de la modalidad más pequeño y discreto */}
                   {plan.badge && (
-                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-sm whitespace-nowrap ${
+                    <div className={`absolute -top-2.5 sm:-top-3 left-1/2 -translate-x-1/2 px-2.5 sm:px-3 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-xs whitespace-nowrap ${
                       isPopular
-                        ? 'bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-stone-950'
+                        ? 'bg-[#D4AF37] text-stone-950'
                         : isLifetime
                         ? 'bg-emerald-600 text-white'
                         : 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200'
@@ -234,63 +300,72 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
                     </div>
                   )}
 
-                  <div className="space-y-3 pt-1">
+                  <div className="space-y-2 sm:space-y-3 pt-0.5 sm:pt-1">
                     {/* Título de la tarifa */}
                     <div className="space-y-0.5">
-                      <h3 className="font-editorial text-xl sm:text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">
+                      <h3 className="font-editorial text-lg sm:text-2xl font-bold text-stone-900 dark:text-[#F3E5AB] leading-snug">
                         {plan.title}
                       </h3>
-                      <div className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                      <div className="text-[10px] sm:text-[11px] font-semibold text-stone-500 dark:text-stone-400">
                         {plan.billingModeSummary}
                       </div>
                     </div>
 
-                    {/* Precio y cuota */}
-                    <div className="py-2.5 px-3 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
+                    {/* Precio y cuota reducido */}
+                    <div className="py-1.5 sm:py-2.5 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
                       <div className="flex items-baseline gap-1">
-                        <span className="font-editorial text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-[#D4AF37]">
+                        <span className="font-editorial text-2xl sm:text-4xl font-extrabold text-stone-900 dark:text-[#D4AF37]">
                           {plan.priceFormatted}
                         </span>
-                        <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                        <span className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 font-medium">
                           / {plan.periodLabel}
                         </span>
                       </div>
                     </div>
 
-                    {/* Información concisa de la cuota (sin lista de features repetidas) */}
-                    <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[58px]">
+                    {/* Información concisa de la cuota */}
+                    <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-300 leading-snug sm:leading-relaxed min-h-0 sm:min-h-[52px]">
                       {plan.quotaDescription}
                     </p>
                   </div>
 
                   {/* Botón directo de redirección al pago / activación */}
-                  <div className="pt-4 mt-2 border-t border-stone-100 dark:border-stone-800/80">
+                  <div className="pt-3 sm:pt-4 mt-2 border-t border-stone-100 dark:border-stone-800/80">
                     {isTrial ? (
                       <button
                         onClick={() => handleSelectPlan(plan)}
                         id="btn-select-trial-48h"
-                        className="w-full py-3 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                        className="w-full py-2.5 sm:py-3 px-3 rounded-xl sm:rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
                       >
-                        <Phone className="w-4 h-4" />
+                        <Phone className="w-3.5 h-3.5" />
                         <span>{language === 'es' ? 'Activar 48h Gratis' : 'Activate 48h Free'}</span>
                       </button>
                     ) : (
-                      <button
-                        onClick={() => handleSelectPlan(plan)}
-                        id={`btn-select-plan-${plan.id}`}
-                        className={`w-full py-3 px-3 rounded-2xl font-bold text-xs sm:text-sm shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
-                          isPopular
-                            ? 'bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-stone-950 font-extrabold'
-                            : 'bg-stone-900 dark:bg-[#1E3328] text-white hover:bg-stone-800 dark:hover:bg-[#254032]'
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        <span>
-                          {language === 'es'
-                            ? `Pagar ${plan.priceFormatted} (Stripe)`
-                            : `Pay ${plan.priceFormatted} (Stripe)`}
-                        </span>
-                      </button>
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <button
+                          onClick={() => handleSelectPlan(plan)}
+                          id={`btn-select-plan-${plan.id}`}
+                          className={`w-full py-2.5 sm:py-3 px-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 ${
+                            isPopular
+                              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black'
+                              : 'bg-stone-900 dark:bg-[#1E3328] text-white hover:bg-stone-800 dark:hover:bg-[#254032]'
+                          }`}
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          <span>
+                            {language === 'es'
+                              ? `Pagar ${plan.priceFormatted} (Pasarela)`
+                              : `Pay ${plan.priceFormatted} (Gateway)`}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openStripeCheckout(plan.id)}
+                          className="w-full text-center text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 hover:text-amber-700 dark:hover:text-[#D4AF37] underline cursor-pointer"
+                        >
+                          {language === 'es' ? 'O pagar en Stripe oficial ↗' : 'Or pay on official Stripe ↗'}
+                        </button>
+                      </div>
                     )}
                   </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { PricingPlan, PaymentMethodType } from '../types';
-import { redirectToStripeCheckout } from '../data/pricingData';
+import { openStripeCheckout } from '../data/pricingData';
 import { 
   CreditCard, 
   ShieldCheck, 
@@ -12,7 +12,8 @@ import {
   AlertCircle, 
   Check,
   Zap,
-  Info
+  Info,
+  ExternalLink
 } from 'lucide-react';
 
 interface PaymentCheckoutModalProps {
@@ -104,76 +105,76 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
     }
   };
 
-  const handleProcessPayment = async (e: React.FormEvent) => {
+  const handleStripeCheckout = async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+    try {
+      // 1. Try server-side Stripe checkout session
+      const stripeRes = await fetch('/api/payment/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: plan.id,
+          customerEmail: customerEmail || undefined,
+        }),
+      });
+      if (stripeRes.ok) {
+        const stripeData = await stripeRes.json();
+        if (stripeData.url) {
+          window.open(stripeData.url, '_blank', 'noopener,noreferrer');
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch {
+      // Server-side endpoint unavailable or offline
+    }
+
+    // 2. Direct Stripe official link fallback
+    openStripeCheckout(plan.id);
+    setIsLoading(false);
+  };
+
+  const handleCardPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
-    // Check if there is a direct Stripe Payment Link for this plan
-    const directPlanLink = plan.stripePaymentLink || gatewayConfig?.paymentLinks?.[plan.id as keyof typeof gatewayConfig.paymentLinks];
-    if (directPlanLink && directPlanLink.startsWith('http')) {
-      redirectToStripeCheckout(directPlanLink);
+    const cleanCard = cardNumber.replace(/\s+/g, '');
+    if (cleanCard.length < 15) {
+      setErrorMessage(
+        language === 'es' 
+          ? 'Por favor, introduce un número de tarjeta válido (16 dígitos).' 
+          : 'Please enter a valid card number (16 digits).'
+      );
       return;
     }
-
-    if (selectedMethod === 'stripe' || selectedMethod === 'card') {
-      const cleanCard = cardNumber.replace(/\s+/g, '');
-      if (cleanCard.length < 15) {
-        setErrorMessage(
-          language === 'es' 
-            ? 'Por favor, introduce un número de tarjeta válido (16 dígitos).' 
-            : 'Please enter a valid card number (16 digits).'
-        );
-        return;
-      }
-      if (cardExpiry.length < 5) {
-        setErrorMessage(
-          language === 'es' 
-            ? 'Introduce una fecha de caducidad válida (MM/AA).' 
-            : 'Please enter a valid expiration date (MM/YY).'
-        );
-        return;
-      }
-      if (cardCvc.length < 3) {
-        setErrorMessage(
-          language === 'es' 
-            ? 'Introduce el código CVC (3 dígitos de seguridad).' 
-            : 'Please enter the 3-digit CVC code.'
-        );
-        return;
-      }
+    if (cardExpiry.length < 5) {
+      setErrorMessage(
+        language === 'es' 
+          ? 'Introduce una fecha de caducidad válida (MM/AA).' 
+          : 'Please enter a valid expiration date (MM/YY).'
+      );
+      return;
+    }
+    if (cardCvc.length < 3) {
+      setErrorMessage(
+        language === 'es' 
+          ? 'Introduce el código CVC (3 dígitos de seguridad).' 
+          : 'Please enter the 3-digit CVC code.'
+      );
+      return;
     }
 
     setIsLoading(true);
     try {
-      // 1. If Stripe selected, request checkout session from backend if available
-      if (selectedMethod === 'stripe') {
-        try {
-          const stripeRes = await fetch('/api/payment/stripe/create-checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              planId: plan.id,
-              customerEmail: customerEmail || undefined,
-            }),
-          });
-          const stripeData = await stripeRes.json();
-          if (stripeRes.ok && stripeData.url) {
-            window.location.href = stripeData.url;
-            return;
-          }
-        } catch {
-          // Backend offline or local Antigravity: proceed to client confirmation
-        }
-      }
-
-      // 2. Otherwise process standard card or fallback flow
+      // Process standard card payment via backend API
       try {
         const res = await fetch('/api/payment/process', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             planId: plan.id,
-            paymentMethod: selectedMethod,
+            paymentMethod: 'card',
             customerEmail: customerEmail || 'usuario@pawlove.app',
             cardDetails: {
               last4: cardNumber.slice(-4) || '4242',
@@ -184,25 +185,25 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
 
         const data = await res.json();
         if (res.ok && data.success) {
-          onSuccess(selectedMethod, {
+          onSuccess('card', {
             cardLast4: cardNumber.slice(-4) || '4242',
-            transactionId: data.transactionId || `TX_${Date.now()}`,
+            transactionId: data.transactionId || `TX_CARD_${Date.now()}`,
           });
           return;
         }
       } catch {
-        // Backend offline or client-only mode
+        // Backend offline: proceed to client activation
       }
 
-      // 3. Resilient client-side confirmation
-      const fallbackTx = `TX_${selectedMethod.toUpperCase()}_${Date.now().toString(36).toUpperCase()}`;
-      onSuccess(selectedMethod, {
+      // Resilient client-side confirmation
+      const fallbackTx = `TX_CARD_${Date.now().toString(36).toUpperCase()}`;
+      onSuccess('card', {
         cardLast4: cardNumber.slice(-4) || '4242',
         transactionId: fallbackTx,
       });
     } catch {
-      const fallbackTx = `TX_${selectedMethod.toUpperCase()}_${Date.now().toString(36).toUpperCase()}`;
-      onSuccess(selectedMethod, {
+      const fallbackTx = `TX_CARD_${Date.now().toString(36).toUpperCase()}`;
+      onSuccess('card', {
         cardLast4: cardNumber.slice(-4) || '4242',
         transactionId: fallbackTx,
       });
@@ -371,7 +372,62 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
         </div>
 
         {/* Method Content */}
-        {selectedMethod === 'paypal' ? (
+        {selectedMethod === 'stripe' ? (
+          /* Stripe Checkout Direct */
+          <div className="space-y-4 py-2">
+            <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-[#111629] border border-indigo-200/80 dark:border-indigo-800/50 text-center space-y-2">
+              <div className="font-extrabold text-3xl text-indigo-600 dark:text-indigo-400 font-mono tracking-tight">
+                stripe
+              </div>
+              <p className="text-xs text-stone-600 dark:text-stone-300 max-w-sm mx-auto">
+                {language === 'es'
+                  ? 'Pasarela oficial y segura de Stripe. Admite tarjetas de débito/crédito, Apple Pay, Google Pay y métodos bancarios con encriptación SSL 256 bits.'
+                  : 'Official secure Stripe gateway. Supports debit/credit cards, Apple Pay, Google Pay and bank methods with 256-bit SSL.'}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                {language === 'es' ? 'Email para tu recibo oficial:' : 'Email for official receipt:'}
+              </label>
+              <input
+                type="email"
+                placeholder="ejemplo@correo.com"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-[#E8DCCB] dark:border-[#D4AF37]/30 bg-stone-50 dark:bg-[#15231C] text-xs font-semibold text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:ring-2 focus:ring-[#D4AF37] focus:outline-hidden"
+              />
+            </div>
+
+            {errorMessage && (
+              <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleStripeCheckout}
+              disabled={isLoading}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm shadow-md active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>
+                    {language === 'es'
+                      ? `Pagar ${plan.priceFormatted} en Stripe Oficial`
+                      : `Pay ${plan.priceFormatted} on Official Stripe`}
+                  </span>
+                  <ExternalLink className="w-4 h-4 ml-1" />
+                </>
+              )}
+            </button>
+          </div>
+        ) : selectedMethod === 'paypal' ? (
           /* PayPal Checkout Direct */
           <div className="space-y-4 py-2">
             <div className="p-4 rounded-2xl bg-sky-50/80 dark:bg-[#10242B] border border-sky-200 dark:border-sky-800/40 text-center space-y-2">
@@ -389,7 +445,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
               type="button"
               onClick={handlePaypalDirectCheckout}
               disabled={isPaypalProcessing}
-              className="w-full py-3.5 px-4 rounded-xl bg-[#FFC439] hover:bg-[#F2BA36] text-[#003087] font-black text-sm shadow-md active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full py-3.5 px-4 rounded-xl bg-[#FFC439] hover:bg-[#F2BA36] text-[#003087] font-black text-sm shadow-md active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
             >
               {isPaypalProcessing ? (
                 <div className="w-5 h-5 border-2 border-[#003087] border-t-transparent rounded-full animate-spin" />
@@ -403,8 +459,8 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
             </button>
           </div>
         ) : (
-          /* Stripe & Card Form */
-          <form onSubmit={handleProcessPayment} className="space-y-3.5">
+          /* Card Form */
+          <form onSubmit={handleCardPayment} className="space-y-3.5">
             
             {/* Cardholder Email */}
             <div className="space-y-1">
@@ -508,7 +564,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-stone-950 font-bold text-sm shadow-md hover:opacity-95 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full py-3.5 px-4 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black text-sm shadow-md hover:opacity-90 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />

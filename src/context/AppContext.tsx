@@ -76,8 +76,6 @@ interface AppContextType {
   isSubscribed: boolean;
   showPaymentModal: boolean;
   setShowPaymentModal: (show: boolean) => void;
-  showLandingPreview: boolean;
-  setShowLandingPreview: (show: boolean) => void;
   activateSubscription: (
     planId: SubscriptionPlanId, 
     method: PaymentMethodType, 
@@ -85,6 +83,9 @@ interface AppContextType {
   ) => Promise<boolean>;
   cancelOrResetSubscription: () => void;
   currentPricingPlan: PricingPlan | undefined;
+  currentView: 'landing' | 'pricing' | 'app';
+  setCurrentView: (view: 'landing' | 'pricing' | 'app') => void;
+  resetToLanding: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -106,7 +107,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === 'object') {
+          if (parsed && typeof parsed === 'object' && parsed.status === 'active') {
             return parsed;
           }
         } catch (e) {
@@ -114,22 +115,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
     }
-    // Default active Atelier Lifetime VIP session so the full application is immediately open on screen
-    return {
-      status: 'active',
-      planId: 'lifetime',
-      planTitle: 'Atelier Lifetime VIP',
-      amountEur: 97,
-      billingPeriod: 'lifetime',
-      paymentMethod: 'stripe',
-      activatedAt: new Date().toISOString(),
-      expiresAt: null,
-      isLifetime: true,
-    };
+    return null;
   });
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showLandingPreview, setShowLandingPreview] = useState(false);
+  const [currentView, setCurrentView] = useState<'landing' | 'pricing' | 'app'>('landing');
 
   const isSubscribed = Boolean(
     subscription &&
@@ -825,6 +815,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setSubscription(newSub);
     setShowPaymentModal(false);
+    setCurrentView('app');
     playLuxuryChime('success');
     confetti({ particleCount: 65, spread: 85, origin: { y: 0.6 } });
 
@@ -844,6 +835,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const isSuccess = 
         params.get('payment') === 'success' || 
         params.get('status') === 'success' || 
+        params.get('checkout_status') === 'complete' ||
+        params.get('redirect_status') === 'succeeded' ||
+        params.get('paid') === 'true' ||
         params.has('session_id') || 
         params.get('success') === 'true';
 
@@ -852,6 +846,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const provider = (params.get('provider') as PaymentMethodType) || 'stripe';
         const sessionId = params.get('session_id') || `STRIPE_SES_${Date.now()}`;
         activateSubscription(plan, provider, { transactionId: sessionId });
+        setCurrentView('app');
         try {
           window.history.replaceState({}, document.title, window.location.pathname);
         } catch {
@@ -864,12 +859,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const cancelOrResetSubscription = () => {
     setSubscription(null);
     localStorage.removeItem(SUBSCRIPTION_KEY);
+    setCurrentView('landing');
     showToast(
       language === 'es'
-        ? 'Modalidad de pago restablecida. Redirigiendo a pasarela de bienvenida.'
-        : 'Payment mode reset. Redirecting to welcome gateway.',
+        ? 'Modalidad de pago restablecida. Redirigiendo a landing page.'
+        : 'Payment mode reset. Redirecting to landing page.',
       'info'
     );
+  };
+
+  const resetToLanding = () => {
+    setCurrentView('landing');
   };
 
   return (
@@ -929,11 +929,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSubscribed,
         showPaymentModal,
         setShowPaymentModal,
-        showLandingPreview,
-        setShowLandingPreview,
         activateSubscription,
         cancelOrResetSubscription,
         currentPricingPlan,
+        currentView,
+        setCurrentView,
+        resetToLanding,
       }}
     >
       {children}

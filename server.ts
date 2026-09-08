@@ -30,11 +30,15 @@ function getEnvVar(...keys: string[]): string {
 let stripeClient: Stripe | null = null;
 function getStripeClient(): Stripe | null {
   const secretKey = getEnvVar("STRIPE_SECRET_KEY", "STRIPE_API_KEY", "STRIPE_KEY", "STRIPE_SECRET", "STRIPE_LIVE_KEY");
-  if (!secretKey) {
+  if (!secretKey || (!secretKey.startsWith("sk_") && !secretKey.startsWith("rk_"))) {
     return null;
   }
   if (!stripeClient) {
-    stripeClient = new Stripe(secretKey);
+    try {
+      stripeClient = new Stripe(secretKey);
+    } catch {
+      return null;
+    }
   }
   return stripeClient;
 }
@@ -101,6 +105,14 @@ const PLAN_CATALOG: Record<string, { price: number; period: string; title: strin
     title: "Tarifa Vitalicia",
     description: "Acceso de por vida en un único pago permanente sin cuotas futuras",
   },
+};
+
+// Real active Stripe Payment Links
+const DEFAULT_STRIPE_PAYMENT_LINKS: Record<string, string> = {
+  monthly: "https://buy.stripe.com/3cI8wRdfV1ID9J9gFb1ZS00",
+  annual: "https://buy.stripe.com/eVq8wR6Rxaf93kL1Kh1ZS01",
+  lifetime: "https://buy.stripe.com/3cI3cx6Rxaf97B1fB71ZS02",
+  promo: "https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03",
 };
 
 // Lazy initialize Gemini client
@@ -238,7 +250,14 @@ app.get("/api/payment/config", (_req, res) => {
   const paypalSecret = getEnvVar("PAYPAL_CLIENT_SECRET", "PAYPAL_SECRET", "PAYPAL_SECRET_KEY");
   const publishableKey = getEnvVar("STRIPE_PUBLISHABLE_KEY", "STRIPE_PUBLIC_KEY", "STRIPE_PUB_KEY", "VITE_STRIPE_PUBLISHABLE_KEY");
   
-  const isStripeLive = Boolean(stripe);
+  const paymentLinks = {
+    monthly: getEnvVar("STRIPE_PAYMENT_LINK_MONTHLY", "STRIPE_LINK_MONTHLY", "VITE_STRIPE_PAYMENT_LINK_MONTHLY") || DEFAULT_STRIPE_PAYMENT_LINKS.monthly,
+    annual: getEnvVar("STRIPE_PAYMENT_LINK_ANNUAL", "STRIPE_LINK_ANNUAL", "VITE_STRIPE_PAYMENT_LINK_ANNUAL") || DEFAULT_STRIPE_PAYMENT_LINKS.annual,
+    lifetime: getEnvVar("STRIPE_PAYMENT_LINK_LIFETIME", "STRIPE_LINK_LIFETIME", "VITE_STRIPE_PAYMENT_LINK_LIFETIME") || DEFAULT_STRIPE_PAYMENT_LINKS.lifetime,
+    promo: getEnvVar("STRIPE_PAYMENT_LINK_PROMO", "STRIPE_LINK_PROMO", "VITE_STRIPE_PAYMENT_LINK_PROMO") || DEFAULT_STRIPE_PAYMENT_LINKS.promo,
+  };
+
+  const isStripeLive = Boolean(stripe || (paymentLinks.monthly && paymentLinks.annual && paymentLinks.lifetime));
   const isPayPalLive = Boolean(paypalClientId && paypalSecret);
 
   res.json({
@@ -248,11 +267,7 @@ app.get("/api/payment/config", (_req, res) => {
     paypalClientId,
     paypalMode: getEnvVar("PAYPAL_MODE", "PAYPAL_ENV") || "live",
     currency: "EUR",
-    paymentLinks: {
-      monthly: getEnvVar("STRIPE_PAYMENT_LINK_MONTHLY", "STRIPE_LINK_MONTHLY", "VITE_STRIPE_PAYMENT_LINK_MONTHLY"),
-      annual: getEnvVar("STRIPE_PAYMENT_LINK_ANNUAL", "STRIPE_LINK_ANNUAL", "VITE_STRIPE_PAYMENT_LINK_ANNUAL"),
-      lifetime: getEnvVar("STRIPE_PAYMENT_LINK_LIFETIME", "STRIPE_LINK_LIFETIME", "VITE_STRIPE_PAYMENT_LINK_LIFETIME"),
-    },
+    paymentLinks,
   });
 });
 
@@ -270,7 +285,8 @@ app.post("/api/payment/stripe/create-checkout-session", async (req, res) => {
       `STRIPE_PAYMENT_LINK_${planId.toUpperCase()}`,
       `STRIPE_LINK_${planId.toUpperCase()}`,
       `VITE_STRIPE_PAYMENT_LINK_${planId.toUpperCase()}`
-    );
+    ) || DEFAULT_STRIPE_PAYMENT_LINKS[planId];
+
     if (directLink) {
       return res.json({
         success: true,

@@ -111,7 +111,7 @@ export const Navigation: React.FC = () => {
                     <div className="text-xs font-bold leading-none flex items-center gap-1.5">
                       {item.label}
                       {item.isAi && (
-                        <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-gradient-to-r from-amber-500 to-emerald-500 text-white shadow-xs">
+                        <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-[#D4AF37] text-stone-950 shadow-xs">
                           AI
                         </span>
                       )}

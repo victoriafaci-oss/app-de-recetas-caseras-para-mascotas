@@ -4,20 +4,26 @@ export const STRIPE_PAYMENT_LINKS = {
   monthly: 'https://buy.stripe.com/3cI8wRdfV1ID9J9gFb1ZS00',
   annual: 'https://buy.stripe.com/eVq8wR6Rxaf93kL1Kh1ZS01',
   lifetime: 'https://buy.stripe.com/3cI3cx6Rxaf97B1fB71ZS02',
+  promo: 'https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03',
 } as const;
 
-export const redirectToStripeCheckout = (planIdOrUrl: string): boolean => {
-  const link = (STRIPE_PAYMENT_LINKS as Record<string, string>)[planIdOrUrl] || planIdOrUrl;
-  if (link && link.startsWith('http')) {
-    // Open in a new tab to prevent iframe blocking (Stripe Checkout cannot be loaded inside an iframe)
-    const win = window.open(link, '_blank', 'noopener,noreferrer');
-    if (!win || win.closed || typeof win.closed === 'undefined') {
-      window.location.href = link;
+export const openStripeCheckout = (planId: string): boolean => {
+  const link = (STRIPE_PAYMENT_LINKS as Record<string, string>)[planId];
+  if (link) {
+    // Open in a new tab to avoid iframe X-Frame-Options blocking
+    try {
+      const newWin = window.open(link, '_blank', 'noopener,noreferrer');
+      if (newWin) return true;
+    } catch {
+      // Fallback
     }
+    window.location.assign(link);
     return true;
   }
   return false;
 };
+
+export const redirectToStripeCheckout = openStripeCheckout;
 
 export const PRICING_PLANS: PricingPlan[] = [
   {

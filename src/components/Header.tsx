@@ -43,7 +43,10 @@ export const Header: React.FC = () => {
     clearAllDataToBlank,
     loadSampleReferenceData,
     subscription,
-    setShowPaymentModal
+    setShowPaymentModal,
+    currentView,
+    setCurrentView,
+    resetToLanding
   } = useApp();
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -99,15 +102,9 @@ export const Header: React.FC = () => {
                 <Home className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
 
-              {theme === 'dark' ? (
-                <span className="font-editorial text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-[0.1em] sm:tracking-[0.12em] text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] drop-shadow-sm">
-                  PAWLOVE
-                </span>
-              ) : (
-                <span className="font-editorial text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-[#B8860B]">
-                  PAW<span className="text-stone-900">LOVE</span>
-                </span>
-              )}
+              <span className="font-editorial text-xl sm:text-2xl lg:text-3xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
+                PAWLOVE - MASCOTAS
+              </span>
             </button>
 
             <span className="hidden lg:inline-block w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
@@ -125,14 +122,14 @@ export const Header: React.FC = () => {
               id="header-btn-nutria"
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 shadow-xs select-none shrink-0 ${
                 activeTab === 'concierge'
-                  ? 'bg-gradient-to-r from-[#B8860B] to-emerald-700 text-white shadow-md ring-2 ring-[#D4AF37]/50 scale-102'
+                  ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-md ring-2 ring-[#D4AF37]/50 scale-102'
                   : 'bg-white dark:bg-[#112019] text-stone-800 dark:text-[#F3E5AB] border border-[#E8DCCB] dark:border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-amber-50/50 dark:hover:bg-[#16271F]'
               }`}
               title={language === 'es' ? 'NutriIA • Asistente Veterinario con IA' : 'NutriIA • AI Pet Nutrition Assistant'}
             >
               <Bot className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'concierge' ? 'text-white' : 'text-[#B8860B] dark:text-[#D4AF37]'}`} />
               <span className="font-bold text-xs whitespace-nowrap">Nutri IA</span>
-              <span className="hidden xs:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-gradient-to-r from-amber-500 to-emerald-500 text-white shadow-2xs">
+              <span className="hidden xs:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-[#D4AF37] text-stone-950 shadow-2xs">
                 AI
               </span>
             </button>
@@ -230,7 +227,7 @@ export const Header: React.FC = () => {
             ) : (
               <button
                 onClick={() => setShowAddPetModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-stone-950 font-bold text-xs shadow-xs shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4AF37] hover:bg-[#C5A059] text-stone-950 font-bold text-xs shadow-xs shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{language === 'es' ? 'Crear perfil' : 'Create profile'}</span>
@@ -239,6 +236,28 @@ export const Header: React.FC = () => {
 
             {/* Desktop-only Utility Buttons (On mobile they appear in Row 2) */}
             <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+
+              {/* View Landing Page Button */}
+              <button
+                onClick={() => setCurrentView('landing')}
+                className="px-2.5 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-700 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                title={language === 'es' ? 'Ver Landing Page (Presentación)' : 'View Landing Page'}
+                id="header-btn-landing-desktop"
+              >
+                <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                <span className="hidden md:inline">{language === 'es' ? 'Landing' : 'Landing'}</span>
+              </button>
+
+              {/* View Pasarela de Pagos Button */}
+              <button
+                onClick={() => setCurrentView('pricing')}
+                className="px-2.5 py-1.5 rounded-full bg-amber-50 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 text-xs font-bold text-amber-900 dark:text-[#F3E5AB] hover:border-[#B8860B] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                title={language === 'es' ? 'Ver Pasarela de Pagos & Tarifas' : 'View Payment Gateway & Plans'}
+                id="header-btn-pricing-desktop"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                <span className="hidden md:inline">{language === 'es' ? 'Tarifas' : 'Plans'}</span>
+              </button>
               
               {/* Notification Bell Badge */}
               <button
@@ -459,12 +478,12 @@ export const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Modalidad de pagos (Payment Mode) as specifically requested */}
+              {/* Modalidad de pagos & Pasarela de Inicio */}
               <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-bold text-stone-900 dark:text-[#F3E5AB]">
                     <CreditCard className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
-                    <span>{language === 'es' ? 'Modalidad de pagos' : 'Payment Mode'}</span>
+                    <span>{language === 'es' ? 'Modalidad de pagos & Pasarela' : 'Payment Mode & Gateway'}</span>
                   </div>
                   <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60">
                     {subscription ? (language === 'es' ? 'Tarifa Activa' : 'Active Plan') : 'Activa'}
@@ -488,17 +507,31 @@ export const Header: React.FC = () => {
                     : 'Review your active subscription plan or switch tariffs anytime to monthly, annual or lifetime.'}
                 </p>
 
-                <button
-                  onClick={() => {
-                    setShowSettingsModal(false);
-                    setShowPaymentModal(true);
-                  }}
-                  id="btn-settings-payment-mode"
-                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] hover:opacity-95 text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>{language === 'es' ? 'Cambiar o Gestionar Tarifa' : 'Change or Manage Plan'}</span>
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      setShowSettingsModal(false);
+                      setCurrentView('pricing');
+                    }}
+                    id="btn-settings-open-gateway"
+                    className="w-full py-2.5 px-3 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] hover:opacity-90 text-white dark:text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>{language === 'es' ? 'Ver Pasarela de Pagos' : 'View Payment Gateway'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowSettingsModal(false);
+                      setCurrentView('landing');
+                    }}
+                    id="btn-settings-open-landing"
+                    className="w-full py-2.5 px-3 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB] text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                    <span>{language === 'es' ? 'Ver Landing Page' : 'View Landing Page'}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Data Slates: Empty Slate vs Sample Data */}

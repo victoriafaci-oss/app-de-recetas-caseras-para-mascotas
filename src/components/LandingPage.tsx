@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { RECIPES_CATALOG } from '../data/mockData';
-import { PRICING_PLANS, STRIPE_PAYMENT_LINKS, redirectToStripeCheckout } from '../data/pricingData';
+import { PRICING_PLANS, STRIPE_PAYMENT_LINKS, openStripeCheckout, redirectToStripeCheckout } from '../data/pricingData';
 import { FloatingPawsBackground } from './FloatingPawsBackground';
 import { 
   ChefHat, 
@@ -41,6 +41,7 @@ import {
 
 interface LandingPageProps {
   onGoToPricing: (planId?: string) => void;
+  onEnterApp?: () => void;
 }
 
 interface DemoPetProfile {
@@ -62,11 +63,15 @@ interface DemoPetProfile {
   imageUrl: string;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnterApp }) => {
   const { theme, toggleTheme, language, setLanguage } = useApp();
 
   // Miniatura de muestra de recetas
   const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
+
+  // Pestaña de tarifas activa en móvil y modo de visualización
+  const [landingActiveTab, setLandingActiveTab] = useState<'monthly' | 'annual' | 'lifetime'>('annual');
+  const [landingViewMode, setLandingViewMode] = useState<'tab' | 'all'>('tab');
 
   // 3 platos de muestra discretos
   const sampleDishes = RECIPES_CATALOG.slice(0, 3);
@@ -201,11 +206,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               </div>
             </div>
             <div>
-              <div className="font-editorial text-lg sm:text-xl font-black tracking-wider text-stone-900 dark:text-[#E8B84A]">
+              <div className="font-editorial text-lg sm:text-xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
                 PAWLOVE - MASCOTAS
-              </div>
-              <div className="text-[9px] uppercase font-bold tracking-[0.18em] text-amber-700 dark:text-[#E8B84A]/80">
-                Alimentación Real & Salud Animal
               </div>
             </div>
           </div>
@@ -232,14 +234,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               <span>{language.toUpperCase()}</span>
             </button>
 
-            {/* Botón 48h Gratis */}
-            <button
-              onClick={() => onGoToPricing('free_trial_48h')}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-500/40 dark:border-[#E8B84A]/40 bg-amber-50 dark:bg-[#121B16] text-xs font-semibold text-amber-900 dark:text-[#F3E5AB] hover:border-amber-500 transition-all cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-[#E8B84A]" />
-              <span>48h Gratis</span>
-            </button>
+            {/* Botón Entrar a la App */}
+            {onEnterApp && (
+              <button
+                onClick={onEnterApp}
+                id="btn-landing-enter-app"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/50 dark:border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 shadow-2xs transition-all cursor-pointer"
+                title="Ir a la aplicación"
+              >
+                <span>🐾 Entrar a la App</span>
+              </button>
+            )}
 
             {/* Botón Tarifas */}
             <button
@@ -251,7 +256,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
                   onGoToPricing();
                 }
               }}
-              className="px-3.5 sm:px-4 py-2 rounded-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#07130E] font-bold text-xs tracking-wide shadow-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 sm:px-4 py-2 rounded-full bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-bold text-xs tracking-wide shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <span>Ver Tarifas</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -288,7 +293,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
           <button
             onClick={() => onGoToPricing('free_trial_48h')}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#0A0F0D] font-black text-sm sm:text-base shadow-xl shadow-amber-500/20 dark:shadow-[0_0_25px_rgba(232,184,74,0.25)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black text-sm sm:text-base shadow-lg shadow-amber-500/20 dark:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>Personalizar y Probar 48h Gratis</span>
@@ -823,189 +828,283 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           </p>
         </div>
 
-        {/* Las 3 tarjetas de pago oficiales de Stripe */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+        {/* PESTAÑAS DE TARIFAS COMPACTAS PARA MÓVIL (< md) */}
+        <div className="md:hidden max-w-md mx-auto mb-4 space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+              Pestañas de Tarifas:
+            </span>
+            <button
+              type="button"
+              onClick={() => setLandingViewMode(prev => prev === 'tab' ? 'all' : 'tab')}
+              className="text-[10px] font-bold text-amber-700 dark:text-[#E8B84A] hover:underline cursor-pointer"
+            >
+              {landingViewMode === 'tab' ? 'Ver las 3 tarifas' : 'Ver en pestañas'}
+            </button>
+          </div>
+
+          {/* Pestañas reducidas para teléfono */}
+          <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-[#122019] border border-stone-200 dark:border-stone-800 text-[11px]">
+            <button
+              type="button"
+              onClick={() => {
+                setLandingActiveTab('monthly');
+                setLandingViewMode('tab');
+              }}
+              className={`py-1.5 px-1 rounded-xl font-bold text-center transition-all flex flex-col items-center justify-center leading-tight cursor-pointer ${
+                landingActiveTab === 'monthly'
+                  ? 'bg-white dark:bg-[#1A2E24] text-stone-900 dark:text-white shadow-xs'
+                  : 'text-stone-600 dark:text-stone-400'
+              }`}
+            >
+              <span className="text-[11px]">Mensual</span>
+              <span className="text-[9px] font-medium opacity-85">3,99 €</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setLandingActiveTab('annual');
+                setLandingViewMode('tab');
+              }}
+              className={`py-1.5 px-1 rounded-xl font-bold text-center transition-all flex flex-col items-center justify-center leading-tight cursor-pointer ${
+                landingActiveTab === 'annual'
+                  ? 'bg-[#D4AF37] text-stone-950 shadow-xs font-black'
+                  : 'text-stone-600 dark:text-stone-400'
+              }`}
+            >
+              <span className="text-[11px]">Anual ⭐</span>
+              <span className="text-[9px] font-medium opacity-85">19,99 €</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setLandingActiveTab('lifetime');
+                setLandingViewMode('tab');
+              }}
+              className={`py-1.5 px-1 rounded-xl font-bold text-center transition-all flex flex-col items-center justify-center leading-tight cursor-pointer ${
+                landingActiveTab === 'lifetime'
+                  ? 'bg-white dark:bg-[#1A2E24] text-stone-900 dark:text-white shadow-xs'
+                  : 'text-stone-600 dark:text-stone-400'
+              }`}
+            >
+              <span className="text-[11px]">Vitalicio</span>
+              <span className="text-[9px] font-medium opacity-85">39,99 €</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Las 3 tarjetas de pago oficiales de Stripe (Compactas en móvil, 3 columnas en desktop) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6 max-w-5xl mx-auto items-stretch">
           
           {/* 1. PLAN MENSUAL */}
-          <div className="rounded-3xl p-6 sm:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex flex-col justify-between shadow-md hover:shadow-xl transition-all">
-            <div className="space-y-4">
-              <div className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex-col justify-between shadow-xs hover:shadow-xl transition-all ${
+            landingViewMode === 'tab' && landingActiveTab !== 'monthly' ? 'hidden md:flex' : 'flex'
+          }`}>
+            <div className="space-y-2.5 sm:space-y-4">
+              <div className="inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
                 Cuota mensual flexible
               </div>
               <div>
-                <h3 className="font-editorial text-2xl font-bold text-stone-900 dark:text-white">
+                <h3 className="font-editorial text-lg sm:text-2xl font-bold text-stone-900 dark:text-white leading-snug">
                   Tarifa Mensual
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 mt-0.5 sm:mt-1">
                   Suscripción mes a mes sin ataduras
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
+              <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-editorial text-4xl font-extrabold text-stone-900 dark:text-[#E8B84A]">
+                  <span className="font-editorial text-2xl sm:text-4xl font-extrabold text-stone-900 dark:text-[#E8B84A]">
                     3,99 €
                   </span>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                  <span className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 font-medium">
                     / al mes
                   </span>
                 </div>
               </div>
 
-              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[50px]">
-                Cuota mensual de 3,99 € facturada mes a mes. Renovación automática que puedes cancelar en cualquier momento sin permanencia ni penalización.
+              <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-300 leading-snug sm:leading-relaxed min-h-0 sm:min-h-[50px]">
+                Cuota mensual de 3,99 € facturada mes a mes. Renovación automática cancelable en cualquier momento sin permanencia.
               </p>
 
-              <ul className="space-y-2 pt-2 text-xs text-stone-700 dark:text-stone-300">
-                <li className="flex items-center gap-2">
+              <ul className="space-y-1.5 sm:space-y-2 pt-1 sm:pt-2 text-[11px] sm:text-xs text-stone-700 dark:text-stone-300">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Acceso total e ilimitado a todas las recetas</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Cálculo metabólico exacto RER / MER</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Cancelación libre con un solo clic</span>
                 </li>
               </ul>
             </div>
 
-            {/* BOTÓN PLAN MENSUAL -> STRIPE */}
-            <div className="pt-6 mt-4 border-t border-stone-100 dark:border-stone-800">
+            {/* BOTÓN PLAN MENSUAL -> PASARELA / STRIPE */}
+            <div className="pt-3 sm:pt-6 mt-2 sm:mt-4 border-t border-stone-100 dark:border-stone-800">
               <button
-                onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.monthly); }}
+                onClick={() => onGoToPricing('monthly')}
                 id="btn-stripe-monthly"
-                className="w-full py-3.5 px-4 rounded-2xl bg-stone-900 dark:bg-[#1C2C23] hover:bg-stone-800 dark:hover:bg-[#253A2F] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-stone-900 dark:bg-[#1C2C23] hover:bg-stone-800 dark:hover:bg-[#253A2F] text-white font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
-                <CreditCard className="w-4 h-4 text-amber-400" />
-                <span>Pagar Plan Mensual (3,99 €)</span>
-                <ArrowRight className="w-4 h-4 ml-auto" />
+                <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                <span>Contratar Plan Mensual (3,99 €)</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+              </button>
+              <button
+                type="button"
+                onClick={() => openStripeCheckout('monthly')}
+                className="w-full mt-1.5 sm:mt-2 text-center text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 hover:text-amber-700 dark:hover:text-[#E8B84A] underline cursor-pointer"
+              >
+                O pagar directamente en Stripe oficial ↗
               </button>
             </div>
           </div>
 
           {/* 2. PLAN ANUAL (MÁS POPULAR) */}
-          <div className="relative rounded-3xl p-6 sm:p-7 bg-white dark:bg-[#13231B] border-2 border-amber-500 dark:border-[#E8B84A] shadow-xl ring-2 ring-amber-500/20 dark:ring-[#E8B84A]/20 flex flex-col justify-between md:-translate-y-2 transition-all">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#0A0F0D] shadow-md whitespace-nowrap">
+          <div className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 bg-white dark:bg-[#13231B] border-2 border-[#B8860B] dark:border-[#D4AF37] shadow-md ring-1 sm:ring-2 ring-amber-500/20 dark:ring-[#D4AF37]/20 flex-col justify-between md:-translate-y-1.5 transition-all ${
+            landingViewMode === 'tab' && landingActiveTab !== 'annual' ? 'hidden md:flex' : 'flex'
+          }`}>
+            <div className="absolute -top-2.5 sm:-top-3.5 left-1/2 -translate-x-1/2 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[11px] font-black uppercase tracking-wider bg-[#D4AF37] text-stone-950 shadow-xs whitespace-nowrap">
               ⭐ Más Popular • Ahorra 58%
             </div>
 
-            <div className="space-y-4 pt-1">
-              <div className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-[#F3E5AB]">
+            <div className="space-y-2.5 sm:space-y-4 pt-1">
+              <div className="inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-[#F3E5AB]">
                 Un solo pago al año
               </div>
               <div>
-                <h3 className="font-editorial text-2xl font-bold text-stone-900 dark:text-white">
+                <h3 className="font-editorial text-lg sm:text-2xl font-bold text-stone-900 dark:text-white leading-snug">
                   Tarifa Anual
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 mt-0.5 sm:mt-1">
                   Máximo ahorro continuo todo el año
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-[#192C23] border border-amber-200/80 dark:border-[#E8B84A]/30">
+              <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-amber-50/70 dark:bg-[#192C23] border border-amber-200/80 dark:border-[#E8B84A]/30">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-editorial text-4xl font-extrabold text-amber-700 dark:text-[#E8B84A]">
+                  <span className="font-editorial text-2xl sm:text-4xl font-extrabold text-amber-700 dark:text-[#E8B84A]">
                     19,99 €
                   </span>
-                  <span className="text-xs text-stone-600 dark:text-stone-300 font-medium">
+                  <span className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-300 font-medium">
                     / al año (~1,66 €/mes)
                   </span>
                 </div>
               </div>
 
-              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[50px]">
-                Cuota anual de 19,99 € cobrada una sola vez al año. Equivale a solo ~1,66 €/mes, ahorrando un 58% respecto a la modalidad mensual.
+              <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-300 leading-snug sm:leading-relaxed min-h-0 sm:min-h-[50px]">
+                Cuota anual de 19,99 € cobrada una sola vez al año. Equivale a solo ~1,66 €/mes, ahorrando un 58%.
               </p>
 
-              <ul className="space-y-2 pt-2 text-xs text-stone-700 dark:text-stone-300">
-                <li className="flex items-center gap-2">
+              <ul className="space-y-1.5 sm:space-y-2 pt-1 sm:pt-2 text-[11px] sm:text-xs text-stone-700 dark:text-stone-300">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Mismas funciones completas que todos los planes</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Consultas ilimitadas con Nutri IA veterinaria</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Planificación semanal y avisos acústicos</span>
                 </li>
               </ul>
             </div>
 
-            {/* BOTÓN PLAN ANUAL -> STRIPE */}
-            <div className="pt-6 mt-4 border-t border-amber-100 dark:border-stone-800">
+            {/* BOTÓN PLAN ANUAL -> PASARELA / STRIPE */}
+            <div className="pt-3 sm:pt-6 mt-2 sm:mt-4 border-t border-amber-100 dark:border-stone-800">
               <button
-                onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.annual); }}
+                onClick={() => onGoToPricing('annual')}
                 id="btn-stripe-annual"
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] hover:opacity-95 text-white dark:text-[#0A0F0D] font-black text-sm shadow-lg shadow-amber-500/25 dark:shadow-[0_0_25px_rgba(232,184,74,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-[#B8860B] dark:bg-[#D4AF37] hover:opacity-90 text-white dark:text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
-                <CreditCard className="w-4 h-4" />
-                <span>Pagar Plan Anual (19,99 €)</span>
-                <ArrowRight className="w-4 h-4 ml-auto" />
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Contratar Plan Anual (19,99 €)</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+              </button>
+              <button
+                type="button"
+                onClick={() => openStripeCheckout('annual')}
+                className="w-full mt-1.5 sm:mt-2 text-center text-[10px] sm:text-[11px] text-amber-800 dark:text-[#E8B84A] hover:underline font-semibold cursor-pointer"
+              >
+                O pagar directamente en Stripe oficial ↗
               </button>
             </div>
           </div>
 
           {/* 3. PLAN VITALICIO */}
-          <div className="rounded-3xl p-6 sm:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex flex-col justify-between shadow-md hover:shadow-xl transition-all">
-            <div className="space-y-4">
-              <div className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300">
+          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex-col justify-between shadow-xs hover:shadow-xl transition-all ${
+            landingViewMode === 'tab' && landingActiveTab !== 'lifetime' ? 'hidden md:flex' : 'flex'
+          }`}>
+            <div className="space-y-2.5 sm:space-y-4">
+              <div className="inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300">
                 Pago único de por vida
               </div>
               <div>
-                <h3 className="font-editorial text-2xl font-bold text-stone-900 dark:text-white">
+                <h3 className="font-editorial text-lg sm:text-2xl font-bold text-stone-900 dark:text-white leading-snug">
                   Tarifa Vitalicia
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 mt-0.5 sm:mt-1">
                   Acceso definitivo sin renovaciones
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
+              <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-stone-50 dark:bg-[#16271F] border border-stone-100 dark:border-stone-800/80">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-editorial text-4xl font-extrabold text-stone-900 dark:text-[#E8B84A]">
+                  <span className="font-editorial text-2xl sm:text-4xl font-extrabold text-stone-900 dark:text-[#E8B84A]">
                     39,99 €
                   </span>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                  <span className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 font-medium">
                     / pago único para siempre
                   </span>
                 </div>
               </div>
 
-              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed min-h-[50px]">
-                Cuota vitalicia de 39,99 € en un solo pago. Disfruta de acceso permanente e ilimitado para siempre, sin suscripciones ni cuotas futuras.
+              <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-300 leading-snug sm:leading-relaxed min-h-0 sm:min-h-[50px]">
+                Cuota vitalicia de 39,99 € en un solo pago. Disfruta de acceso permanente e ilimitado para siempre, sin cuotas futuras.
               </p>
 
-              <ul className="space-y-2 pt-2 text-xs text-stone-700 dark:text-stone-300">
-                <li className="flex items-center gap-2">
+              <ul className="space-y-1.5 sm:space-y-2 pt-1 sm:pt-2 text-[11px] sm:text-xs text-stone-700 dark:text-stone-300">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Acceso permanente de por vida a la plataforma</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Sin cuotas futuras ni renovaciones jamás</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-1.5 sm:gap-2">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Gestión de hasta 4 mascotas con perfiles</span>
                 </li>
               </ul>
             </div>
 
-            {/* BOTÓN PLAN VITALICIO -> STRIPE */}
-            <div className="pt-6 mt-4 border-t border-stone-100 dark:border-stone-800">
+            {/* BOTÓN PLAN VITALICIO -> PASARELA / STRIPE */}
+            <div className="pt-3 sm:pt-6 mt-2 sm:mt-4 border-t border-stone-100 dark:border-stone-800">
               <button
-                onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.lifetime); }}
+                onClick={() => onGoToPricing('lifetime')}
                 id="btn-stripe-lifetime"
-                className="w-full py-3.5 px-4 rounded-2xl bg-stone-900 dark:bg-[#1C2C23] hover:bg-stone-800 dark:hover:bg-[#253A2F] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-stone-900 dark:bg-[#1C2C23] hover:bg-stone-800 dark:hover:bg-[#253A2F] text-white font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
-                <CreditCard className="w-4 h-4 text-emerald-400" />
-                <span>Pagar Plan Vitalicio (39,99 €)</span>
-                <ArrowRight className="w-4 h-4 ml-auto" />
+                <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Contratar Plan Vitalicio (39,99 €)</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+              </button>
+              <button
+                type="button"
+                onClick={() => openStripeCheckout('lifetime')}
+                className="w-full mt-1.5 sm:mt-2 text-center text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-400 underline cursor-pointer"
+              >
+                O pagar directamente en Stripe oficial ↗
               </button>
             </div>
           </div>
@@ -1069,9 +1168,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
         {/* Enlaces de pago directos en la sección final */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
-            onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.annual); }}
+            onClick={() => onGoToPricing('annual')}
             id="btn-final-stripe-annual"
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 dark:from-[#B8860B] dark:via-[#E8B84A] dark:to-[#F3C35B] text-white dark:text-[#0A0F0D] font-black text-base shadow-lg shadow-amber-500/25 dark:shadow-[0_0_30px_rgba(232,184,74,0.3)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black text-base shadow-lg shadow-amber-500/25 dark:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <CreditCard className="w-5 h-5" />
             <span>Contratar Plan Anual (19,99 €)</span>
@@ -1086,22 +1185,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
             <Sparkles className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
             <span>Probar 48h Gratis</span>
           </button>
+
+          {onEnterApp && (
+            <button
+              onClick={onEnterApp}
+              id="btn-final-enter-app"
+              className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/50 dark:border-emerald-400/40 text-emerald-900 dark:text-emerald-300 font-bold text-sm hover:border-emerald-600 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>🐾 Entrar a la App</span>
+            </button>
+          )}
         </div>
 
-        {/* Enlaces secundarios a los otros 2 planes */}
+        {/* Enlaces secundarios a los otros 2 planes y Stripe */}
         <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs">
           <button
-            onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.monthly); }}
+            onClick={() => onGoToPricing('monthly')}
             className="text-stone-600 dark:text-stone-400 hover:text-amber-700 dark:hover:text-[#E8B84A] underline font-medium cursor-pointer"
           >
             Plan Mensual (3,99 €/mes)
           </button>
           <span className="text-stone-300 dark:text-stone-700">•</span>
           <button
-            onClick={() => { redirectToStripeCheckout(STRIPE_PAYMENT_LINKS.lifetime); }}
+            onClick={() => onGoToPricing('lifetime')}
             className="text-stone-600 dark:text-stone-400 hover:text-amber-700 dark:hover:text-[#E8B84A] underline font-medium cursor-pointer"
           >
             Plan Vitalicio (39,99 € pago único)
+          </button>
+          <span className="text-stone-300 dark:text-stone-700">•</span>
+          <button
+            onClick={() => openStripeCheckout('annual')}
+            className="text-amber-800 dark:text-[#E8B84A] hover:underline font-semibold cursor-pointer"
+          >
+            Stripe Oficial ↗
           </button>
         </div>
 
@@ -1111,7 +1227,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
       </section>
 
       {/* FOOTER */}
-      <footer className="relative z-10 border-t border-stone-200 dark:border-[#E8B84A]/15 bg-stone-100/90 dark:bg-[#060A08]/90 backdrop-blur-md py-8 px-4 text-center text-xs text-stone-500 dark:text-gray-500 transition-colors duration-300">
+      <footer className="relative z-10 border-t border-stone-200 dark:border-[#E8B84A]/15 bg-stone-100/90 dark:bg-[#060A08]/90 backdrop-blur-md pt-8 pb-20 sm:pb-8 px-4 text-center text-xs text-stone-500 dark:text-gray-500 transition-colors duration-300">
         <p className="mb-2">© {new Date().getFullYear()} PawLove • Cuidarte360. Todos los derechos reservados.</p>
         <div className="flex justify-center gap-5 text-xs text-stone-500 dark:text-gray-400">
           <a href="#terminos" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Términos y Condiciones</a>
@@ -1120,15 +1236,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           <span>•</span>
           <a href="#contacto" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Contacto</a>
         </div>
-        
-        {/* Botón discreto de promoción */}
+
+        {/* Botón pequeño y muy discreto de Promoción */}
         <div className="mt-4 flex justify-center">
           <a
             href="https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03"
             target="_blank"
             rel="noopener noreferrer"
-            id="btn-promo-stripe"
-            className="inline-block text-[11px] lowercase px-2.5 py-1 rounded bg-stone-200/50 dark:bg-stone-900/40 text-stone-500 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-400 transition-colors cursor-pointer border border-stone-300/40 dark:border-stone-800/50 text-center no-underline"
+            id="btn-promocion-footer"
+            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-300 transition-opacity opacity-50 hover:opacity-100 cursor-pointer select-none"
+            title="Promoción"
           >
             promoción
           </a>
@@ -1143,7 +1260,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
         </div>
         <button
           onClick={() => onGoToPricing('free_trial_48h')}
-          className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-500 dark:from-[#B8860B] dark:to-[#E8B84A] text-white dark:text-[#0A0F0D] text-xs font-black shadow-md flex items-center gap-1 cursor-pointer"
+          className="px-4 py-2 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-xs font-black shadow-md hover:opacity-90 flex items-center gap-1 cursor-pointer"
         >
           <span>Empezar</span>
           <ArrowRight className="w-3.5 h-3.5" />

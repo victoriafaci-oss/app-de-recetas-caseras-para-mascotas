@@ -1,6 +1,6 @@
 import { Pet, DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem } from '../types';
 import { calculateMER } from './nutrition';
-import { extractPetAllergens, COMMON_FOOD_ALLERGENS } from '../data/allergensData';
+import { parseAllergens, hasAllergenConflict, getSafeSubstituteProtein } from './allergyUtils';
 
 export const HIGH_PERFORMANCE_BREEDS = [
   'border collie',
@@ -730,6 +730,9 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
     },
   ];
 
+  const petAllergens = parseAllergens(pet.allergies);
+  const hasAllergies = petAllergens.length > 0;
+
   return weekTemplates.map((template, dayIndex) => {
     const isEn = language === 'en';
     const isPuppyOrKitten = pet.ageYears < 1;
@@ -741,28 +744,62 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       ? (isEn ? 'Senior profile: Joint support, easy mastication & kidney-friendly balance' : 'Etapa Senior: Soporte articular, fácil masticación y fósforo equilibrado')
       : (isEn ? 'Adult profile: Muscle tone & optimal metabolic stamina' : 'Etapa Adulto: Tono muscular y vitalidad metabólica óptima');
 
+    // Check allergen conflict for dish1 protein
+    const origProtein1 = template.dish1.proteinSourceEs;
+    const subProtein1 = getSafeSubstituteProtein(origProtein1, petAllergens, !isDog);
+    const dish1HasSub = subProtein1.isSubstituted;
+    const effectiveProtein1 = dish1HasSub ? subProtein1.proteinName : origProtein1;
+
+    let baseTitle1 = isHighPerf
+      ? (dayIndex === 0 ? 'Súper Guiso Energético de Res con Arroz Integral'
+        : dayIndex === 1 ? 'Súper Guiso de Cerdo Energético para Perros Atletas'
+        : dayIndex === 2 ? 'Plato de Potencia Canina: Pollo y Quinoa con Verduras'
+        : dayIndex === 3 ? 'Menú Deportivo de Pavo y Boniato: Combustible Muscular'
+        : dayIndex === 4 ? 'Festín de Cordero Energético con Calabaza y Arroz'
+        : dayIndex === 5 ? 'Cazuela Marina de Salmón y Boniato para Perros Deportistas'
+        : 'Cazuela de Pescado Blanco y Arroz: Digestión Ligera para Atletas')
+      : (isEn ? template.dish1.titleEn : template.dish1.titleEs);
+
+    if (dish1HasSub) {
+      baseTitle1 = isEn 
+        ? `Hypoallergenic ${subProtein1.substituteTitleWord} Special Dish` 
+        : `Menú Hipoalergénico de ${subProtein1.substituteTitleWord} Adaptado`;
+    }
+
+    // Check grain allergen for side carb
+    const carbAllergy1 = hasAllergenConflict('arroz trigo gluten cereales', petAllergens);
+    const effectiveCarb1 = carbAllergy1.hasConflict 
+      ? (isDog ? 'Boniato asado & Calabaza (Grain-Free)' : 'Proteína noble sin cereales')
+      : (isDog ? 'Boniato / Arroz cocido' : 'Proteína noble / Taurina');
+
+    const dish1Benefits = [
+      isHighPerf ? '⚡ Ratio proteico/lipídico de alto rendimiento (BCAA + MCT)' : stageBenefit,
+      ...(isEn ? template.dish1.benefitsEn : template.dish1.benefitsEs)
+    ];
+    if (dish1HasSub || hasAllergies) {
+      dish1Benefits.unshift(
+        isEn
+          ? `🛡️ 100% Allergen-Free: strictly excludes ${pet.allergies}`
+          : `🛡️ Receta 100% segura: excluye ${pet.allergies} por alergia de ${pet.name}`
+      );
+    }
+
     const dish1: DailyMealItem = {
       id: `dish-d${dayIndex}-1`,
-      title: isHighPerf
-        ? (dayIndex === 0 ? 'Súper Guiso Energético de Res con Arroz Integral'
-          : dayIndex === 1 ? 'Súper Guiso de Cerdo Energético para Perros Atletas'
-          : dayIndex === 2 ? 'Plato de Potencia Canina: Pollo y Quinoa con Verduras'
-          : dayIndex === 3 ? 'Menú Deportivo de Pavo y Boniato: Combustible Muscular'
-          : dayIndex === 4 ? 'Festín de Cordero Energético con Calabaza y Arroz'
-          : dayIndex === 5 ? 'Cazuela Marina de Salmón y Boniato para Perros Deportistas'
-          : 'Cazuela de Pescado Blanco y Arroz: Digestión Ligera para Atletas')
-        : (isEn ? template.dish1.titleEn : template.dish1.titleEs),
+      title: baseTitle1,
       category: 'dish1',
       mealSlot: 'morning',
-      description: isHighPerf
-        ? 'Aporte calórico denso (3.5% peso corporal) con aminoácidos ramificados BCAA, grasas nobles MCT y carbohidratos de bajo índice glucémico para energía sostenida sin sobreexcitación.'
-        : (isEn ? template.dish1.descEn : template.dish1.descEs),
+      description: dish1HasSub
+        ? (isEn ? `Adapted recipe avoiding ${pet.allergies} with easily digestible ${subProtein1.substituteTitleWord}.` : `Receta adaptada evitando ${pet.allergies} con ${subProtein1.substituteTitleWord} de alta digestibilidad.`)
+        : (isHighPerf
+          ? 'Aporte calórico denso (3.5% peso corporal) con aminoácidos ramificados BCAA, grasas nobles MCT y carbohidratos de bajo índice glucémico para energía sostenida sin sobreexcitación.'
+          : (isEn ? template.dish1.descEn : template.dish1.descEs)),
       portionGrams: morningGrams,
       kcal: Math.round(merData.mer * 0.5),
       ingredients: [
-        { name: template.dish1.proteinSourceEs, grams: template.dish1.proteinGrams, category: 'protein' },
+        { name: effectiveProtein1, grams: template.dish1.proteinGrams, category: 'protein' },
         { name: isDog ? 'Verdura al vapor (Calabacín/Zanahoria)' : 'Caldo clarificado de colágeno', grams: template.dish1.vegGrams, category: 'vegetable' },
-        { name: isDog ? 'Boniato / Arroz cocido' : 'Proteína noble / Taurina', grams: template.dish1.carbGrams, category: 'fiber_carb' },
+        { name: effectiveCarb1, grams: template.dish1.carbGrams, category: 'fiber_carb' },
         { name: isHighPerf ? 'Aceite MCT + Caldo de médula + Calcio' : (isPuppyOrKitten ? `${template.dish1.supplementsEs} + Calcio Crecimiento` : isSenior ? `${template.dish1.supplementsEs} + Condroprotectores` : template.dish1.supplementsEs), grams: Math.round(weightFactor * 5), category: 'supplement_calcium' },
       ],
       instructions: [
@@ -770,35 +807,66 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
         isEn ? `Step 2: Mash the vegetables and carbs until smooth and tender.` : `Paso 2: Cocer y machacar las verduras y guarnición hasta textura suave y de fácil digestión.`,
         isEn ? `Step 3: Mix the supplements (${template.dish1.supplementsEs}) and serve warm at body temperature (~37°C).` : `Paso 3: Integrar los suplementos (${template.dish1.supplementsEs}) y servir tibio a temperatura ambiente/corporal (~37°C).`,
       ],
-      clinicalBenefits: [
-        isHighPerf ? '⚡ Ratio proteico/lipídico de alto rendimiento (BCAA + MCT)' : stageBenefit,
-        ...(isEn ? template.dish1.benefitsEn : template.dish1.benefitsEs)
-      ],
+      clinicalBenefits: dish1Benefits,
       chefTip: isHighPerf ? '⚠️ Reposo obligatorio: Esperar 60 min antes y después de comer antes de iniciar cualquier carrera o entrenamiento.' : template.dish1.chefTipEs,
     };
 
+    // Check allergen conflict for dish2 protein
+    const origProtein2 = template.dish2.proteinSourceEs;
+    const subProtein2 = getSafeSubstituteProtein(origProtein2, petAllergens, !isDog);
+    const dish2HasSub = subProtein2.isSubstituted;
+    const effectiveProtein2 = dish2HasSub ? subProtein2.proteinName : origProtein2;
+
+    let baseTitle2 = isHighPerf
+      ? (dayIndex === 0 ? 'Potaje de Res y Arroz Integral para Perros Deportistas'
+        : dayIndex === 1 ? 'Estofado Dinámico de Pollo y Avena Atleta'
+        : dayIndex === 2 ? 'Plato de Pavo y Avena: Energía Limpia para Perros Activos'
+        : dayIndex === 3 ? 'Estofado de Cordero y Quinoa: Recuperación y Masa Muscular'
+        : dayIndex === 4 ? 'Guiso de Salmón y Patatas: Resistencia y Salud Articular'
+        : dayIndex === 5 ? 'Súper Salmón Atleta: Fuerza, Pelo Brillante y Agilidad'
+        : 'Plato de Res y Avena: Potencia y Resistencia para Canes Activos')
+      : (isEn ? template.dish2.titleEn : template.dish2.titleEs);
+
+    if (dish2HasSub) {
+      baseTitle2 = isEn 
+        ? `Hypoallergenic ${subProtein2.substituteTitleWord} Night Stew` 
+        : `Guiso Nocturno Hipoalergénico de ${subProtein2.substituteTitleWord}`;
+    }
+
+    // Check egg/grain allergen in dish2 side
+    const eggCarbAllergy = hasAllergenConflict('huevo avena trigo cereales arroz', petAllergens);
+    const effectiveCarb2 = eggCarbAllergy.hasConflict
+      ? (isDog ? 'Calabaza asada & Chía (Sin huevo ni granos)' : 'Caldo purificado & Taurina')
+      : (isDog ? 'Fibra soluble / Chía' : 'Clara de huevo / Taurina');
+
+    const dish2Benefits = [
+      isHighPerf ? '⚡ Regeneración nocturna de tejido conectivo y glucógeno muscular' : stageBenefit,
+      ...(isEn ? template.dish2.benefitsEn : template.dish2.benefitsEs)
+    ];
+    if (dish2HasSub || hasAllergies) {
+      dish2Benefits.unshift(
+        isEn
+          ? `🛡️ 100% Allergen-Free: strictly excludes ${pet.allergies}`
+          : `🛡️ Cena 100% segura: libre de ${pet.allergies} para ${pet.name}`
+      );
+    }
+
     const dish2: DailyMealItem = {
       id: `dish-d${dayIndex}-2`,
-      title: isHighPerf
-        ? (dayIndex === 0 ? 'Potaje de Res y Arroz Integral para Perros Deportistas'
-          : dayIndex === 1 ? 'Estofado Dinámico de Pollo y Avena Atleta'
-          : dayIndex === 2 ? 'Plato de Pavo y Avena: Energía Limpia para Perros Activos'
-          : dayIndex === 3 ? 'Estofado de Cordero y Quinoa: Recuperación y Masa Muscular'
-          : dayIndex === 4 ? 'Guiso de Salmón y Patatas: Resistencia y Salud Articular'
-          : dayIndex === 5 ? 'Súper Salmón Atleta: Fuerza, Pelo Brillante y Agilidad'
-          : 'Plato de Res y Avena: Potencia y Resistencia para Canes Activos')
-        : (isEn ? template.dish2.titleEn : template.dish2.titleEs),
+      title: baseTitle2,
       category: 'dish2',
       mealSlot: 'night',
-      description: isHighPerf
-        ? 'Cena regenerativa rica en colágeno soluble, glicina y antioxidantes marinos para restaurar micro-fibras musculares y lubricar cartílagos durante el descanso.'
-        : (isEn ? template.dish2.descEn : template.dish2.descEs),
+      description: dish2HasSub
+        ? (isEn ? `Night meal formulated without ${pet.allergies}, soothing digestive mucosa.` : `Cena regenerativa formulada sin ${pet.allergies}, protegiendo la mucosa gástrica.`)
+        : (isHighPerf
+          ? 'Cena regenerativa rica en colágeno soluble, glicina y antioxidantes marinos para restaurar micro-fibras musculares y lubricar cartílagos durante el descanso.'
+          : (isEn ? template.dish2.descEn : template.dish2.descEs)),
       portionGrams: nightGrams,
       kcal: Math.round(merData.mer * 0.5),
       ingredients: [
-        { name: template.dish2.proteinSourceEs, grams: template.dish2.proteinGrams, category: 'protein' },
+        { name: effectiveProtein2, grams: template.dish2.proteinGrams, category: 'protein' },
         { name: isDog ? 'Calabaza asada / Calabacín' : 'Caldo de médula ósea', grams: template.dish2.vegGrams, category: 'vegetable' },
-        { name: isDog ? 'Fibra soluble / Chía' : 'Clara de huevo / Taurina', grams: template.dish2.carbGrams, category: 'fiber_carb' },
+        { name: effectiveCarb2, grams: template.dish2.carbGrams, category: 'fiber_carb' },
         { name: isHighPerf ? 'Omega-3 EPA/DHA + Colágeno bioasimilable' : (isPuppyOrKitten ? `${template.dish2.supplementsEs} + DHA Cachorro` : isSenior ? `${template.dish2.supplementsEs} + Omega-3 Senior` : template.dish2.supplementsEs), grams: Math.round(weightFactor * 5), category: 'supplement_calcium' },
       ],
       instructions: [
@@ -806,20 +874,26 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
         isEn ? `Step 2: Prepare the vegetable purée and warm collagen broth.` : `Paso 2: Preparar el puré de verduras e integrar el caldo de colágeno tibio.`,
         isEn ? `Step 3: Combine with ${template.dish2.supplementsEs} and serve in two separate calm bowls.` : `Paso 3: Mezclar con ${template.dish2.supplementsEs} y servir en tazón cómodo.`,
       ],
-      clinicalBenefits: [
-        isHighPerf ? '⚡ Regeneración nocturna de tejido conectivo y glucógeno muscular' : stageBenefit,
-        ...(isEn ? template.dish2.benefitsEn : template.dish2.benefitsEs)
-      ],
+      clinicalBenefits: dish2Benefits,
       chefTip: isHighPerf ? 'Servir con una cucharada de caldo de huesos templado para hidratación isotónica.' : template.dish2.chefTipEs,
     };
 
+    // Check dairy or poultry in snacks
+    const snack1Conflict = hasAllergenConflict(template.snack1.ingredientsEs.join(' '), petAllergens);
+    const snack1Ingredients = snack1Conflict.hasConflict
+      ? ['Caldo de colágeno desgrasado', 'Puré de calabaza', 'Semillas de chía']
+      : template.snack1.ingredientsEs;
+    const snack1Title = snack1Conflict.hasConflict
+      ? (isEn ? 'Hypoallergenic Calming Snacking' : 'Snack Hipoalergénico Suave')
+      : (isEn ? template.snack1.titleEn : template.snack1.titleEs);
+
     const snack1: DailySnackItem = {
       id: `snack-d${dayIndex}-1`,
-      title: isEn ? template.snack1.titleEn : template.snack1.titleEs,
+      title: snack1Title,
       portion: template.snack1.portionEs,
       description: isEn ? template.snack1.descEn : template.snack1.descEs,
       benefits: template.snack1.benefitsEs,
-      ingredients: template.snack1.ingredientsEs,
+      ingredients: snack1Ingredients,
       instructions: [
         isEn ? `Step 1: Slice the ingredients thinly into bite-sized portions suitable for ${pet.name}.` : `Paso 1: Cortar finamente los ingredientes en porciones pequeñas aptas para ${pet.name}.`,
         isEn ? `Step 2: Steam or bake gently at low temperature (75°C - 80°C) without oil or salt.` : `Paso 2: Cocer al vapor suave o deshidratar al horno a baja temperatura (75°C - 80°C) sin sal ni aceites añadidos.`,
@@ -845,30 +919,47 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       kcal: Math.round(merData.mer * 0.04),
     };
 
+    // Check dairy / kefir / milk allergen in dessert1
+    const dessert1Conflict = hasAllergenConflict(template.dessert1.ingredientsEs.join(' ') + ' ' + template.dessert1.titleEs, petAllergens);
+    const dessert1Title = dessert1Conflict.hasConflict
+      ? (isEn ? 'Gentle Bone Broth & Apple Jelly Dessert' : 'Gelatina Digestiva de Caldo de Huesos & Manzana')
+      : (isEn ? template.dessert1.titleEn : template.dessert1.titleEs);
+    const dessert1Ingredients = dessert1Conflict.hasConflict
+      ? ['Caldo clarificado de huesos', 'Puré fino de manzana cocida', 'Gelatina neutra pura']
+      : template.dessert1.ingredientsEs;
+
     const dessert1: DailyDessertItem = {
       id: `dessert-d${dayIndex}-1`,
-      title: isEn ? template.dessert1.titleEn : template.dessert1.titleEs,
+      title: dessert1Title,
       portion: template.dessert1.portionEs,
       description: isEn ? template.dessert1.descEn : template.dessert1.descEs,
       benefits: template.dessert1.benefitsEs,
-      ingredients: template.dessert1.ingredientsEs,
+      ingredients: dessert1Ingredients,
       isFrozenOrGelatin: template.dessert1.isFrozenOrGelatin,
       instructions: [
         isEn ? `Step 1: Blend or whisk the ingredients into a smooth, silky liquid or purée.` : `Paso 1: Triturar o mezclar los ingredientes hasta obtener una consistencia suave y homogénea.`,
         isEn ? `Step 2: Pour into silicone molds or ice trays and chill in the fridge for 2-3 hours until set (or freeze for frozen treats).` : `Paso 2: Verter en moldes de silicona o cubitera y refrigerar 2-3 horas hasta cuajar (o congelar ligeramente si es helado).`,
         isEn ? `Step 3: Unmold 1 portion and serve at room temperature or cool.` : `Paso 3: Desmoldar la porción indicada y servir fresco tras la comida o como postre digestivo.`
       ],
-      chefTip: isEn ? 'Rich in glycine and probiotics to soothe gastric mucosa.' : 'Rico en glicina y probióticos para proteger la mucosa gástrica.',
+      chefTip: isEn ? 'Rich in glycine and soothing compounds to comfort gastric mucosa.' : 'Rico en glicina y nutrientes suaves para proteger la mucosa gástrica sin alérgenos.',
       kcal: Math.round(merData.mer * 0.05),
     };
 
+    const dessert2Conflict = hasAllergenConflict(template.dessert2.ingredientsEs.join(' ') + ' ' + template.dessert2.titleEs, petAllergens);
+    const dessert2Title = dessert2Conflict.hasConflict
+      ? (isEn ? 'Antioxidant Blueberry & Pumpkin Puree' : 'Compota Digestiva de Calabaza & Arándanos')
+      : (isEn ? template.dessert2.titleEn : template.dessert2.titleEs);
+    const dessert2Ingredients = dessert2Conflict.hasConflict
+      ? ['Calabaza al vapor machacada', 'Arándanos antioxidantes', 'Caldo clarificado']
+      : template.dessert2.ingredientsEs;
+
     const dessert2: DailyDessertItem = {
       id: `dessert-d${dayIndex}-2`,
-      title: isEn ? template.dessert2.titleEn : template.dessert2.titleEs,
+      title: dessert2Title,
       portion: template.dessert2.portionEs,
       description: isEn ? template.dessert2.descEn : template.dessert2.descEs,
       benefits: template.dessert2.benefitsEs,
-      ingredients: template.dessert2.ingredientsEs,
+      ingredients: dessert2Ingredients,
       isFrozenOrGelatin: template.dessert2.isFrozenOrGelatin,
       instructions: [
         isEn ? `Step 1: Combine the natural probiotics or fruit purée at room temperature.` : `Paso 1: Mezclar los probióticos naturales o puré de fruta a temperatura ambiente.`,
@@ -883,8 +974,8 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       durationMin: 80,
       activityTypeEs: 'Entrenamiento Deportivo / Trabajo & Olfateo de Descompresión',
       activityTypeEn: 'Sport / Work Training & Decompression Scent Session',
-      notesEs: '⚠️ Regla de Oro Anti-Torsión: Reposo estricto de 60 min antes y después de comidas. 15-20 min de olfateo autónomo para modular el cortisol.',
-      notesEn: '⚠️ Anti-Torsion Golden Rule: Strict 60 min rest before and after meals. 15-20 min autonomous scent search to balance cortisol.',
+      notesEs: '⚠️ AVISO IMPORTANTE: Esperar al menos 1 hora DESPUÉS del ejercicio para dar de comer (y 1h antes) para prevenir torsión de estómago e indigestiones. Fraccionar en raciones pequeñas más frecuentes y ofrecer abundante agua y caldos nutritivos.',
+      notesEn: '⚠️ CRITICAL WARNING: Wait at least 1 hour AFTER exercise before feeding (and 1h before) to prevent gastric torsion and indigestion. Split into smaller, frequent portions and offer plenty of fresh water and nutrient broths.',
     } : {
       durationMin: template.exercise.durationMin,
       activityTypeEs: template.exercise.typeEs,
@@ -893,7 +984,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       notesEn: template.exercise.notesEn,
     };
 
-    const dayPlan: DayDietPlan = {
+    return {
       dayIndex,
       dayNameEs: daysEs[dayIndex],
       dayNameEn: daysEn[dayIndex],
@@ -907,185 +998,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
       cognitiveHabitTarget: isHighPerf ? HIGH_PERFORMANCE_COGNITIVE_HABITS[dayIndex] : undefined,
       isHighPerformancePlan: isHighPerf,
     };
-
-    return filterDayPlanForAllergies(dayPlan, pet, language);
   });
-}
-
-/**
- * Adapts dishes, snacks, and desserts to eliminate any allergen specified by the pet owner.
- */
-function filterDayPlanForAllergies(dayPlan: DayDietPlan, pet: Pet, language: 'es' | 'en'): DayDietPlan {
-  const allergens = extractPetAllergens(pet.allergies, pet.allergensList);
-  if (!allergens || allergens.length === 0) {
-    return dayPlan;
-  }
-
-  const isEn = language === 'en';
-  const hasAllergen = (text: string, allergenKeys: string[]) => {
-    const lower = text.toLowerCase();
-    return allergenKeys.some(key => {
-      const def = COMMON_FOOD_ALLERGENS.find(d => d.id === key);
-      const keywords = def ? def.keywords : [key.toLowerCase()];
-      return keywords.some(kw => lower.includes(kw));
-    });
-  };
-
-  const modifiedDish1 = { ...dayPlan.dish1 };
-  const modifiedDish2 = { ...dayPlan.dish2 };
-  const modifiedSnack1 = { ...dayPlan.snack1, ingredients: [...dayPlan.snack1.ingredients] };
-  const modifiedSnack2 = { ...dayPlan.snack2, ingredients: [...dayPlan.snack2.ingredients] };
-  const modifiedDessert1 = { ...dayPlan.dessert1, ingredients: [...dayPlan.dessert1.ingredients] };
-  const modifiedDessert2 = { ...dayPlan.dessert2, ingredients: [...dayPlan.dessert2.ingredients] };
-
-  // Check proteins and ingredients in dishes
-  const checkAndSubstituteDish = (dish: DailyMealItem) => {
-    const dishText = `${dish.title} ${dish.description} ${dish.ingredients.map(i => i.name).join(' ')}`;
-
-    // Pollo
-    if (hasAllergen(dishText, ['pollo'])) {
-      dish.title = dish.title.replace(/pollo|chicken/gi, isEn ? 'Country Turkey' : 'Pavo Campesino');
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/pollo|chicken/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Fresh Lean Turkey Breast' : 'Pechuga de Pavo fresca hipoalergénica' };
-        }
-        return ing;
-      });
-      dish.description = `${dish.description} (🛡️ ${isEn ? 'Adapted: 100% poultry-free' : 'Adaptado: 100% libre de pollo'})`;
-    }
-
-    // Ternera
-    if (hasAllergen(dishText, ['ternera'])) {
-      dish.title = dish.title.replace(/ternera|beef|res/gi, isEn ? 'Country Turkey' : 'Pavo Magro Campesino');
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/ternera|beef|res/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Lean Turkey or Steamed Whitefish' : 'Pavo magro o Merluza blanca' };
-        }
-        return ing;
-      });
-      dish.description = `${dish.description} (🛡️ ${isEn ? 'Adapted: 100% beef-free' : 'Adaptado: 100% libre de ternera'})`;
-    }
-
-    // Pescado / Salmón
-    if (hasAllergen(dishText, ['pescado'])) {
-      dish.title = dish.title.replace(/salmón|salmon|pescado|fish|merluza|trucha/gi, isEn ? 'Noble Duck & Sweet Potato' : 'Pato Noble o Pavo');
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/salmón|salmon|pescado|fish|merluza|trucha/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Noble Duck Breast' : 'Magret de Pato o Pavo Campesino' };
-        }
-        if (/aceite de salmón/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Olive Oil & Golden Flax' : 'Aceite de oliva y lino dorado' };
-        }
-        return ing;
-      });
-      dish.description = `${dish.description} (🛡️ ${isEn ? 'Adapted: 100% fish-free' : 'Adaptado: 100% libre de pescado y salmón'})`;
-    }
-
-    // Cerdo
-    if (hasAllergen(dishText, ['cerdo'])) {
-      dish.title = dish.title.replace(/cerdo|pork/gi, isEn ? 'Farm Turkey' : 'Pavo Campesino');
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/cerdo|pork/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Fresh Turkey' : 'Pavo magro campesino' };
-        }
-        return ing;
-      });
-    }
-
-    // Cordero
-    if (hasAllergen(dishText, ['cordero'])) {
-      dish.title = dish.title.replace(/cordero|lamb/gi, isEn ? 'Tender Turkey' : 'Pavo Tierno');
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/cordero|lamb/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Fresh Turkey' : 'Pavo fresco' };
-        }
-        return ing;
-      });
-    }
-
-    // Cereales / Gluten
-    if (hasAllergen(dishText, ['cereales'])) {
-      dish.title = dish.title.replace(/arroz|avena|rice|oat/gi, isEn ? 'Sweet Potato' : 'Boniato asado');
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/arroz|avena|trigo|gluten|cereal/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Steamed Sweet Potato or Pumpkin Puree' : 'Boniato asado o Puré de calabaza (Grain-Free)' };
-        }
-        return ing;
-      });
-      dish.description = `${dish.description} (🌾 100% Grain-Free)`;
-    }
-
-    // Huevo
-    if (hasAllergen(dishText, ['huevo'])) {
-      dish.ingredients = dish.ingredients.map(ing => {
-        if (/huevo|cáscara de huevo/gi.test(ing.name)) {
-          return { ...ing, name: isEn ? 'Pure mineral calcium carbonate (Egg-Free)' : 'Carbonato cálcico mineral puro (sin huevo)' };
-        }
-        return ing;
-      });
-    }
-  };
-
-  checkAndSubstituteDish(modifiedDish1);
-  checkAndSubstituteDish(modifiedDish2);
-
-  // Check snacks
-  const checkAndSubstituteSnack = (snack: DailySnackItem) => {
-    if (hasAllergen(`${snack.title} ${snack.description} ${snack.ingredients.join(' ')}`, ['pollo'])) {
-      snack.title = snack.title.replace(/pollo|chicken/gi, isEn ? 'Turkey' : 'Pavo');
-      snack.ingredients = snack.ingredients.map(ing => ing.replace(/pollo|chicken/gi, isEn ? 'Turkey' : 'Pechuga de pavo'));
-    }
-    if (hasAllergen(`${snack.title} ${snack.description} ${snack.ingredients.join(' ')}`, ['ternera'])) {
-      snack.title = snack.title.replace(/ternera|beef/gi, isEn ? 'Duck' : 'Pato');
-      snack.ingredients = snack.ingredients.map(ing => ing.replace(/ternera|beef/gi, isEn ? 'Duck' : 'Pato'));
-    }
-    if (hasAllergen(`${snack.title} ${snack.description} ${snack.ingredients.join(' ')}`, ['pescado'])) {
-      snack.title = snack.title.replace(/pescado|fish|salmón|salmon/gi, isEn ? 'Duck' : 'Pato crujiente');
-      snack.ingredients = snack.ingredients.map(ing => ing.replace(/pescado|salmón/gi, isEn ? 'Duck' : 'Pato'));
-    }
-    if (hasAllergen(`${snack.title} ${snack.ingredients.join(' ')}`, ['huevo'])) {
-      snack.title = isEn ? 'Dehydrated Duck & Apple Bites' : 'Bocaditos de Pato & Manzana';
-      snack.ingredients = [isEn ? 'Duck breast' : 'Pechuga de pato', isEn ? 'Apple' : 'Manzana'];
-    }
-  };
-
-  checkAndSubstituteSnack(modifiedSnack1);
-  checkAndSubstituteSnack(modifiedSnack2);
-
-  // Check desserts (especially dairy & broth)
-  const checkAndSubstituteDessert = (dessert: DailyDessertItem) => {
-    if (hasAllergen(`${dessert.title} ${dessert.description} ${dessert.ingredients.join(' ')}`, ['lacteos'])) {
-      dessert.title = isEn ? 'Roasted Pumpkin Puree with Chia Gel & Bone Broth' : 'Puré de Calabaza Asada con Semillas de Chía & Caldo';
-      dessert.description = isEn 
-        ? '100% dairy-free, hypoallergenic gut-soothing digestive puree.' 
-        : 'Postre 100% libre de lácteos, hipoalergénico y reconfortante para la microbiota digestiva.';
-      dessert.benefits = isEn ? 'Anti-inflammatory intestinal comfort without lactose.' : 'Alivio antiinflamatorio intestinal 100% libre de lactosa.';
-      dessert.ingredients = isEn 
-        ? ['Roasted sweet pumpkin', 'Activated chia gel', 'Purified bone broth']
-        : ['Puré de calabaza dulce asada', 'Gel de chía hidratada', 'Caldo de huesos clarificado'];
-    }
-    if (hasAllergen(`${dessert.ingredients.join(' ')}`, ['pollo'])) {
-      dessert.ingredients = dessert.ingredients.map(ing => ing.replace(/pollo/gi, 'pavo o ternera'));
-    }
-  };
-
-  checkAndSubstituteDessert(modifiedDessert1);
-  checkAndSubstituteDessert(modifiedDessert2);
-
-  const allergyTag = isEn
-    ? `🛡️ 100% Allergen-Free for ${pet.name}: Excluded [${allergens.join(', ')}]`
-    : `🛡️ 100% Libre de Alérgenos para ${pet.name}: Excluido [${allergens.join(', ')}]`;
-
-  return {
-    ...dayPlan,
-    dish1: modifiedDish1,
-    dish2: modifiedDish2,
-    snack1: modifiedSnack1,
-    snack2: modifiedSnack2,
-    dessert1: modifiedDessert1,
-    dessert2: modifiedDessert2,
-    allergyAdaptationNote: allergyTag,
-  };
 }
 
 /**

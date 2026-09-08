@@ -256,7 +256,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-stone-950 font-bold text-sm shadow-md hover:opacity-95 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full py-3 px-4 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] hover:opacity-90 text-white dark:text-stone-950 font-black text-sm shadow-md active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
