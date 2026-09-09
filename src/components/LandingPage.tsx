@@ -41,7 +41,6 @@ import {
 
 interface LandingPageProps {
   onGoToPricing: (planId?: string) => void;
-  onEnterApp?: () => void;
 }
 
 interface DemoPetProfile {
@@ -63,7 +62,7 @@ interface DemoPetProfile {
   imageUrl: string;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnterApp }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
   const { theme, toggleTheme, language, setLanguage } = useApp();
 
   // Miniatura de muestra de recetas
@@ -196,19 +195,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
       {/* HEADER: LOGO, SELECTOR DÍA/NOCHE, IDIOMA Y ACCESO                          */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 dark:border-[#E8B84A]/20 bg-[#FBF9F5]/90 dark:bg-[#0A0F0D]/90 backdrop-blur-md transition-colors duration-300">
-        <div className="max-w-6xl mx-auto px-2.5 sm:px-6 h-13 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo Brand */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E]">
-              <div className="w-full h-full aspect-square overflow-hidden flex items-center justify-center">
-                <img 
-                  src="/pawlove_logo.jpg" 
-                  alt="PAWLOVE Mascotas" 
-                  className="w-full h-full object-cover aspect-square"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E] flex items-center justify-center">
+              <img 
+                src="/pawlove_logo.jpg" 
+                alt="PAWLOVE Mascotas" 
+                className="w-full h-full object-cover aspect-square"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div className="min-w-0 shrink">
               <div className="font-editorial text-xs sm:text-base md:text-lg font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
@@ -217,40 +214,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
             </div>
           </div>
 
-          {/* Controles: Día/Noche, Idioma y Botón de Acción */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {/* Controles: Modo Día/Noche, Idioma y Tarifas */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 shrink-0">
             
             {/* Toggle Día / Noche */}
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Cambiar a modo Día' : 'Cambiar a modo Noche'}
-              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-[#121B16] text-stone-600 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-200/90 dark:border-stone-800 bg-stone-100/90 dark:bg-[#121B16] text-stone-700 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
             >
-              {theme === 'dark' ? <Sun className="w-3 h-3 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3 h-3 sm:w-4 sm:h-4 text-stone-700" />}
+              {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-700" />}
             </button>
 
             {/* Toggle Idioma */}
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
               title="Cambiar idioma"
-              className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-[#121B16] text-[10px] sm:text-[11px] font-bold text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors flex items-center gap-0.5 sm:gap-1 cursor-pointer shrink-0"
+              className="h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border border-stone-200/90 dark:border-stone-800 bg-stone-100/90 dark:bg-[#121B16] text-[11px] sm:text-xs font-bold text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-[#E8B84A] hover:border-stone-300 dark:hover:border-stone-700 transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs cursor-pointer shrink-0"
             >
-              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-stone-500 dark:text-stone-400" />
               <span>{language.toUpperCase()}</span>
             </button>
-
-            {/* Botón Entrar a la App */}
-            {onEnterApp && (
-              <button
-                onClick={onEnterApp}
-                id="btn-landing-enter-app"
-                className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-emerald-500/50 dark:border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/40 text-[10px] sm:text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 shadow-2xs transition-all cursor-pointer shrink-0"
-                title="Ir a la aplicación"
-              >
-                <span className="hidden sm:inline">🐾 Entrar a la App</span>
-                <span className="sm:hidden">🐾 App</span>
-              </button>
-            )}
 
             {/* Botón Tarifas */}
             <button
@@ -263,10 +247,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
                 }
               }}
               id="btn-header-tarifas-small"
-              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-[10px] sm:text-xs tracking-tight sm:tracking-wide shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              className="h-8 sm:h-9 px-3 sm:px-4.5 rounded-full bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-[11px] sm:text-xs tracking-wide shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
             >
-              <span className="text-stone-950 font-black">{language === 'es' ? 'Tarifas' : 'Pricing'}</span>
-              <ArrowRight className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-stone-950" />
+              <span className="font-black">{language === 'es' ? 'Tarifas' : 'Pricing'}</span>
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-stone-950" />
             </button>
           </div>
         </div>
@@ -1192,16 +1176,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
             <Sparkles className="w-4 h-4 text-amber-600 dark:text-[#E8B84A]" />
             <span>Probar 48h Gratis</span>
           </button>
-
-          {onEnterApp && (
-            <button
-              onClick={onEnterApp}
-              id="btn-final-enter-app"
-              className="w-full sm:w-auto px-6 py-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/50 dark:border-emerald-400/40 text-emerald-900 dark:text-emerald-300 font-bold text-sm hover:border-emerald-600 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>🐾 Entrar a la App</span>
-            </button>
-          )}
         </div>
 
         {/* Enlaces secundarios a los otros 2 planes y Stripe */}

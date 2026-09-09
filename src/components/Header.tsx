@@ -24,6 +24,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { AddPetModal } from './AddPetModal';
+import { formatLocalDateKey } from '../utils/dietPlanner';
 
 export const Header: React.FC = () => {
   const { 
@@ -65,7 +66,7 @@ export const Header: React.FC = () => {
       petName: currentPet?.name || 'Charlie',
       title: language === 'es' ? 'Cena & Condroprotector Articular' : "Charlie's Mealtime & Joint Support",
       category: 'medication',
-      date: new Date().toISOString().split('T')[0],
+      date: formatLocalDateKey(new Date()),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       dosage: language === 'es' ? '1 ración fresca (200g) + 1 comprimido' : '1 fresh portion (200g) + 1 capsule',
       notes: language === 'es' ? 'Administrar con caldo de huesos tibio.' : 'Administer with warm bone broth.',

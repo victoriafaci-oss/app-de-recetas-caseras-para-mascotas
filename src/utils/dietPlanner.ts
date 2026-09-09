@@ -110,6 +110,16 @@ export const HIGH_PERFORMANCE_COGNITIVE_HABITS = [
 ];
 
 /**
+ * Converts a Date to local YYYY-MM-DD string respecting the user's local timezone (avoiding UTC offset shift)
+ */
+export function formatLocalDateKey(d: Date = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Returns the Monday-based real calendar dates for the current week.
  * Output: array of 7 dates { dateStr: "YYYY-MM-DD", dayIndex: 0..6, isToday: boolean, formattedLabel: string }
  */
@@ -118,7 +128,10 @@ export function getCurrentWeekDates(refDate: Date = new Date()): {
   dayIndex: number;
   isToday: boolean;
   dayNumber: number;
+  year: number;
   monthName: string;
+  monthFullNameEs: string;
+  monthFullNameEn: string;
   dayShortNameEs: string;
   dayShortNameEn: string;
   dayFullNameEs: string;
@@ -134,9 +147,10 @@ export function getCurrentWeekDates(refDate: Date = new Date()): {
   const distanceToMonday = (currentDayOfWeek === 0 ? -6 : 1) - currentDayOfWeek;
   const monday = new Date(current);
   monday.setDate(current.getDate() + distanceToMonday);
-  monday.setHours(0, 0, 0, 0);
+  // Using midday 12:00:00 avoids daylight saving time switches or midnight timezone shifts
+  monday.setHours(12, 0, 0, 0);
 
-  const todayStr = refDate.toISOString().split('T')[0];
+  const todayStr = formatLocalDateKey(refDate);
 
   const daysEs = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const daysEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -145,20 +159,25 @@ export function getCurrentWeekDates(refDate: Date = new Date()): {
 
   const monthNamesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const monthNamesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthFullNamesEs = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const monthFullNamesEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const result = [];
 
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = formatLocalDateKey(d);
     
     result.push({
       dateStr,
       dayIndex: i,
       isToday: dateStr === todayStr,
       dayNumber: d.getDate(),
+      year: d.getFullYear(),
       monthName: monthNamesEs[d.getMonth()],
+      monthFullNameEs: monthFullNamesEs[d.getMonth()],
+      monthFullNameEn: monthFullNamesEn[d.getMonth()],
       dayShortNameEs: daysShortEs[i],
       dayShortNameEn: daysShortEn[i],
       dayFullNameEs: daysEs[i],

@@ -22,13 +22,11 @@ import {
 
 interface WelcomePaymentGatewayProps {
   onBackToLanding?: () => void;
-  onEnterApp?: () => void;
   initialSelectedPlanId?: string;
 }
 
 export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({ 
   onBackToLanding, 
-  onEnterApp,
   initialSelectedPlanId 
 }) => {
   const { 
@@ -117,18 +115,6 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
 
           {/* Minimal Controls: Language & Theme only */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {onEnterApp && (
-              <button
-                onClick={onEnterApp}
-                id="gateway-btn-enter-app"
-                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/50 dark:border-emerald-400/35 text-[10px] sm:text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
-                title={language === 'es' ? 'Entrar a la aplicación' : 'Enter application'}
-              >
-                <span className="hidden sm:inline">🐾 Entrar a la App</span>
-                <span className="sm:hidden">🐾 App</span>
-              </button>
-            )}
-
             {onBackToLanding && (
               <button
                 onClick={onBackToLanding}

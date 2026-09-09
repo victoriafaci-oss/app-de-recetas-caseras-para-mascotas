@@ -15,6 +15,7 @@ import {
   Sparkles, 
   ChefHat, 
   Info, 
+  Eye, 
   Check, 
   X, 
   ChevronRight, 
@@ -23,7 +24,12 @@ import {
   Award,
   Printer,
   Heart,
-  ChevronLeft
+  ChevronLeft,
+  StickyNote,
+  Edit3,
+  Trash2,
+  Plus,
+  PenLine
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HighPerformanceExerciseAlert } from './HighPerformanceExerciseAlert';
@@ -36,6 +42,7 @@ export const WeeklyPlanView: React.FC = () => {
     weeklyTracking, 
     setMealStatus, 
     setExerciseStatus, 
+    setDayNote,
     getTrackingForDay,
     t, 
     language,
@@ -47,8 +54,7 @@ export const WeeklyPlanView: React.FC = () => {
 
   const [avatarError, setAvatarError] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const idx = weekDates.findIndex(d => d.dateStr === today);
+    const idx = weekDates.findIndex(d => d.isToday);
     return idx >= 0 ? idx : 0;
   });
 
@@ -67,6 +73,79 @@ export const WeeklyPlanView: React.FC = () => {
   const [exerciseModalDateKey, setExerciseModalDateKey] = useState<string | null>(null);
   const [customExerciseMin, setCustomExerciseMin] = useState<number>(30);
   const [customExerciseNotes, setCustomExerciseNotes] = useState<string>('');
+
+  // Day Annotation modal state
+  const [annotationModalDayIndex, setAnnotationModalDayIndex] = useState<number | null>(null);
+  const [annotationText, setAnnotationText] = useState<string>('');
+
+  const openAnnotationModal = (idx: number) => {
+    const dateObj = weekDates[idx];
+    if (!dateObj) return;
+    const tracking = getTrackingForDay(selectedPet.id, dateObj.dateStr);
+    setAnnotationText(tracking.dayNote || '');
+    setAnnotationModalDayIndex(idx);
+  };
+
+  const handleSaveAnnotation = () => {
+    if (annotationModalDayIndex === null) return;
+    const dateObj = weekDates[annotationModalDayIndex];
+    if (!dateObj) return;
+    setDayNote(selectedPet.id, dateObj.dateStr, annotationText.trim());
+    showToast(
+      language === 'es'
+        ? (annotationText.trim() ? '📝 ¡Anotación guardada con éxito!' : 'Anotación eliminada')
+        : (annotationText.trim() ? '📝 Note saved successfully!' : 'Note removed'),
+      'success'
+    );
+    setAnnotationModalDayIndex(null);
+  };
+
+  const handleDeleteAnnotation = () => {
+    if (annotationModalDayIndex === null) return;
+    const dateObj = weekDates[annotationModalDayIndex];
+    if (!dateObj) return;
+    setDayNote(selectedPet.id, dateObj.dateStr, '');
+    showToast(
+      language === 'es' ? 'Anotación eliminada' : 'Note deleted',
+      'info'
+    );
+    setAnnotationModalDayIndex(null);
+  };
+
+  const toggleChip = (chip: string) => {
+    setAnnotationText(prev => {
+      if (prev.includes(chip)) {
+        return prev.replace(chip, '').replace(/\n\s*\n+/g, '\n').trim();
+      }
+      return prev ? `${prev}\n• ${chip}` : `• ${chip}`;
+    });
+  };
+
+  const quickNoteChips = useMemo(() => {
+    return language === 'es' ? [
+      '🥣 Comió todo con ganas',
+      '🐾 Digestión y heces perfectas',
+      '💧 Buena hidratación',
+      '⚡ Muy activo y animado',
+      '⏳ Comió más lento de lo normal',
+      '🍗 Le encantó el plato 1',
+      '🥩 Premio / Snack extra dado',
+      '💊 Medicación/Suplemento al día',
+      '⚠️ Heces algo blandas',
+      '💤 Día tranquilo y descansado'
+    ] : [
+      '🥣 Ate everything with appetite',
+      '🐾 Perfect digestion & stool',
+      '💧 Well hydrated',
+      '⚡ High energy & playful',
+      '⏳ Ate slower than usual',
+      '🍗 Loved meal 1',
+      '🥩 Extra healthy treat given',
+      '💊 Medication/Supplement taken',
+      '⚠️ Softer stools observed',
+      '💤 Calm and well rested'
+    ];
+  }, [language]);
 
   // Generate 7-day dynamic personalized plan for the selected pet
   const weeklyPlan: DayDietPlan[] = useMemo(() => {
@@ -119,8 +198,8 @@ export const WeeklyPlanView: React.FC = () => {
   };
 
   const activeDateFormatted = language === 'es' 
-    ? `${activeDateInfo.dayFullNameEs} ${activeDateInfo.dayNumber} de ${activeDateInfo.monthName}`
-    : `${activeDateInfo.dayFullNameEn}, ${activeDateInfo.monthName} ${activeDateInfo.dayNumber}`;
+    ? `${activeDateInfo.dayFullNameEs}, ${activeDateInfo.dayNumber} de ${activeDateInfo.monthFullNameEs || activeDateInfo.monthName} de ${activeDateInfo.year || 2026}`
+    : `${activeDateInfo.dayFullNameEn}, ${activeDateInfo.monthFullNameEn || activeDateInfo.monthName} ${activeDateInfo.dayNumber}, ${activeDateInfo.year || 2026}`;
 
   return (
     <div className="space-y-6 pb-12 animate-fadeIn" id="weekly-plan-container">
@@ -281,13 +360,14 @@ export const WeeklyPlanView: React.FC = () => {
             ];
             const givenCount = statuses.filter(s => s === true).length;
             const notGivenCount = statuses.filter(s => s === false).length;
+            const hasNote = Boolean(tracking.dayNote && tracking.dayNote.trim().length > 0);
 
             return (
               <button
                 key={dateObj.dateStr}
                 onClick={() => setSelectedDayIndex(idx)}
                 id={`btn-select-day-${idx}`}
-                className={`relative p-3 rounded-2xl text-left transition-all duration-200 border flex flex-col justify-between min-h-[90px] ${
+                className={`relative p-3 rounded-2xl text-left transition-all duration-200 border flex flex-col justify-between min-h-[108px] cursor-pointer ${
                   isSelected
                     ? 'bg-[#B8860B] dark:bg-[#183126] text-white dark:text-[#F3E5AB] border-[#B8860B] dark:border-[#D4AF37] shadow-md scale-[1.02]'
                     : 'bg-stone-50 dark:bg-stone-900/60 text-stone-700 dark:text-stone-300 border-stone-200/80 dark:border-stone-800 hover:border-[#D4AF37]/50'
@@ -310,8 +390,48 @@ export const WeeklyPlanView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Micro indicators for dishes & exercise */}
-                <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/10 dark:border-white/10">
+                {/* Day Note Indicator / Quick Add Button */}
+                <div className="my-1.5">
+                  {hasNote ? (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openAnnotationModal(idx);
+                      }}
+                      className={`group/note relative px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 border shadow-2xs ${
+                        isSelected
+                          ? 'bg-amber-300 text-stone-950 border-amber-400 hover:bg-amber-200'
+                          : 'bg-amber-500/15 dark:bg-[#F3E5AB]/20 text-amber-950 dark:text-[#F3E5AB] border-amber-500/30 dark:border-[#D4AF37]/40 hover:bg-amber-500/25'
+                      }`}
+                      title={`${language === 'es' ? 'Anotación guardada' : 'Saved note'}: ${tracking.dayNote}`}
+                    >
+                      <StickyNote className="w-3 h-3 text-amber-600 dark:text-[#D4AF37] shrink-0" />
+                      <span className="truncate flex-1 font-bold">{tracking.dayNote}</span>
+                      <span className="shrink-0 text-[9px] font-black underline opacity-80 group-hover/note:opacity-100">
+                        {language === 'es' ? 'Ver' : 'View'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openAnnotationModal(idx);
+                      }}
+                      className={`w-full py-0.5 px-1.5 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition-all border border-dashed cursor-pointer ${
+                        isSelected
+                          ? 'border-amber-200/60 text-amber-100 hover:bg-white/10 hover:border-amber-200'
+                          : 'border-stone-300 dark:border-stone-700 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:border-stone-400'
+                      }`}
+                      title={language === 'es' ? 'Escribir anotación para este día' : 'Write note for this day'}
+                    >
+                      <PenLine className="w-2.5 h-2.5" />
+                      <span>{language === 'es' ? '+ Anotar' : '+ Note'}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Micro indicators for dishes, exercise & note */}
+                <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-black/10 dark:border-white/10">
                   <div className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" title="Dados" />
                     <span className="text-[10px] font-bold">{givenCount}</span>
@@ -322,11 +442,21 @@ export const WeeklyPlanView: React.FC = () => {
                       </>
                     )}
                   </div>
-                  {tracking.exerciseCompleted && (
-                    <span className="text-[10px] font-extrabold text-amber-300 flex items-center">
-                      🏃
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {hasNote && (
+                      <span
+                        className={`text-[11px] flex items-center ${isSelected ? 'text-amber-300' : 'text-[#B8860B] dark:text-[#D4AF37]'}`}
+                        title={language === 'es' ? 'Tiene anotación guardada' : 'Has saved note'}
+                      >
+                        📝
+                      </span>
+                    )}
+                    {tracking.exerciseCompleted && (
+                      <span className="text-[10px] font-extrabold text-amber-300 flex items-center">
+                        🏃
+                      </span>
+                    )}
+                  </div>
                 </div>
               </button>
             );
@@ -368,6 +498,70 @@ export const WeeklyPlanView: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* Day Annotation Card */}
+        {activeDayTracking.dayNote ? (
+          <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-[#D4AF37]/15 dark:to-transparent p-4 rounded-2xl border border-amber-300/60 dark:border-[#D4AF37]/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 dark:bg-[#D4AF37]/20 text-[#B8860B] dark:text-[#D4AF37] flex items-center justify-center shrink-0 mt-0.5">
+                <StickyNote className="w-4 h-4" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-[#F3E5AB]">
+                    {language === 'es' ? 'Anotación del día' : 'Day Note'}
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                    {language === 'es' ? 'Guardada' : 'Saved'}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-stone-800 dark:text-stone-200 whitespace-pre-wrap leading-relaxed">
+                  {activeDayTracking.dayNote}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <button
+                type="button"
+                onClick={() => openAnnotationModal(selectedDayIndex)}
+                className="px-3 py-1.5 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 text-xs font-black flex items-center gap-1.5 border border-[#E5D2B3] dark:border-[#D4AF37]/50 shadow-2xs transition-all cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-stone-950" />
+                <span>{language === 'es' ? 'Modificar' : 'Edit'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDayNote(selectedPet.id, activeDateInfo.dateStr, '');
+                  showToast(language === 'es' ? 'Anotación eliminada' : 'Note deleted', 'info');
+                }}
+                className="p-1.5 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
+                title={language === 'es' ? 'Eliminar anotación' : 'Delete note'}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 px-4 rounded-2xl bg-[#FAF7F2] dark:bg-[#0c1813]/60 border border-[#E8DCCB] dark:border-[#D4AF37]/20 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-xs text-stone-600 dark:text-stone-400">
+              <StickyNote className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37] shrink-0" />
+              <span>
+                {language === 'es' 
+                  ? '¿Quieres dejar alguna anotación para este día? (apetito, digestión, observaciones...)' 
+                  : 'Want to add a note for this day? (appetite, digestion, observations...)'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => openAnnotationModal(selectedDayIndex)}
+              className="px-3 py-1.5 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 text-xs font-black flex items-center gap-1.5 border border-[#E5D2B3] dark:border-[#D4AF37]/50 shadow-2xs transition-all cursor-pointer shrink-0"
+            >
+              <PenLine className="w-3.5 h-3.5 text-stone-950" />
+              <span>{language === 'es' ? 'Anotar cosas' : 'Add note'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Section 1: 2 Platos Recomendados del Día */}
         <div className="space-y-3">
@@ -665,6 +859,7 @@ export const WeeklyPlanView: React.FC = () => {
                 <th className="py-2.5 px-3">{t('permittedSnacks')}</th>
                 <th className="py-2.5 px-3">{t('permittedDesserts')}</th>
                 <th className="py-2.5 px-3">{t('exerciseCompleted')}</th>
+                <th className="py-2.5 px-3">{language === 'es' ? 'Anotación' : 'Notes'}</th>
                 <th className="py-2.5 px-3 text-right">{language === 'es' ? 'Acción' : 'Action'}</th>
               </tr>
             </thead>
@@ -785,6 +980,31 @@ export const WeeklyPlanView: React.FC = () => {
                           </>
                         )}
                       </button>
+                    </td>
+
+                    {/* Day Note Cell */}
+                    <td className="py-3 px-3">
+                      {tracking.dayNote ? (
+                        <button
+                          type="button"
+                          onClick={() => openAnnotationModal(idx)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-950 dark:text-amber-200 border border-amber-500/30 hover:bg-amber-500/25 max-w-[150px] truncate cursor-pointer"
+                          title={`${language === 'es' ? 'Modificar anotación' : 'Edit note'}: ${tracking.dayNote}`}
+                        >
+                          <StickyNote className="w-3 h-3 text-[#B8860B] dark:text-[#D4AF37] shrink-0" />
+                          <span className="truncate">{tracking.dayNote}</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openAnnotationModal(idx)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                          title={language === 'es' ? 'Añadir anotación para este día' : 'Add note for this day'}
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>{language === 'es' ? 'Anotar' : 'Note'}</span>
+                        </button>
+                      )}
                     </td>
 
                     {/* Inspect Day Button */}
@@ -1000,6 +1220,136 @@ export const WeeklyPlanView: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Day Annotation Modal */}
+      <AnimatePresence>
+        {annotationModalDayIndex !== null && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setAnnotationModalDayIndex(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-[#0e1d17] border border-[#E8DCCB] dark:border-[#D4AF37]/30 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl space-y-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="p-4 sm:p-5 bg-[#FAF7F2] dark:bg-[#16271F] border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 dark:bg-[#D4AF37]/20 text-[#B8860B] dark:text-[#D4AF37] flex items-center justify-center shrink-0">
+                    <StickyNote className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-stone-900 dark:text-[#F3E5AB]">
+                      {language === 'es' ? 'Anotación del Día' : 'Day Note & Observations'}
+                    </h3>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                      {weekDates[annotationModalDayIndex] && (
+                        language === 'es'
+                          ? `${weekDates[annotationModalDayIndex].dayFullNameEs}, ${weekDates[annotationModalDayIndex].dayNumber} de ${weekDates[annotationModalDayIndex].monthName} • ${selectedPet.name}`
+                          : `${weekDates[annotationModalDayIndex].dayFullNameEn}, ${weekDates[annotationModalDayIndex].monthName} ${weekDates[annotationModalDayIndex].dayNumber} • ${selectedPet.name}`
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAnnotationModalDayIndex(null)}
+                  className="p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-4 sm:p-5 space-y-4">
+                {/* Quick Chips */}
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 block mb-2">
+                    {language === 'es' ? 'Atajos rápidos (pulsa para añadir):' : 'Quick tags (tap to insert):'}
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {quickNoteChips.map((chip, cIdx) => (
+                      <button
+                        key={cIdx}
+                        type="button"
+                        onClick={() => toggleChip(chip)}
+                        className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                          annotationText.includes(chip)
+                            ? 'bg-amber-500/20 text-amber-950 dark:text-[#F3E5AB] border-amber-500/40 font-bold shadow-2xs'
+                            : 'bg-stone-100 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:border-amber-400'
+                        }`}
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Text Area */}
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 block mb-1.5">
+                    {language === 'es' ? 'Texto de la anotación:' : 'Note text:'}
+                  </label>
+                  <textarea
+                    value={annotationText}
+                    onChange={(e) => setAnnotationText(e.target.value)}
+                    rows={4}
+                    placeholder={
+                      language === 'es'
+                        ? 'Ej: Hoy comió con muchas ganas. Heces firmes y digestión excelente. Tuvo mucha energía en el paseo...'
+                        : 'E.g.: Ate with high appetite today. Good stool and digestion. Energetic during morning walk...'
+                    }
+                    className="w-full p-3 rounded-2xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 resize-none"
+                    autoFocus
+                  />
+                  <span className="text-[11px] text-stone-400 mt-1 block">
+                    {language === 'es' 
+                      ? 'La anotación se guardará para este día y verás un distintivo en el calendario semanal.' 
+                      : 'Note will be saved for this day with a badge in the weekly calendar.'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 sm:p-5 bg-[#FAF7F2] dark:bg-[#16271F] border-t border-[#E8DCCB] dark:border-[#D4AF37]/20 flex items-center justify-between gap-2">
+                {annotationModalDayIndex !== null && getTrackingForDay(selectedPet.id, weekDates[annotationModalDayIndex]?.dateStr || '').dayNote ? (
+                  <button
+                    type="button"
+                    onClick={handleDeleteAnnotation}
+                    className="px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>{language === 'es' ? 'Eliminar nota' : 'Delete note'}</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAnnotationModalDayIndex(null)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-200/60 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  >
+                    {language === 'es' ? 'Cancelar' : 'Cancel'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveAnnotation}
+                    className="px-4 py-2 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 text-xs font-black flex items-center gap-1.5 border border-[#E5D2B3] dark:border-[#D4AF37]/50 shadow-xs transition-all cursor-pointer"
+                  >
+                    <Check className="w-4 h-4 text-stone-950" />
+                    <span>{language === 'es' ? 'Guardar anotación' : 'Save note'}</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -1099,41 +1449,42 @@ const MealCard: React.FC<MealCardProps> = ({
         {ingredients.slice(0, 3).map(i => i.name).join(', ')}...
       </div>
 
-      {/* Dual Controls: Green (Yes, Given) / Red (No, Not Given) / Inspect */}
-      <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-stone-800/80">
-        {/* Yes Button (Green) */}
+      {/* Dual Controls: Green (Sí se dio) / Red (No se dio) / Inspect (Ver) */}
+      <div className="flex items-center gap-1.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+        {/* Yes Button (Green) - Smaller tab */}
         <button
           onClick={() => onSetStatus(status === true ? null : true)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
             status === true
-              ? 'bg-emerald-600 text-white shadow-md'
+              ? 'bg-emerald-600 text-white shadow-xs'
               : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
           }`}
         >
-          <Check className="w-3.5 h-3.5" />
-          <span>{language === 'es' ? 'Dado (Sí)' : 'Served (Yes)'}</span>
+          <Check className="w-3 h-3 shrink-0" />
+          <span className="truncate">{language === 'es' ? 'Sí se dio' : 'Served (Yes)'}</span>
         </button>
 
-        {/* No Button (Red) */}
+        {/* No Button (Red) - Smaller tab */}
         <button
           onClick={() => onSetStatus(status === false ? null : false)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
             status === false
-              ? 'bg-rose-600 text-white shadow-md'
+              ? 'bg-rose-600 text-white shadow-xs'
               : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20'
           }`}
         >
-          <X className="w-3.5 h-3.5" />
-          <span>{language === 'es' ? 'No se dio' : 'Not served'}</span>
+          <X className="w-3 h-3 shrink-0" />
+          <span className="truncate">{language === 'es' ? 'No se dio' : 'Not served'}</span>
         </button>
 
-        {/* Inspect Recipe */}
+        {/* Inspect Recipe - 'Ver' Button with Champagne background and black text */}
         <button
           onClick={onInspect}
-          className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+          className="py-1 px-2.5 sm:px-3 rounded-lg bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] active:bg-[#dfc8a5] text-stone-950 border border-[#E5D2B3] dark:border-[#D4AF37]/50 shadow-2xs text-[11px] font-black transition-all flex items-center justify-center gap-1 shrink-0 cursor-pointer"
           title={t('ingredientsAndRecipe')}
         >
-          <Info className="w-4 h-4" />
+          <Eye className="w-3 h-3 text-stone-950 shrink-0" />
+          <span className="text-stone-950 font-black tracking-wide">{language === 'es' ? 'Ver' : 'View'}</span>
         </button>
       </div>
     </div>
@@ -1207,38 +1558,39 @@ const SnackDessertCard: React.FC<SnackDessertCardProps> = ({
         ✓ {benefits}
       </div>
 
-      {/* Control Buttons */}
+      {/* Control Buttons: Smaller tabs & Champagne 'Ver' button */}
       <div className="flex items-center gap-1.5 pt-2 border-t border-stone-100 dark:border-stone-800">
         <button
           onClick={() => onSetStatus(status === true ? null : true)}
-          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 py-1 px-1.5 sm:px-2 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
             status === true
               ? 'bg-emerald-600 text-white shadow-xs'
               : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
           }`}
         >
-          <Check className="w-3 h-3" />
-          <span>{language === 'es' ? 'Dado' : 'Given'}</span>
+          <Check className="w-3 h-3 shrink-0" />
+          <span className="truncate">{language === 'es' ? 'Sí se dio' : 'Given'}</span>
         </button>
 
         <button
           onClick={() => onSetStatus(status === false ? null : false)}
-          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+          className={`flex-1 py-1 px-1.5 sm:px-2 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
             status === false
               ? 'bg-rose-600 text-white shadow-xs'
               : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400'
           }`}
         >
-          <X className="w-3 h-3" />
-          <span>{language === 'es' ? 'No' : 'No'}</span>
+          <X className="w-3 h-3 shrink-0" />
+          <span className="truncate">{language === 'es' ? 'No se dio' : 'No'}</span>
         </button>
 
         <button
           onClick={onInspect}
-          className="p-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
-          title="Ver detalles"
+          className="py-1 px-2.5 sm:px-3 rounded-lg bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] active:bg-[#dfc8a5] text-stone-950 border border-[#E5D2B3] dark:border-[#D4AF37]/50 shadow-2xs text-[10px] sm:text-[11px] font-black transition-all flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+          title={language === 'es' ? 'Ver detalles' : 'View details'}
         >
-          <Info className="w-3.5 h-3.5" />
+          <Eye className="w-3 h-3 text-stone-950 shrink-0" />
+          <span className="text-stone-950 font-black tracking-wide">{language === 'es' ? 'Ver' : 'View'}</span>
         </button>
       </div>
     </div>

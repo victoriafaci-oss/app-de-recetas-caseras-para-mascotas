@@ -62,10 +62,6 @@ const MainLayout: React.FC = () => {
             setCurrentView('pricing');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }} 
-          onEnterApp={() => {
-            setCurrentView('app');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
         />
         {renderToast()}
       </>
@@ -79,10 +75,6 @@ const MainLayout: React.FC = () => {
         <WelcomePaymentGateway 
           onBackToLanding={() => {
             setCurrentView('landing');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          onEnterApp={() => {
-            setCurrentView('app');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           initialSelectedPlanId={selectedPlanId}

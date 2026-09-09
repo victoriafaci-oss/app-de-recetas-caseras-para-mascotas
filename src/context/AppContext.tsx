@@ -18,6 +18,7 @@ import { INITIAL_PETS, INITIAL_EVENTS, RECIPES_CATALOG } from '../data/mockData'
 import { PRICING_PLANS } from '../data/pricingData';
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { getTranslation, TranslationKey, TRANSLATIONS } from '../utils/translations';
+import { formatLocalDateKey } from '../utils/dietPlanner';
 import confetti from 'canvas-confetti';
 
 interface AppContextType {
@@ -56,6 +57,7 @@ interface AppContextType {
   weeklyTracking: WeeklyTrackingMap;
   setMealStatus: (petId: string, dateKey: string, mealType: 'dish1' | 'dish2' | 'snack1' | 'snack2' | 'dessert1' | 'dessert2', status: boolean | null) => void;
   setExerciseStatus: (petId: string, dateKey: string, completed: boolean, durationMin?: number, notes?: string) => void;
+  setDayNote: (petId: string, dateKey: string, note: string) => void;
   getTrackingForDay: (petId: string, dateKey: string) => DailyTrackingRecord;
   customRecipes: Recipe[];
   addCustomRecipe: (recipe: Recipe) => void;
@@ -248,7 +250,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     }
     // Seed initial realistic compliance state for demo pets
-    const today = new Date().toISOString().split('T')[0];
+    const today = formatLocalDateKey(new Date());
     return {
       'pet-1': {
         [today]: {
@@ -378,6 +380,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'success'
       );
     }
+  };
+
+  const setDayNote = (
+    petId: string,
+    dateKey: string,
+    note: string
+  ) => {
+    setWeeklyTracking(prev => {
+      const petRecords = prev[petId] || {};
+      const dayRecord = petRecords[dateKey] || {
+        dish1Given: null,
+        dish2Given: null,
+        snack1Given: null,
+        snack2Given: null,
+        dessert1Given: null,
+        dessert2Given: null,
+        exerciseCompleted: false,
+        exerciseDurationMin: 0,
+      };
+
+      const updatedRecord: DailyTrackingRecord = {
+        ...dayRecord,
+        dayNote: note,
+        dayNoteUpdatedAt: new Date().toISOString(),
+      };
+
+      return {
+        ...prev,
+        [petId]: {
+          ...petRecords,
+          [dateKey]: updatedRecord,
+        },
+      };
+    });
   };
 
   // Custom AI recipes
@@ -640,7 +676,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const recordBathToday = (petId: string) => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = formatLocalDateKey(new Date());
     setPets(prev => prev.map(p => {
       if (p.id === petId) {
         return { ...p, lastBathDate: todayStr };
@@ -655,7 +691,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const recordCookedMeal = (petId: string, record: { recipeId: string; recipeTitle: string; daysPrepared: number; totalGrams: number; totalKcal: number }) => {
     const cookedEntry = {
       id: `cook-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
+      date: formatLocalDateKey(new Date()),
       ...record,
     };
     setPets(prev => prev.map(p => {
@@ -910,6 +946,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         weeklyTracking,
         setMealStatus,
         setExerciseStatus,
+        setDayNote,
         getTrackingForDay,
         customRecipes,
         addCustomRecipe,

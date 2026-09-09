@@ -92,8 +92,7 @@ export const HomeScreen: React.FC = () => {
 
   // Today's specific plan and date
   const todayDateObj = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const found = weekDates.find(d => d.dateStr === today);
+    const found = weekDates.find(d => d.isToday);
     return found || weekDates[0];
   }, [weekDates]);
 
@@ -531,7 +530,9 @@ export const HomeScreen: React.FC = () => {
               <p className="text-xs text-stone-600 dark:text-stone-300 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 font-semibold text-stone-900 dark:text-stone-100">
                   <Calendar className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                  {language === 'es' ? 'Sugerencias de hoy:' : 'Today:'} {todayDateObj.dayNameEs}, {todayDateObj.dateFormatted}
+                  {language === 'es' 
+                    ? `Sugerencias de hoy: ${todayDateObj.dayNameEs}, ${todayDateObj.dayNumber} de ${todayDateObj.monthFullNameEs || todayDateObj.monthName} de ${todayDateObj.year || 2026}`
+                    : `Today: ${todayDateObj.dayNameEn}, ${todayDateObj.monthFullNameEn || todayDateObj.monthName} ${todayDateObj.dayNumber}, ${todayDateObj.year || 2026}`}
                 </span>
                 <span className="text-stone-400">•</span>
                 <span>
@@ -620,47 +621,45 @@ export const HomeScreen: React.FC = () => {
                       clinicalBenefits: todayPlan.dish1.clinicalBenefits,
                       chefTip: todayPlan.dish1.chefTip
                     })}
-                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 hover:border-[#D4AF37] text-stone-800 dark:text-[#F3E5AB] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101"
+                    className="px-3 py-1.5 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 font-black text-xs border border-[#E5D2B3] dark:border-[#D4AF37]/50 flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101 cursor-pointer"
                   >
-                    <BookOpen className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                    <span>{language === 'es' ? 'Ver Receta & Preparación 📖' : 'View Recipe & Method'}</span>
+                    <Eye className="w-3.5 h-3.5 text-stone-950 shrink-0" />
+                    <span className="text-stone-950 font-black">{language === 'es' ? 'Ver' : 'View'}</span>
                   </button>
 
-                  {/* Stik OK Controls */}
+                  {/* Stik Controls - Smaller tabs */}
                   <div className="flex items-center justify-end gap-1.5">
-                    <span className="text-[10px] font-semibold text-stone-500 mr-1 hidden sm:inline">
-                      {language === 'es' ? '¿Hecha hoy?' : 'Made today?'}
-                    </span>
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'dish1', true);
                         playLuxuryChime();
-                        showToast(language === 'es' ? '✅ ¡Plato 1 marcado como hecho hoy (OK)!' : '✅ Meal 1 marked as done today!');
+                        showToast(language === 'es' ? '✅ ¡Plato 1 marcado como Sí se dio!' : '✅ Meal 1 marked as served!');
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                         todayTracking.dish1Given === true
                           ? 'bg-emerald-600 text-white shadow-xs scale-102 ring-2 ring-emerald-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-emerald-100 hover:text-emerald-900'
+                          : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
                       }`}
-                      title={language === 'es' ? 'Dar OK: marcar como hecha hoy' : 'Give OK: mark as made today'}
+                      title={language === 'es' ? 'Sí se dio' : 'Served today'}
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{language === 'es' ? 'OK / Hecha' : 'OK / Done'}</span>
+                      <Check className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'Sí se dio' : 'Served'}</span>
                     </button>
 
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'dish1', false);
-                        showToast(language === 'es' ? '🔴 Marcada como no hecha' : '🔴 Marked as not done');
+                        showToast(language === 'es' ? '🔴 Marcado como No se dio' : '🔴 Marked as not served');
                       }}
-                      className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                         todayTracking.dish1Given === false
                           ? 'bg-rose-600 text-white shadow-xs scale-102 ring-2 ring-rose-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:bg-rose-100 hover:text-rose-900'
+                          : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20'
                       }`}
-                      title={language === 'es' ? 'Marcar como No hecha' : 'Mark as not done'}
+                      title={language === 'es' ? 'No se dio' : 'Not served'}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'No se dio' : 'No'}</span>
                     </button>
                   </div>
                 </div>
@@ -720,47 +719,45 @@ export const HomeScreen: React.FC = () => {
                       clinicalBenefits: todayPlan.dish2.clinicalBenefits,
                       chefTip: todayPlan.dish2.chefTip
                     })}
-                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 hover:border-[#D4AF37] text-stone-800 dark:text-[#F3E5AB] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101"
+                    className="px-3 py-1.5 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 font-black text-xs border border-[#E5D2B3] dark:border-[#D4AF37]/50 flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101 cursor-pointer"
                   >
-                    <BookOpen className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                    <span>{language === 'es' ? 'Ver Receta & Preparación 📖' : 'View Recipe & Method'}</span>
+                    <Eye className="w-3.5 h-3.5 text-stone-950 shrink-0" />
+                    <span className="text-stone-950 font-black">{language === 'es' ? 'Ver' : 'View'}</span>
                   </button>
 
-                  {/* Stik OK Controls */}
+                  {/* Stik Controls - Smaller tabs */}
                   <div className="flex items-center justify-end gap-1.5">
-                    <span className="text-[10px] font-semibold text-stone-500 mr-1 hidden sm:inline">
-                      {language === 'es' ? '¿Hecha hoy?' : 'Made today?'}
-                    </span>
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'dish2', true);
                         playLuxuryChime();
-                        showToast(language === 'es' ? '✅ ¡Plato 2 marcado como hecho hoy (OK)!' : '✅ Meal 2 marked as done today!');
+                        showToast(language === 'es' ? '✅ ¡Plato 2 marcado como Sí se dio!' : '✅ Meal 2 marked as served!');
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                         todayTracking.dish2Given === true
                           ? 'bg-emerald-600 text-white shadow-xs scale-102 ring-2 ring-emerald-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-emerald-100 hover:text-emerald-900'
+                          : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
                       }`}
-                      title={language === 'es' ? 'Dar OK: marcar como hecha hoy' : 'Give OK: mark as made today'}
+                      title={language === 'es' ? 'Sí se dio' : 'Served today'}
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{language === 'es' ? 'OK / Hecha' : 'OK / Done'}</span>
+                      <Check className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'Sí se dio' : 'Served'}</span>
                     </button>
 
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'dish2', false);
-                        showToast(language === 'es' ? '🔴 Marcada como no hecha' : '🔴 Marked as not done');
+                        showToast(language === 'es' ? '🔴 Marcado como No se dio' : '🔴 Marked as not served');
                       }}
-                      className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                         todayTracking.dish2Given === false
                           ? 'bg-rose-600 text-white shadow-xs scale-102 ring-2 ring-rose-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:bg-rose-100 hover:text-rose-900'
+                          : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20'
                       }`}
-                      title={language === 'es' ? 'Marcar como No hecha' : 'Mark as not done'}
+                      title={language === 'es' ? 'No se dio' : 'Not served'}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'No se dio' : 'No'}</span>
                     </button>
                   </div>
                 </div>
@@ -819,47 +816,45 @@ export const HomeScreen: React.FC = () => {
                       clinicalBenefits: [todayPlan.dessert1.benefits],
                       chefTip: todayPlan.dessert1.chefTip || (language === 'es' ? 'Rico en prebióticos y colágeno para mimar su digestión.' : 'Rich in prebiotics and collagen for smooth digestion.')
                     })}
-                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 hover:border-purple-400 text-stone-800 dark:text-[#F3E5AB] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101"
+                    className="px-3 py-1.5 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 font-black text-xs border border-[#E5D2B3] dark:border-[#D4AF37]/50 flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101 cursor-pointer"
                   >
-                    <BookOpen className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                    <span>{language === 'es' ? 'Ver Receta & Preparación 📖' : 'View Recipe & Method'}</span>
+                    <Eye className="w-3.5 h-3.5 text-stone-950 shrink-0" />
+                    <span className="text-stone-950 font-black">{language === 'es' ? 'Ver' : 'View'}</span>
                   </button>
 
-                  {/* Stik OK Controls */}
+                  {/* Stik Controls - Smaller tabs */}
                   <div className="flex items-center justify-end gap-1.5">
-                    <span className="text-[10px] font-semibold text-stone-500 mr-1 hidden sm:inline">
-                      {language === 'es' ? '¿Hecho hoy?' : 'Given?'}
-                    </span>
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'dessert1', true);
                         playLuxuryChime();
-                        showToast(language === 'es' ? '✅ ¡Postre marcado como hecho hoy (OK)!' : '✅ Dessert marked as done today!');
+                        showToast(language === 'es' ? '✅ ¡Postre marcado como Sí se dio!' : '✅ Dessert marked as served!');
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                         todayTracking.dessert1Given === true
                           ? 'bg-emerald-600 text-white shadow-xs scale-102 ring-2 ring-emerald-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-emerald-100 hover:text-emerald-900'
+                          : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
                       }`}
-                      title={language === 'es' ? 'Dar OK: marcar como hecho hoy' : 'Give OK: mark as done today'}
+                      title={language === 'es' ? 'Sí se dio' : 'Served today'}
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{language === 'es' ? 'OK / Hecho' : 'OK / Done'}</span>
+                      <Check className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'Sí se dio' : 'Served'}</span>
                     </button>
 
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'dessert1', false);
-                        showToast(language === 'es' ? '🔴 Marcado como no hecho' : '🔴 Marked as not given');
+                        showToast(language === 'es' ? '🔴 Marcado como No se dio' : '🔴 Marked as not served');
                       }}
-                      className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                         todayTracking.dessert1Given === false
                           ? 'bg-rose-600 text-white shadow-xs scale-102 ring-2 ring-rose-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:bg-rose-100 hover:text-rose-900'
+                          : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20'
                       }`}
-                      title={language === 'es' ? 'Marcar como No hecho' : 'Mark as not done'}
+                      title={language === 'es' ? 'No se dio' : 'Not served'}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'No se dio' : 'No'}</span>
                     </button>
                   </div>
                 </div>
@@ -918,47 +913,45 @@ export const HomeScreen: React.FC = () => {
                       clinicalBenefits: [todayPlan.snack1.benefits],
                       chefTip: todayPlan.snack1.chefTip || (language === 'es' ? 'Conservar en bote hermético hasta 4 días.' : 'Store in an airtight jar up to 4 days.')
                     })}
-                    className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 hover:border-amber-400 text-stone-800 dark:text-[#F3E5AB] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101"
+                    className="px-3 py-1.5 rounded-xl bg-[#F7E7CE] dark:bg-[#F3E5AB] hover:bg-[#ebd7b8] text-stone-950 font-black text-xs border border-[#E5D2B3] dark:border-[#D4AF37]/50 flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:scale-101 cursor-pointer"
                   >
-                    <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                    <span>{language === 'es' ? 'Ver Receta & Preparación 📖' : 'View Recipe & Method'}</span>
+                    <Eye className="w-3.5 h-3.5 text-stone-950 shrink-0" />
+                    <span className="text-stone-950 font-black">{language === 'es' ? 'Ver' : 'View'}</span>
                   </button>
 
-                  {/* Stik OK Controls */}
+                  {/* Stik Controls - Smaller tabs */}
                   <div className="flex items-center justify-end gap-1.5">
-                    <span className="text-[10px] font-semibold text-stone-500 mr-1 hidden sm:inline">
-                      {language === 'es' ? '¿Hecho hoy?' : 'Given?'}
-                    </span>
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'snack1', true);
                         playLuxuryChime();
-                        showToast(language === 'es' ? '✅ ¡Snack marcado como hecho hoy (OK)!' : '✅ Snack marked as done today!');
+                        showToast(language === 'es' ? '✅ ¡Snack marcado como Sí se dio!' : '✅ Snack marked as served!');
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                         todayTracking.snack1Given === true
                           ? 'bg-emerald-600 text-white shadow-xs scale-102 ring-2 ring-emerald-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-emerald-100 hover:text-emerald-900'
+                          : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
                       }`}
-                      title={language === 'es' ? 'Dar OK: marcar como hecho hoy' : 'Give OK: mark as done today'}
+                      title={language === 'es' ? 'Sí se dio' : 'Served today'}
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{language === 'es' ? 'OK / Hecho' : 'OK / Done'}</span>
+                      <Check className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'Sí se dio' : 'Served'}</span>
                     </button>
 
                     <button
                       onClick={() => {
                         setMealStatus(selectedPet.id, todayDateObj.dateStr, 'snack1', false);
-                        showToast(language === 'es' ? '🔴 Marcado como no hecho' : '🔴 Marked as not given');
+                        showToast(language === 'es' ? '🔴 Marcado como No se dio' : '🔴 Marked as not served');
                       }}
-                      className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                         todayTracking.snack1Given === false
                           ? 'bg-rose-600 text-white shadow-xs scale-102 ring-2 ring-rose-500/30'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:bg-rose-100 hover:text-rose-900'
+                          : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20'
                       }`}
-                      title={language === 'es' ? 'Marcar como No hecho' : 'Mark as not done'}
+                      title={language === 'es' ? 'No se dio' : 'Not served'}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3 shrink-0" />
+                      <span>{language === 'es' ? 'No se dio' : 'No'}</span>
                     </button>
                   </div>
                 </div>
@@ -1284,7 +1277,9 @@ export const HomeScreen: React.FC = () => {
                     <span>{inspectingRecipe.typeLabel}</span>
                   </span>
                   <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    {todayDateObj.dayNameEs}, {todayDateObj.dateFormatted}
+                    {language === 'es'
+                      ? `${todayDateObj.dayNameEs}, ${todayDateObj.dayNumber} de ${todayDateObj.monthFullNameEs || todayDateObj.monthName} de ${todayDateObj.year || 2026}`
+                      : `${todayDateObj.dayNameEn}, ${todayDateObj.monthFullNameEn || todayDateObj.monthName} ${todayDateObj.dayNumber}, ${todayDateObj.year || 2026}`}
                   </span>
                 </div>
                 <h3 className="font-editorial text-xl sm:text-2xl font-bold text-stone-900 dark:text-[#F3E5AB]">

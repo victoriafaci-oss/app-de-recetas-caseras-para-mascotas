@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { HealthEvent, EventCategory } from '../types';
 import { EVENT_CATEGORIES } from '../data/mockData';
 import { exportToICS, getGoogleCalendarUrl, playLuxuryChime } from '../utils/alertsAndAudio';
+import { formatLocalDateKey } from '../utils/dietPlanner';
 import { 
   CalendarDays, 
   Plus, 
@@ -39,7 +40,7 @@ export const AgendaScreen: React.FC = () => {
   const [title, setTitle] = useState('');
   const [formPetId, setFormPetId] = useState(selectedPetId);
   const [category, setCategory] = useState<EventCategory>('medication');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(formatLocalDateKey(new Date()));
   const [time, setTime] = useState('09:00');
   const [dosage, setDosage] = useState('');
   const [notes, setNotes] = useState('');

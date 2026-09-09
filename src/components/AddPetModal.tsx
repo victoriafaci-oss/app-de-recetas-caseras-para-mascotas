@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Pet, Species, ClinicalCondition, ActivityLevel } from '../types';
 import { X, Sparkles, Plus, Check, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { COMMON_FOOD_ALLERGENS, parseAllergens } from '../utils/allergyUtils';
+import { formatLocalDateKey } from '../utils/dietPlanner';
 
 interface AddPetModalProps {
   isOpen: boolean;
@@ -115,7 +116,7 @@ export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petTo
         avatarIcon,
         avatarColor: species === 'dog' ? 'from-amber-600 to-yellow-800' : 'from-emerald-700 to-teal-900',
         bathFrequencyDays: Number(bathFrequencyDays),
-        lastBathDate: new Date().toISOString().split('T')[0],
+        lastBathDate: formatLocalDateKey(new Date()),
       });
     }
     onClose();

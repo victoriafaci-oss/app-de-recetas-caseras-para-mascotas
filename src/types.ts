@@ -244,6 +244,8 @@ export interface DailyTrackingRecord {
   exerciseDurationMin: number;
   exerciseType?: string;
   exerciseNotes?: string;
+  dayNote?: string;
+  dayNoteUpdatedAt?: string;
 }
 
 export type WeeklyTrackingMap = {
