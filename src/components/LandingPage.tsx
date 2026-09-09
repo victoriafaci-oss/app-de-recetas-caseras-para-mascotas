@@ -1218,15 +1218,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           <a href="#contacto" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Contacto</a>
         </div>
 
-        {/* Botón pequeño y muy discreto de Promoción: utiliza la ruta segura interna /promocion para que en la esquina inferior izquierda solo se muestre el dominio propio y nunca el enlace directo de Stripe */}
+        {/* Botón de Promoción conectado directamente a Stripe */}
         <div className="mt-4 flex justify-center">
           <a
-            href="/promocion"
+            href="https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03"
             target="_blank"
             rel="noopener noreferrer"
             id="btn-promocion-footer"
             className="inline-flex items-center px-2 py-0.5 rounded text-[10px] text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-300 transition-opacity opacity-50 hover:opacity-100 cursor-pointer select-none"
-            aria-label="Promoción"
           >
             promoción
           </a>
