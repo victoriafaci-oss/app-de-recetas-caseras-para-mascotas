@@ -168,6 +168,25 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "PawLove - Mascotas Server" });
 });
 
+// Secure server-side redirect for promotional link and plans
+// This protects external Stripe links from being exposed in browser status bars on hover
+app.get("/promocion", (_req, res) => {
+  const promoUrl = getEnvVar("STRIPE_PAYMENT_LINK_PROMO", "STRIPE_LINK_PROMO", "VITE_STRIPE_PAYMENT_LINK_PROMO") || DEFAULT_STRIPE_PAYMENT_LINKS.promo;
+  return res.redirect(302, promoUrl);
+});
+
+app.get("/checkout/:plan", (req, res) => {
+  const plan = req.params.plan;
+  const directLinks: Record<string, string> = {
+    monthly: getEnvVar("STRIPE_PAYMENT_LINK_MONTHLY", "STRIPE_LINK_MONTHLY", "VITE_STRIPE_PAYMENT_LINK_MONTHLY") || DEFAULT_STRIPE_PAYMENT_LINKS.monthly,
+    annual: getEnvVar("STRIPE_PAYMENT_LINK_ANNUAL", "STRIPE_LINK_ANNUAL", "VITE_STRIPE_PAYMENT_LINK_ANNUAL") || DEFAULT_STRIPE_PAYMENT_LINKS.annual,
+    lifetime: getEnvVar("STRIPE_PAYMENT_LINK_LIFETIME", "STRIPE_LINK_LIFETIME", "VITE_STRIPE_PAYMENT_LINK_LIFETIME") || DEFAULT_STRIPE_PAYMENT_LINKS.lifetime,
+    promo: getEnvVar("STRIPE_PAYMENT_LINK_PROMO", "STRIPE_LINK_PROMO", "VITE_STRIPE_PAYMENT_LINK_PROMO") || DEFAULT_STRIPE_PAYMENT_LINKS.promo,
+  };
+  const link = directLinks[plan] || directLinks.promo;
+  return res.redirect(302, link);
+});
+
 // In-memory store for SMS verification codes
 const smsVerificationStore = new Map<string, { code: string; expiresAt: number }>();
 

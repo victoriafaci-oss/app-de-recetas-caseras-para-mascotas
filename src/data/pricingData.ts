@@ -8,16 +8,43 @@ export const STRIPE_PAYMENT_LINKS = {
 } as const;
 
 export const openStripeCheckout = (planId: string): boolean => {
-  const link = (STRIPE_PAYMENT_LINKS as Record<string, string>)[planId];
-  if (link) {
-    // Open in a new tab to avoid iframe X-Frame-Options blocking
+  const directLink = (STRIPE_PAYMENT_LINKS as Record<string, string>)[planId];
+  const redirectUrl = planId === 'promo' ? '/promocion' : (directLink || `/checkout/${planId}`);
+
+  if (redirectUrl) {
+    // 1. Try simulated anchor click to bypass popup blockers and work smoothly across browser sandbox modes
     try {
-      const newWin = window.open(link, '_blank', 'noopener,noreferrer');
+      const a = document.createElement('a');
+      a.href = redirectUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return true;
+    } catch {
+      // Fallback
+    }
+
+    // 2. Direct window.open fallback
+    try {
+      const newWin = window.open(redirectUrl, '_blank', 'noopener,noreferrer');
       if (newWin) return true;
     } catch {
       // Fallback
     }
-    window.location.assign(link);
+
+    // 3. Top-window navigation fallback if in iframe
+    try {
+      if (window.top && window.top !== window) {
+        window.top.location.href = directLink || redirectUrl;
+        return true;
+      }
+    } catch {
+      // Cross-origin iframe fallback
+    }
+
+    window.location.assign(directLink || redirectUrl);
     return true;
   }
   return false;
