@@ -196,41 +196,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
       {/* HEADER: LOGO, SELECTOR DÍA/NOCHE, IDIOMA Y ACCESO                          */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 dark:border-[#E8B84A]/20 bg-[#FBF9F5]/90 dark:bg-[#0A0F0D]/90 backdrop-blur-md transition-colors duration-300">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-2.5 sm:px-6 h-13 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
           
           {/* Logo Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-emerald-700 p-0.5 shadow-sm dark:shadow-md">
-              <div className="w-full h-full rounded-[10px] bg-[#FBF9F5] dark:bg-[#0A0F0D] flex items-center justify-center text-amber-700 dark:text-[#E8B84A]">
-                <ChefHat className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E]">
+              <div className="w-full h-full aspect-square overflow-hidden flex items-center justify-center">
+                <img 
+                  src="/pawlove_logo.jpg" 
+                  alt="PAWLOVE Mascotas" 
+                  className="w-full h-full object-cover aspect-square"
+                  referrerPolicy="no-referrer"
+                />
               </div>
             </div>
-            <div>
-              <div className="font-editorial text-lg sm:text-xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
+            <div className="min-w-0 shrink">
+              <div className="font-editorial text-xs sm:text-base md:text-lg font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
                 PAWLOVE - MASCOTAS
               </div>
             </div>
           </div>
 
           {/* Controles: Día/Noche, Idioma y Botón de Acción */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             
             {/* Toggle Día / Noche */}
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Cambiar a modo Día' : 'Cambiar a modo Noche'}
-              className="w-8 h-8 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-[#121B16] text-stone-600 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-[#121B16] text-stone-600 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E8B84A]" /> : <Moon className="w-4 h-4 text-stone-700" />}
+              {theme === 'dark' ? <Sun className="w-3 h-3 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3 h-3 sm:w-4 sm:h-4 text-stone-700" />}
             </button>
 
             {/* Toggle Idioma */}
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
               title="Cambiar idioma"
-              className="px-2 py-1 rounded-md border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-[#121B16] text-[11px] font-bold text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors flex items-center gap-1 cursor-pointer"
+              className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-[#121B16] text-[10px] sm:text-[11px] font-bold text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors flex items-center gap-0.5 sm:gap-1 cursor-pointer shrink-0"
             >
-              <Globe className="w-3 h-3" />
+              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               <span>{language.toUpperCase()}</span>
             </button>
 
@@ -239,10 +244,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
               <button
                 onClick={onEnterApp}
                 id="btn-landing-enter-app"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/50 dark:border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 shadow-2xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-emerald-500/50 dark:border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/40 text-[10px] sm:text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 shadow-2xs transition-all cursor-pointer shrink-0"
                 title="Ir a la aplicación"
               >
-                <span>🐾 Entrar a la App</span>
+                <span className="hidden sm:inline">🐾 Entrar a la App</span>
+                <span className="sm:hidden">🐾 App</span>
               </button>
             )}
 
@@ -256,10 +262,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
                   onGoToPricing();
                 }
               }}
-              className="px-3.5 sm:px-4 py-2 rounded-full bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-bold text-xs tracking-wide shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+              id="btn-header-tarifas-small"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-[10px] sm:text-xs tracking-tight sm:tracking-wide shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
             >
-              <span>Ver Tarifas</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span className="text-stone-950 font-black">{language === 'es' ? 'Tarifas' : 'Pricing'}</span>
+              <ArrowRight className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-stone-950" />
             </button>
           </div>
         </div>
@@ -293,11 +300,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
           <button
             onClick={() => onGoToPricing('free_trial_48h')}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black text-sm sm:text-base shadow-lg shadow-amber-500/20 dark:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-sm sm:text-base shadow-lg shadow-amber-500/20 dark:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Personalizar y Probar 48h Gratis</span>
-            <ArrowRight className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 text-stone-950" />
+            <span className="text-stone-950 font-black">Personalizar y Probar 48h Gratis</span>
+            <ArrowRight className="w-4 h-4 text-stone-950" />
           </button>
           <button
             onClick={() => {
@@ -345,7 +352,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
                   onClick={() => setSelectedDemoId(p.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     selectedDemoId === p.id
-                      ? 'bg-amber-600 text-white dark:bg-[#E8B84A] dark:text-[#0A0F0D] shadow-sm'
+                      ? 'bg-[#D4AF37] text-stone-950 shadow-sm font-black'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >
@@ -814,22 +821,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
       {/* ========================================================================= */}
       {/* 9. TARIFAS Y PLANES DE SUSCRIPCIÓN OFICIALES (CHECKOUT DIRECTO STRIPE)    */}
       {/* ========================================================================= */}
-      <section id="tarifas" className="relative z-10 py-16 px-4 sm:px-6 max-w-6xl mx-auto border-t border-stone-200 dark:border-[#E8B84A]/20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+      <section id="tarifas" className="relative z-10 py-12 sm:py-16 px-3.5 sm:px-6 max-w-6xl mx-auto border-t border-stone-200 dark:border-[#E8B84A]/20 w-full max-w-full box-border overflow-hidden sm:overflow-visible">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-[#E8B84A]/35 text-xs font-bold text-amber-900 dark:text-[#F3E5AB] mb-3 shadow-xs">
             <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-[#E8B84A]" />
             <span>Suscripción Oficial • Checkout Seguro con Stripe</span>
           </div>
-          <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 dark:text-white leading-tight">
+          <h2 className="font-editorial text-2xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 dark:text-white leading-tight">
             Tarifas Transparentes para el Cuidado de tu Mascota
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-stone-600 dark:text-stone-300 leading-relaxed font-light">
+          <p className="mt-3 text-xs sm:text-base text-stone-600 dark:text-stone-300 leading-relaxed font-light">
             Todas las tarifas incluyen acceso completo a las recetas al gramo, NutriIA, agenda médica y cálculo metabólico. Al hacer clic accederás directamente a la pasarela oficial y encriptada de <strong>Stripe</strong>.
           </p>
         </div>
 
         {/* PESTAÑAS DE TARIFAS COMPACTAS PARA MÓVIL (< md) */}
-        <div className="md:hidden max-w-md mx-auto mb-4 space-y-2">
+        <div className="md:hidden max-w-md mx-auto mb-4 space-y-2 w-full max-w-full box-border">
           <div className="flex items-center justify-between px-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
               Pestañas de Tarifas:
@@ -844,7 +851,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
           </div>
 
           {/* Pestañas reducidas para teléfono */}
-          <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-[#122019] border border-stone-200 dark:border-stone-800 text-[11px]">
+          <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-[#122019] border border-stone-200 dark:border-stone-800 text-[11px] w-full max-w-full box-border">
             <button
               type="button"
               onClick={() => {
@@ -873,8 +880,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
                   : 'text-stone-600 dark:text-stone-400'
               }`}
             >
-              <span className="text-[11px]">Anual ⭐</span>
-              <span className="text-[9px] font-medium opacity-85">19,99 €</span>
+              <span className={`text-[11px] ${landingActiveTab === 'annual' ? 'text-stone-950 font-black' : ''}`}>Anual ⭐</span>
+              <span className={`text-[9px] font-medium ${landingActiveTab === 'annual' ? 'text-stone-950 font-bold opacity-90' : 'opacity-85'}`}>19,99 €</span>
             </button>
 
             <button
@@ -896,10 +903,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
         </div>
 
         {/* Las 3 tarjetas de pago oficiales de Stripe (Compactas en móvil, 3 columnas en desktop) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6 max-w-5xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6 max-w-5xl mx-auto items-stretch w-full max-w-full box-border">
           
           {/* 1. PLAN MENSUAL */}
-          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex-col justify-between shadow-xs hover:shadow-xl transition-all ${
+          <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 lg:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex-col justify-between shadow-xs hover:shadow-xl transition-all w-full max-w-full box-border ${
             landingViewMode === 'tab' && landingActiveTab !== 'monthly' ? 'hidden md:flex' : 'flex'
           }`}>
             <div className="space-y-2.5 sm:space-y-4">
@@ -968,7 +975,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
           </div>
 
           {/* 2. PLAN ANUAL (MÁS POPULAR) */}
-          <div className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 bg-white dark:bg-[#13231B] border-2 border-[#B8860B] dark:border-[#D4AF37] shadow-md ring-1 sm:ring-2 ring-amber-500/20 dark:ring-[#D4AF37]/20 flex-col justify-between md:-translate-y-1.5 transition-all ${
+          <div className={`relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 lg:p-7 bg-white dark:bg-[#13231B] border-2 border-[#B8860B] dark:border-[#D4AF37] shadow-md ring-1 sm:ring-2 ring-amber-500/20 dark:ring-[#D4AF37]/20 flex-col justify-between md:-translate-y-1.5 transition-all w-full max-w-full box-border ${
             landingViewMode === 'tab' && landingActiveTab !== 'annual' ? 'hidden md:flex' : 'flex'
           }`}>
             <div className="absolute -top-2.5 sm:-top-3.5 left-1/2 -translate-x-1/2 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[11px] font-black uppercase tracking-wider bg-[#D4AF37] text-stone-950 shadow-xs whitespace-nowrap">
@@ -1024,11 +1031,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
               <button
                 onClick={() => onGoToPricing('annual')}
                 id="btn-stripe-annual"
-                className="w-full py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-[#B8860B] dark:bg-[#D4AF37] hover:opacity-90 text-white dark:text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-2.5 sm:py-3.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>Contratar Plan Anual (19,99 €)</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+                <CreditCard className="w-3.5 h-3.5 text-stone-950" />
+                <span className="text-stone-950 font-black">Contratar Plan Anual (19,99 €)</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-auto text-stone-950" />
               </button>
               <button
                 type="button"
@@ -1041,7 +1048,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
           </div>
 
           {/* 3. PLAN VITALICIO */}
-          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex-col justify-between shadow-xs hover:shadow-xl transition-all ${
+          <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 lg:p-7 bg-white/95 dark:bg-[#0F1B15] border border-stone-200 dark:border-[#E8B84A]/25 flex-col justify-between shadow-xs hover:shadow-xl transition-all w-full max-w-full box-border ${
             landingViewMode === 'tab' && landingActiveTab !== 'lifetime' ? 'hidden md:flex' : 'flex'
           }`}>
             <div className="space-y-2.5 sm:space-y-4">
@@ -1170,11 +1177,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
           <button
             onClick={() => onGoToPricing('annual')}
             id="btn-final-stripe-annual"
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black text-base shadow-lg shadow-amber-500/25 dark:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-base shadow-lg shadow-amber-500/25 dark:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <CreditCard className="w-5 h-5" />
-            <span>Contratar Plan Anual (19,99 €)</span>
-            <ArrowRight className="w-5 h-5" />
+            <CreditCard className="w-5 h-5 text-stone-950" />
+            <span className="text-stone-950 font-black">Contratar Plan Anual (19,99 €)</span>
+            <ArrowRight className="w-5 h-5 text-stone-950" />
           </button>
           
           <button
@@ -1260,10 +1267,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onEnter
         </div>
         <button
           onClick={() => onGoToPricing('free_trial_48h')}
-          className="px-4 py-2 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-xs font-black shadow-md hover:opacity-90 flex items-center gap-1 cursor-pointer"
+          className="px-4 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 text-xs font-black shadow-md hover:opacity-95 flex items-center gap-1 cursor-pointer"
         >
-          <span>Empezar</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <span className="text-stone-950 font-black">Empezar</span>
+          <ArrowRight className="w-3.5 h-3.5 text-stone-950" />
         </button>
       </div>
 

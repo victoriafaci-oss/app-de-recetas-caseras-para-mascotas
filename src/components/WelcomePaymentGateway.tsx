@@ -97,11 +97,16 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
           
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
-            <div className="p-1 sm:p-2 rounded-xl sm:rounded-2xl bg-[#D4AF37] text-stone-950 shadow-xs shrink-0">
-              <ChefHat className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden shadow-xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E] flex items-center justify-center">
+              <img 
+                src="/pawlove_logo.jpg" 
+                alt="PAWLOVE Mascotas" 
+                className="w-full h-full object-cover aspect-square"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div className="min-w-0 shrink">
-              <div className="font-editorial text-sm sm:text-2xl lg:text-3xl font-black tracking-normal sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
+              <div className="font-editorial text-xs sm:text-xl lg:text-2xl font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
                 PAWLOVE - MASCOTAS
               </div>
               <div className="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider sm:tracking-widest text-stone-500 dark:text-[#D4AF37]/80 leading-none truncate hidden xs:block">
@@ -346,14 +351,14 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
                         <button
                           onClick={() => handleSelectPlan(plan)}
                           id={`btn-select-plan-${plan.id}`}
-                          className={`w-full py-2.5 sm:py-3 px-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 ${
+                          className={`w-full py-2.5 sm:py-3 px-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 ${
                             isPopular
-                              ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 font-black'
+                              ? 'bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black'
                               : 'bg-stone-900 dark:bg-[#1E3328] text-white hover:bg-stone-800 dark:hover:bg-[#254032]'
                           }`}
                         >
-                          <CreditCard className="w-3.5 h-3.5" />
-                          <span>
+                          <CreditCard className={`w-3.5 h-3.5 ${isPopular ? 'text-stone-950' : ''}`} />
+                          <span className={isPopular ? 'text-stone-950 font-black' : ''}>
                             {language === 'es'
                               ? `Pagar ${plan.priceFormatted} (Pasarela)`
                               : `Pay ${plan.priceFormatted} (Gateway)`}
