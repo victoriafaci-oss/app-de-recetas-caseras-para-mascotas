@@ -87,48 +87,49 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBF9F5] dark:bg-[#07110C] text-stone-900 dark:text-stone-100 transition-colors duration-300 font-sans selection:bg-amber-500/30 selection:text-amber-900">
+    <div className="min-h-screen flex flex-col bg-[#FBF9F5] dark:bg-[#07110C] text-stone-900 dark:text-stone-100 transition-colors duration-300 font-sans selection:bg-amber-500/30 selection:text-amber-900 w-full max-w-full overflow-x-hidden">
       
       {/* ========================================================================= */}
       {/* TOP HEADER: BRAND IDENTITY + LANGUAGE / THEME UTILITIES                   */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-30 w-full border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 bg-[#FAF7F2]/95 dark:bg-[#07130E]/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-13 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
           
           {/* Brand Logo & Name */}
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-2xl bg-[#D4AF37] text-stone-950 shadow-xs">
-              <ChefHat className="w-5 h-5" />
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
+            <div className="p-1 sm:p-2 rounded-xl sm:rounded-2xl bg-[#D4AF37] text-stone-950 shadow-xs shrink-0">
+              <ChefHat className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="font-editorial text-2xl sm:text-3xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
+            <div className="min-w-0 shrink">
+              <div className="font-editorial text-sm sm:text-2xl lg:text-3xl font-black tracking-normal sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
                 PAWLOVE - MASCOTAS
               </div>
-              <div className="text-[10px] uppercase font-bold tracking-widest text-stone-500 dark:text-[#D4AF37]/80 leading-none">
+              <div className="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider sm:tracking-widest text-stone-500 dark:text-[#D4AF37]/80 leading-none truncate hidden xs:block">
                 {language === 'es' ? 'Recetas Caseras & Nutrición para Mascotas' : 'Homemade Nutrition & Pet Care'}
               </div>
             </div>
           </div>
 
           {/* Minimal Controls: Language & Theme only */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {onEnterApp && (
               <button
                 onClick={onEnterApp}
                 id="gateway-btn-enter-app"
-                className="px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/50 dark:border-emerald-400/35 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/50 dark:border-emerald-400/35 text-[10px] sm:text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:border-emerald-600 transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
                 title={language === 'es' ? 'Entrar a la aplicación' : 'Enter application'}
               >
-                <span>🐾 Entrar a la App</span>
+                <span className="hidden sm:inline">🐾 Entrar a la App</span>
+                <span className="sm:hidden">🐾 App</span>
               </button>
             )}
 
             {onBackToLanding && (
               <button
                 onClick={onBackToLanding}
-                className="px-3 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/35 text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/35 text-[10px] sm:text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
                 <span className="hidden sm:inline">{language === 'es' ? 'Presentación' : 'Landing'}</span>
               </button>
             )}
@@ -136,23 +137,23 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
             {/* Language Switch */}
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-              className="px-3 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:scale-105 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] sm:text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:scale-105 transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
               title={language === 'es' ? 'Cambiar a English' : 'Switch to Español'}
             >
-              <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
               <span className="font-mono">{language.toUpperCase()}</span>
             </button>
 
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 transition-all shadow-xs cursor-pointer"
+              className="p-1 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 transition-all shadow-xs cursor-pointer shrink-0"
               title={theme === 'dark' ? t('themeLight') : t('themeDark')}
             >
               {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-[#D4AF37]" />
+                <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37]" />
               ) : (
-                <Moon className="w-4 h-4 text-[#B8860B]" />
+                <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#B8860B]" />
               )}
             </button>
 
@@ -269,7 +270,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
           </div>
 
           {/* CUADRÍCULA DE TARIFAS (COMPACTAS PARA MÓVIL Y EXPANDIDAS PARA TABLET/DESKTOP) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full max-w-full">
             {PRICING_PLANS.map((plan) => {
               const isTrial = plan.id === 'free_trial_48h';
               const isPopular = plan.popular;
@@ -279,7 +280,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
               return (
                 <div
                   key={plan.id}
-                  className={`relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:shadow-xl ${
+                  className={`relative rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:shadow-xl w-full max-w-full box-border ${
                     isHiddenOnMobile ? 'hidden sm:flex' : 'flex'
                   } ${
                     isPopular
