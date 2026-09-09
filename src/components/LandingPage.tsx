@@ -1218,18 +1218,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           <a href="#contacto" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Contacto</a>
         </div>
 
-        {/* Botón pequeño y muy discreto de Promoción */}
+        {/* Botón pequeño y muy discreto de Promoción (manejado por evento click para no exponer el enlace en la barra de estado del navegador al pasar el ratón) */}
         <div className="mt-4 flex justify-center">
-          <a
-            href="https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => openStripeCheckout('promo')}
             id="btn-promocion-footer"
-            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-300 transition-opacity opacity-50 hover:opacity-100 cursor-pointer select-none"
-            title="Promoción"
+            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-300 transition-opacity opacity-50 hover:opacity-100 cursor-pointer select-none border-0 bg-transparent"
+            aria-label="Promoción"
           >
             promoción
-          </a>
+          </button>
         </div>
       </footer>
 
