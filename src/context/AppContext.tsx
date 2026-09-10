@@ -78,6 +78,8 @@ interface AppContextType {
   isSubscribed: boolean;
   showPaymentModal: boolean;
   setShowPaymentModal: (show: boolean) => void;
+  showPwaInstallModal: boolean;
+  setShowPwaInstallModal: (show: boolean) => void;
   activateSubscription: (
     planId: SubscriptionPlanId, 
     method: PaymentMethodType, 
@@ -121,6 +123,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPwaInstallModal, setShowPwaInstallModal] = useState(false);
   const [currentView, setCurrentView] = useState<'landing' | 'pricing' | 'app'>('landing');
 
   const isSubscribed = Boolean(
@@ -869,6 +872,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const isSuccess = 
+        params.get('pago') === 'exito' ||
+        params.get('pago') === 'success' ||
         params.get('payment') === 'success' || 
         params.get('status') === 'success' || 
         params.get('checkout_status') === 'complete' ||
@@ -883,6 +888,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const sessionId = params.get('session_id') || `STRIPE_SES_${Date.now()}`;
         activateSubscription(plan, provider, { transactionId: sessionId });
         setCurrentView('app');
+        // Automatically open the official PWA Install prompt for the new customer!
+        setTimeout(() => {
+          setShowPwaInstallModal(true);
+        }, 600);
+
         try {
           window.history.replaceState({}, document.title, window.location.pathname);
         } catch {
@@ -966,6 +976,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSubscribed,
         showPaymentModal,
         setShowPaymentModal,
+        showPwaInstallModal,
+        setShowPwaInstallModal,
         activateSubscription,
         cancelOrResetSubscription,
         currentPricingPlan,

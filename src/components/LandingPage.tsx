@@ -36,7 +36,8 @@ import {
   Activity,
   Flame,
   CheckCircle,
-  Info
+  Info,
+  Smartphone
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -63,7 +64,7 @@ interface DemoPetProfile {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
-  const { theme, toggleTheme, language, setLanguage } = useApp();
+  const { theme, toggleTheme, language, setLanguage, setShowPwaInstallModal } = useApp();
 
   // Miniatura de muestra de recetas
   const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
@@ -199,9 +200,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
           
           {/* Logo Brand */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E] flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/60 bg-[#07130E] flex items-center justify-center">
               <img 
-                src="/pawlove_logo.jpg" 
+                src="/apple-touch-icon.png" 
                 alt="PAWLOVE Mascotas" 
                 className="w-full h-full object-cover aspect-square"
                 referrerPolicy="no-referrer"

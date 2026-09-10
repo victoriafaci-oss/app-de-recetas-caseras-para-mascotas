@@ -21,7 +21,8 @@ import {
   Trash2,
   Database,
   Plus,
-  CreditCard
+  CreditCard,
+  Smartphone
 } from 'lucide-react';
 import { AddPetModal } from './AddPetModal';
 import { formatLocalDateKey } from '../utils/dietPlanner';
@@ -45,6 +46,8 @@ export const Header: React.FC = () => {
     loadSampleReferenceData,
     subscription,
     setShowPaymentModal,
+    showPwaInstallModal,
+    setShowPwaInstallModal,
     currentView,
     setCurrentView,
     resetToLanding
@@ -238,6 +241,17 @@ export const Header: React.FC = () => {
             {/* Desktop-only Utility Buttons (On mobile they appear in Row 2) */}
             <div className="hidden sm:flex items-center gap-1.5 shrink-0">
 
+              {/* Install PWA Button */}
+              <button
+                onClick={() => setShowPwaInstallModal(true)}
+                className="px-2.5 py-1.5 rounded-full bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                title={language === 'es' ? 'Descargar e instalar App en el móvil' : 'Install App on mobile'}
+                id="header-btn-install-app-desktop"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden md:inline">{language === 'es' ? 'Instalar App' : 'Install App'}</span>
+              </button>
+
               {/* View Landing Page Button */}
               <button
                 onClick={() => setCurrentView('landing')}
@@ -372,7 +386,18 @@ export const Header: React.FC = () => {
             )}
           </button>
 
-          {/* 4. Settings Modal Launcher */}
+          {/* 4. Install App Button (Mobile) */}
+          <button
+            onClick={() => setShowPwaInstallModal(true)}
+            id="mobile-btn-install-app"
+            className="py-1 px-2 rounded-xl bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all"
+            title={language === 'es' ? 'Descargar e instalar App' : 'Install App'}
+          >
+            <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>App</span>
+          </button>
+
+          {/* 5. Settings Modal Launcher */}
           <button
             onClick={() => setShowSettingsModal(true)}
             id="mobile-btn-settings"

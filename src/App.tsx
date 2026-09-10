@@ -13,6 +13,8 @@ import { PageReturnHeader } from './components/PageReturnHeader';
 import { WelcomePaymentGateway } from './components/WelcomePaymentGateway';
 import { LandingPage } from './components/LandingPage';
 import { PaymentPlansModal } from './components/PaymentPlansModal';
+import { PWAInstallModal } from './components/PWAInstallModal';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
@@ -20,6 +22,8 @@ const MainLayout: React.FC = () => {
     isSubscribed, 
     showPaymentModal, 
     setShowPaymentModal, 
+    showPwaInstallModal,
+    setShowPwaInstallModal,
     activeTab, 
     toast,
     currentView,
@@ -107,6 +111,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FBF9F5] text-stone-900 dark:bg-[#0A0F0D] dark:text-stone-100 transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full">
+      <PWAInstallBanner onOpenModal={() => setShowPwaInstallModal(true)} />
       {/* Top Main Atelier Header with Integrated Navigation & Language Switcher */}
       <Header />
 
@@ -123,6 +128,12 @@ const MainLayout: React.FC = () => {
       <PaymentPlansModal 
         isOpen={showPaymentModal} 
         onClose={() => setShowPaymentModal(false)} 
+      />
+
+      {/* PWA Install Instructions Modal */}
+      <PWAInstallModal 
+        isOpen={showPwaInstallModal} 
+        onClose={() => setShowPwaInstallModal(false)} 
       />
 
       {/* Global Toast Notification */}
