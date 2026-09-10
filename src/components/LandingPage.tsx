@@ -43,6 +43,7 @@ import {
 
 interface LandingPageProps {
   onGoToPricing: (planId?: string) => void;
+  onGoToApp?: () => void;
 }
 
 interface DemoPetProfile {
@@ -64,8 +65,16 @@ interface DemoPetProfile {
   imageUrl: string;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
-  const { theme, toggleTheme, language, setLanguage, setShowPwaInstallModal } = useApp();
+export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToApp }) => {
+  const { theme, toggleTheme, language, setLanguage, setShowPwaInstallModal, setCurrentView } = useApp();
+
+  const handleNavigateToApp = () => {
+    if (onGoToApp) {
+      onGoToApp();
+    } else {
+      setCurrentView('app');
+    }
+  };
 
   // Miniatura de muestra de recetas
   const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
@@ -171,7 +180,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#FBF9F5] text-stone-900 dark:bg-[#0A0F0D] dark:text-[#EDE8DF] font-sans transition-colors duration-300 overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-900 dark:selection:bg-[#E8B84A]/30 dark:selection:text-[#FFF8E7]">
+    <div className={`relative min-h-screen ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-[#EDE8DF]' : 'light bg-[#FBF9F5] text-stone-900'} font-sans transition-colors duration-300 overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-900 dark:selection:bg-[#E8B84A]/30 dark:selection:text-[#FFF8E7]`}>
       
       {/* ========================================================================= */}
       {/* FONDO DINÁMICO AMBIENTAL TRANSLÚCIDO (ORBS + PATRÓN ORGÁNICO)               */}
@@ -199,9 +208,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
       <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 dark:border-[#E8B84A]/20 bg-[#FBF9F5]/90 dark:bg-[#0A0F0D]/90 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Logo Brand */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/60 bg-[#07130E] flex items-center justify-center">
+          {/* Logo Brand / Icono en pantalla que dirige a la App */}
+          <button
+            onClick={handleNavigateToApp}
+            className="flex items-center gap-2 sm:gap-3 min-w-0 shrink cursor-pointer group text-left transition-all"
+            title={language === 'es' ? 'Ir a la App PAWLOVE' : 'Go to PAWLOVE App'}
+            id="landing-logo-btn-app"
+          >
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/60 bg-[#07130E] flex items-center justify-center group-hover:scale-105 group-hover:border-[#D4AF37] transition-all">
               <img 
                 src="/apple-touch-icon.png" 
                 alt="PAWLOVE Mascotas" 
@@ -210,13 +224,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               />
             </div>
             <div className="min-w-0 shrink">
-              <div className="font-editorial text-xs sm:text-base md:text-lg font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
+              <div className="font-editorial text-xs sm:text-base md:text-lg font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate group-hover:text-amber-500 transition-colors">
                 PAWLOVE - MASCOTAS
               </div>
             </div>
-          </div>
+          </button>
 
-          {/* Controles: Modo Día/Noche, Idioma y Tarifas */}
+          {/* Controles: Modo Día/Noche, Idioma, Botón a la App y Tarifas */}
           <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 shrink-0">
             
             {/* Toggle Día / Noche */}
@@ -224,12 +238,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Cambiar a modo Día' : 'Cambiar a modo Noche'}
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-200/90 dark:border-stone-800 bg-stone-100/90 dark:bg-[#121B16] text-stone-700 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
+              id="landing-btn-toggle-theme"
             >
               {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-700" />}
             </button>
 
             {/* Selector de Idioma (Mundial / Europa) */}
             <LanguageSelector idPrefix="landing-lang" align="right" />
+
+            {/* Botón-Icono para Dirigir Directamente a la App */}
+            <button
+              onClick={handleNavigateToApp}
+              id="landing-btn-enter-app"
+              className="h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full bg-white dark:bg-[#112019] border border-stone-300/80 dark:border-[#D4AF37]/50 text-stone-800 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
+              title={language === 'es' ? 'Dirigir a la Aplicación' : 'Go to App'}
+            >
+              <Smartphone className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#E8B84A]" />
+              <span className="font-bold text-[11px] sm:text-xs hidden xs:inline">{language === 'es' ? 'Abrir App' : 'Open App'}</span>
+            </button>
 
             {/* Botón Tarifas */}
             <button
@@ -242,7 +268,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
                 }
               }}
               id="btn-header-tarifas-small"
-              className="h-8 sm:h-9 px-3 sm:px-4.5 rounded-full bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-[11px] sm:text-xs tracking-wide shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
+              className="h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 font-black text-[11px] sm:text-xs tracking-wide shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
             >
               <span className="font-black">{language === 'es' ? 'Tarifas' : 'Pricing'}</span>
               <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-stone-950" />
@@ -1228,16 +1254,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
       </footer>
 
       {/* STICKY BOTTOM BAR FOR MOBILES */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0A0F0D]/95 backdrop-blur-md border-t border-stone-200 dark:border-[#E8B84A]/30 p-2.5 px-4 flex items-center justify-between shadow-2xl transition-colors duration-300">
-        <div>
-          <div className="text-[10px] uppercase font-bold text-amber-700 dark:text-[#E8B84A]">Acceso Completo</div>
-          <div className="text-xs font-bold text-stone-900 dark:text-white">Prueba 48h Gratis</div>
-        </div>
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0A0F0D]/95 backdrop-blur-md border-t border-stone-200 dark:border-[#E8B84A]/30 p-2.5 px-3 flex items-center justify-between shadow-2xl transition-colors duration-300 gap-2">
+        <button
+          onClick={handleNavigateToApp}
+          id="landing-btn-mobile-go-to-app"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-900 dark:bg-[#15271F] border border-[#D4AF37]/60 text-[#F3E5AB] text-xs font-bold shadow-md cursor-pointer shrink-0 active:scale-95 transition-all"
+        >
+          <Smartphone className="w-3.5 h-3.5 text-[#E8B84A]" />
+          <span>{language === 'es' ? 'Ir a la App' : 'App'}</span>
+        </button>
         <button
           onClick={() => onGoToPricing('free_trial_48h')}
-          className="px-4 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 text-xs font-black shadow-md hover:opacity-95 flex items-center gap-1 cursor-pointer"
+          className="flex-1 px-3 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 text-xs font-black shadow-md hover:opacity-95 flex items-center justify-center gap-1 cursor-pointer"
         >
-          <span className="text-stone-950 font-black">Empezar</span>
+          <span className="text-stone-950 font-black">{language === 'es' ? 'Prueba 48h Gratis' : 'Start Free'}</span>
           <ArrowRight className="w-3.5 h-3.5 text-stone-950" />
         </button>
       </div>

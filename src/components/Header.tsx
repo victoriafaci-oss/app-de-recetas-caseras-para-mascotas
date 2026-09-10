@@ -94,10 +94,13 @@ export const Header: React.FC = () => {
           {/* Left: Brand Identity with Home Casita Icon */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
             <button 
-              onClick={() => setActiveTab('home')}
+              onClick={() => {
+                setCurrentView('app');
+                setActiveTab('home');
+              }}
               id="header-brand-pawlove"
               className="flex items-center gap-1.5 sm:gap-2 text-left group shrink-0"
-              title={language === 'es' ? 'PAWLOVE • Ir a Inicio' : 'PAWLOVE • Go to Home'}
+              title={language === 'es' ? 'PAWLOVE • Ir a Inicio de la App' : 'PAWLOVE • Go to App Home'}
             >
               {/* Home Casita Icon next to title */}
               <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 ${
@@ -254,15 +257,18 @@ export const Header: React.FC = () => {
                 <span className="hidden md:inline">{language === 'es' ? 'Instalar App' : 'Install App'}</span>
               </button>
 
-              {/* View Landing Page Button */}
+              {/* App Home Button */}
               <button
-                onClick={() => setCurrentView('landing')}
+                onClick={() => {
+                  setCurrentView('app');
+                  setActiveTab('home');
+                }}
                 className="px-2.5 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-700 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
-                title={language === 'es' ? 'Ver Landing Page (Presentación)' : 'View Landing Page'}
-                id="header-btn-landing-desktop"
+                title={language === 'es' ? 'Ir al inicio de la App' : 'Go to App Home'}
+                id="header-btn-app-desktop"
               >
-                <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                <span className="hidden md:inline">{language === 'es' ? 'Landing' : 'Landing'}</span>
+                <Smartphone className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                <span className="hidden md:inline">App</span>
               </button>
 
               {/* View Pasarela de Pagos Button */}

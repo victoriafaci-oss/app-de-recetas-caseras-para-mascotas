@@ -102,6 +102,7 @@ const RECIPES_KEY = 'nutripet_custom_recipes_v1';
 const CHAT_KEY = 'nutripet_chat_v1';
 const WEEKLY_TRACKING_KEY = 'nutripet_weekly_tracking_v1';
 const SUBSCRIPTION_KEY = 'nutripet_subscription_v1';
+const VIEW_KEY = 'nutripet_view_v1';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Subscription & Payment Gateway state
@@ -124,7 +125,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPwaInstallModal, setShowPwaInstallModal] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'pricing' | 'app'>('landing');
+  
+  // Intelligent view initialization: if opened via home screen icon / standalone / URL param, goes to app
+  const [currentView, setCurrentViewState] = useState<'landing' | 'pricing' | 'app'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramView = urlParams.get('view');
+        if (paramView === 'app') return 'app';
+        if (paramView === 'pricing') return 'pricing';
+        if (paramView === 'landing') return 'landing';
+
+        // Detect if launched from mobile home screen icon / PWA standalone mode
+        const isStandalone = 
+          window.matchMedia('(display-mode: standalone)').matches || 
+          (window.navigator as any).standalone === true ||
+          urlParams.get('pwa') === '1' ||
+          urlParams.get('mode') === 'standalone';
+
+        if (isStandalone) {
+          return 'app';
+        }
+
+        // Restore view from localStorage if user was using the app
+        const savedView = localStorage.getItem(VIEW_KEY);
+        if (savedView === 'app') return 'app';
+        if (savedView === 'pricing') return 'pricing';
+      } catch (e) {
+        console.warn('View initialization notice:', e);
+      }
+    }
+    return 'landing';
+  });
+
+  const setCurrentView = (view: 'landing' | 'pricing' | 'app') => {
+    setCurrentViewState(view);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(VIEW_KEY, view);
+      } catch (e) {
+        // ignore
+      }
+    }
+  };
 
   const isSubscribed = Boolean(
     subscription &&
@@ -466,13 +509,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Sync to localStorage and document attributes
   useEffect(() => {
-    localStorage.setItem(THEME_KEY, theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+      const root = document.documentElement;
+      const body = document.body;
+      if (theme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        body.classList.add('dark');
+        body.classList.remove('light');
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+        body.classList.remove('dark');
+        body.classList.add('light');
+        root.style.colorScheme = 'light';
+      }
+    } catch (e) {
+      console.warn('Theme synchronization notice:', e);
     }
   }, [theme]);
 
@@ -509,8 +564,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
-    playLuxuryChime('gentle');
+    setTheme(prev => {
+      const nextTheme = prev === 'dark' ? 'light' : 'dark';
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(THEME_KEY, nextTheme);
+          const root = document.documentElement;
+          const body = document.body;
+          if (nextTheme === 'dark') {
+            root.classList.add('dark');
+            root.classList.remove('light');
+            body.classList.add('dark');
+            body.classList.remove('light');
+            root.style.colorScheme = 'dark';
+          } else {
+            root.classList.remove('dark');
+            root.classList.add('light');
+            body.classList.remove('dark');
+            body.classList.add('light');
+            root.style.colorScheme = 'light';
+          }
+        } catch (e) {
+          console.warn('Theme toggle notice:', e);
+        }
+      }
+      return nextTheme;
+    });
+    try {
+      playLuxuryChime('gentle');
+    } catch (e) {
+      // Audio chime is optional and non-blocking
+    }
   };
 
   const selectedPet = pets.find(p => p.id === selectedPetId) || pets[0] || INITIAL_PETS[0];

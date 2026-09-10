@@ -19,6 +19,7 @@ import { Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const { 
+    theme,
     isSubscribed, 
     showPaymentModal, 
     setShowPaymentModal, 
@@ -66,6 +67,10 @@ const MainLayout: React.FC = () => {
             setCurrentView('pricing');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }} 
+          onGoToApp={() => {
+            setCurrentView('app');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
         {renderToast()}
       </>
@@ -110,7 +115,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBF9F5] text-stone-900 dark:bg-[#0A0F0D] dark:text-stone-100 transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-stone-100' : 'light bg-[#FBF9F5] text-stone-900'} transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full`}>
       <PWAInstallBanner onOpenModal={() => setShowPwaInstallModal(true)} />
       {/* Top Main Atelier Header with Integrated Navigation & Language Switcher */}
       <Header />

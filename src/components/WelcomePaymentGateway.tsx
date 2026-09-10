@@ -36,6 +36,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
     language, 
     setLanguage, 
     activateSubscription, 
+    setCurrentView,
     t 
   } = useApp();
 
@@ -86,7 +87,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBF9F5] dark:bg-[#07110C] text-stone-900 dark:text-stone-100 transition-colors duration-300 font-sans selection:bg-amber-500/30 selection:text-amber-900 w-full max-w-full overflow-x-hidden">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-[#07110C] text-stone-100' : 'light bg-[#FBF9F5] text-stone-900'} transition-colors duration-300 font-sans selection:bg-amber-500/30 selection:text-amber-900 w-full max-w-full overflow-x-hidden`}>
       
       {/* ========================================================================= */}
       {/* TOP HEADER: BRAND IDENTITY + LANGUAGE / THEME UTILITIES                   */}
@@ -94,9 +95,14 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
       <header className="sticky top-0 z-30 w-full border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 bg-[#FAF7F2]/95 dark:bg-[#07130E]/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-13 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
           
-          {/* Brand Logo & Name */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden shadow-xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E] flex items-center justify-center">
+          {/* Brand Logo & Name / Click to go to App */}
+          <button
+            onClick={() => setCurrentView('app')}
+            className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink text-left cursor-pointer group transition-all"
+            title={language === 'es' ? 'Ir a la App' : 'Go to App'}
+            id="gateway-logo-btn-app"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden shadow-xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E] flex items-center justify-center group-hover:scale-105 transition-transform">
               <img 
                 src="/pawlove_logo.jpg" 
                 alt="PAWLOVE Mascotas" 
@@ -105,17 +111,28 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
               />
             </div>
             <div className="min-w-0 shrink">
-              <div className="font-editorial text-xs sm:text-xl lg:text-2xl font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate">
+              <div className="font-editorial text-xs sm:text-xl lg:text-2xl font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate group-hover:text-amber-500 transition-colors">
                 PAWLOVE - MASCOTAS
               </div>
               <div className="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider sm:tracking-widest text-stone-500 dark:text-[#D4AF37]/80 leading-none truncate hidden xs:block">
                 {language === 'es' ? 'Recetas Caseras & Nutrición para Mascotas' : 'Homemade Nutrition & Pet Care'}
               </div>
             </div>
-          </div>
+          </button>
 
-          {/* Minimal Controls: Language & Theme only */}
+          {/* Minimal Controls: Language & Theme & App & Landing */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Ir a la App button */}
+            <button
+              onClick={() => setCurrentView('app')}
+              id="gateway-btn-go-to-app"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/40 text-[10px] sm:text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
+              title={language === 'es' ? 'Entrar a la App' : 'Go to App'}
+            >
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Abrir App' : 'App'}</span>
+            </button>
+
             {onBackToLanding && (
               <button
                 onClick={onBackToLanding}

@@ -3,7 +3,7 @@
   "name": "PawLove - Mascotas",
   "short_name": "PawLove",
   "description": "Nutrición casera y hábitos diarios para perros y gatos, recetario balanceado y seguimiento de salud.",
-  "start_url": "/",
+  "start_url": "/?view=app&pwa=1",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
