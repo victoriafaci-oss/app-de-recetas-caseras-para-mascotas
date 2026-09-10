@@ -1,6 +1,6 @@
 export type ThemeMode = 'dark' | 'light';
 
-export type Language = 'es' | 'en';
+export type Language = 'es' | 'en' | 'fr' | 'de' | 'it' | 'pt' | 'nl';
 
 export type Species = 'dog' | 'cat';
 

@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { AddPetModal } from './AddPetModal';
 import { formatLocalDateKey } from '../utils/dietPlanner';
+import { LanguageSelector } from './LanguageSelector';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
 
 export const Header: React.FC = () => {
   const { 
@@ -289,16 +291,8 @@ export const Header: React.FC = () => {
                 )}
               </button>
 
-              {/* Language Selector (ES / EN) */}
-              <button
-                onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                className="px-2.5 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs flex items-center gap-1 shrink-0"
-                title={language === 'es' ? 'Cambiar a English' : 'Switch to Español'}
-                id="header-btn-language-desktop"
-              >
-                <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                <span className="font-mono">{language.toUpperCase()}</span>
-              </button>
+              {/* Language Selector (Desktop) */}
+              <LanguageSelector idPrefix="header-lang-desktop" align="right" />
 
               {/* Theme Switcher Toggle Button (Light/Dark) */}
               <button
@@ -335,16 +329,8 @@ export const Header: React.FC = () => {
         {/* ========================================================================= */}
         <div className="flex sm:hidden max-w-7xl mx-auto px-3 py-1.5 items-center justify-between gap-1.5 bg-[#F4EFE6]/90 dark:bg-[#0A1712]/90 border-b border-[#E8DCCB]/80 dark:border-[#D4AF37]/15">
           
-          {/* 1. Language Toggle */}
-          <button
-            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-            id="mobile-btn-language"
-            className="flex-1 py-1 px-2 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all"
-            title={language === 'es' ? 'Cambiar a English' : 'Switch to Español'}
-          >
-            <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-            <span className="font-mono">{language === 'es' ? 'ES' : 'EN'}</span>
-          </button>
+          {/* 1. Language Selector */}
+          <LanguageSelector idPrefix="mobile-lang" compact={true} align="left" />
 
           {/* 2. Light / Dark Theme Toggle (Claro / Oscuro) */}
           <button
@@ -475,32 +461,37 @@ export const Header: React.FC = () => {
             <div className="space-y-3.5 text-xs">
               
               {/* Language Switch Section */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 flex items-center justify-between">
-                <div>
+              <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 space-y-2.5">
+                <div className="flex items-center justify-between">
                   <div className="font-bold text-stone-900 dark:text-[#F3E5AB]">
                     {language === 'es' ? 'Idioma de la Aplicación' : 'Application Language'}
                   </div>
-                  <div className="text-[11px] text-stone-500 dark:text-stone-400">
-                    {language === 'es' ? 'Cambia todos los textos al instante' : 'Dynamically updates all titles'}
-                  </div>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 dark:text-[#E8B84A]/70 font-mono">
+                    {language.toUpperCase()}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 bg-stone-200/70 dark:bg-stone-800 p-1 rounded-xl">
-                  <button
-                    onClick={() => setLanguage('es')}
-                    className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-colors ${
-                      language === 'es' ? 'bg-[#B8860B] text-white shadow-xs' : 'text-stone-600 dark:text-stone-400'
-                    }`}
-                  >
-                    ES
-                  </button>
-                  <button
-                    onClick={() => setLanguage('en')}
-                    className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-colors ${
-                      language === 'en' ? 'bg-[#B8860B] text-white shadow-xs' : 'text-stone-600 dark:text-stone-400'
-                    }`}
-                  >
-                    EN
-                  </button>
+                <div className="text-[11px] text-stone-500 dark:text-stone-400">
+                  {language === 'es' ? 'Selecciona tu idioma preferido para toda la plataforma' : 'Select your preferred language for the whole platform'}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+                  {SUPPORTED_LANGUAGES.map((lang) => {
+                    const isSelected = language === lang.code;
+                    return (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => setLanguage(lang.code)}
+                        className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
+                            : 'bg-stone-200/60 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 hover:bg-stone-300/80 dark:hover:bg-stone-700'
+                        }`}
+                      >
+                        <span className="text-sm">{lang.flag}</span>
+                        <span className="text-[11px]">{lang.nativeName}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

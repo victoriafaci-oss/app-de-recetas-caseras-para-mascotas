@@ -533,27 +533,29 @@ app.post("/api/nutri-chat", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
+    const langNames: Record<string, string> = {
+      es: "Spanish (Español)",
+      en: "English",
+      fr: "French (Français)",
+      de: "German (Deutsch)",
+      it: "Italian (Italiano)",
+      pt: "Portuguese (Português)",
+      nl: "Dutch (Nederlands)",
+    };
+    const targetLangName = langNames[language] || "Spanish (Español)";
     const isEn = language === "en";
     const apiKey = process.env.GEMINI_API_KEY;
 
     // If API Key is available, invoke Gemini Cascade
     if (apiKey && apiKey.trim().length > 0 && apiKey !== "MY_GEMINI_API_KEY") {
       try {
-        let systemInstruction = isEn
-          ? `You are "NutriAI & Pet Concierge", a veterinary clinical assistant and pet care expert in "Homemade Pet Recipes & Pet Care".
+        let systemInstruction = `You are "NutriAI & Pet Concierge", a premier veterinary clinical assistant and canine/feline nutrition expert in "Homemade Pet Recipes & Daily Health".
 
 MANDATORY DIRECT RESPONSE RULES:
-1. DIRECT ANSWER FIRST: Respond IMMEDIATELY and directly to the user's specific question or problem in the very first sentence. Never make the user ask twice or confirm before answering.
-2. DO NOT DUMP PET PROFILE STATS: Do NOT list or recite the pet's bio, weight, age, calorie formulas, or medical record unless the user specifically asked for portion calculations or weight analysis.
-3. CONCRETE ACTIONABLE ADVICE: When asked "what should I do if my pet did X", "can my dog eat Y", "how to train Z", or health/hygiene questions, provide immediate step-by-step instructions, danger triage, dos and don'ts, and practical solutions.
-4. Structure responses with clear bold headings and concise bullet points.`
-          : `Eres "NutriIA & Pet Concierge", asistente clínico veterinario y experto en cuidado de mascotas de "Recetas caseras para mascotas".
-
-REGLAS OBLIGATORIAS DE RESPUESTA DIRECTA:
-1. RESPUESTA DIRECTA DESDE LA PRIMERA LÍNEA: Responde DE INMEDIATO y de forma concreta a la pregunta, duda o situación planteada por el usuario en el primer párrafo. NUNCA hagas que el usuario tenga que repetir la pregunta ni respondas con un mensaje evasivo o introductorio sin solucionar la duda.
-2. NO REPITAS LA FICHA NI LOS DATOS GENERALES: Está TERMINANTEMENTE PROHIBIDO volcar o listar la ficha, peso, edad, calorías (RER/MER) o perfil de la mascota a menos que el usuario haya preguntado explícitamente cuánto debe comer o calcular raciones.
-3. CONSEJOS Y SOLUCIONES PRÁCTICAS PASO A PASO: Ante preguntas de "¿qué hago si mi perro se comió X?", "¿qué alimentos puede comer?", "¿cómo solucionar una conducta?", o dudas de salud/higiene, entrega de inmediato las soluciones exactas, pasos a seguir, qué hacer, qué evitar y signos de alarma.
-4. Estructura la respuesta con títulos claros en negrita, viñetas y pasos numerados fáciles de aplicar.`;
+1. TARGET LANGUAGE: You MUST write your entire response fluently and naturally in: ${targetLangName}.
+2. DIRECT ANSWER FIRST: Respond IMMEDIATELY and directly to the user's specific question, query, or pet situation in the very first sentence. Never evade, ask confirmational questions before answering, or delay the solution.
+3. DO NOT DUMP PET PROFILE STATS: Do NOT recite the pet's bio, weight, age, or metabolic formulas unless the user explicitly requested feeding amounts or portion sizing.
+4. ACTIONABLE ADVICE & TRIAGE: Provide clear bullet points, bold headings, step-by-step instructions, veterinary safety triage, dos and don'ts.`;
 
         if (petContext) {
           systemInstruction += isEn
@@ -782,42 +784,36 @@ He analizado tu consulta para **${petName}** (${petSpecies}, ${petWeight} kg).
 app.post("/api/custom-recipe-ai", async (req, res) => {
   try {
     const { pet, goal, preferences, availableIngredients, language = "es" } = req.body;
+    const langNames: Record<string, string> = {
+      es: "Spanish (Español)",
+      en: "English",
+      fr: "French (Français)",
+      de: "German (Deutsch)",
+      it: "Italian (Italiano)",
+      pt: "Portuguese (Português)",
+      nl: "Dutch (Nederlands)",
+    };
+    const targetLangName = langNames[language] || "Spanish (Español)";
     const isEn = language === "en";
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (apiKey && apiKey.trim().length > 0 && apiKey !== "MY_GEMINI_API_KEY") {
       try {
-        const prompt = isEn
-          ? `Create a balanced veterinary homemade recipe for the following pet:
+        const prompt = `Create a balanced veterinary homemade recipe for the following pet, fully written in ${targetLangName}:
 - Species: ${pet?.species === "cat" ? "Cat" : "Dog"}
 - Name: ${pet?.name || "Pet"}
 - Weight: ${pet?.weightKg || 10} kg
 - Condition / Objective: ${goal || pet?.clinicalCondition || "General health & longevity"}
 - Available or Preferred Ingredients: ${availableIngredients || preferences || "Fresh market ingredients"}
 
-Generate a balanced recipe in English with:
+Generate a balanced recipe in ${targetLangName} with:
 1. Clear recipe name.
 2. Exact portion and calories for 1 day (${pet?.weightKg || 10}kg).
 3. List of ingredients with exact grams (healthy protein, safe vegetables, healthy fats & calcium/bone broth source).
 4. Gentle cooking / steaming instructions preserving nutrients.
-5. Clinical benefits and storage advice.`
-          : `Crea una receta casera veterinaria equilibrada para la siguiente mascota:
-- Especie: ${pet?.species === "cat" ? "Gato" : "Perro"}
-- Nombre: ${pet?.name || "Mascota"}
-- Peso: ${pet?.weightKg || 10} kg
-- Condición / Objetivo: ${goal || pet?.clinicalCondition || "Salud general"}
-- Preferencias / Ingredientes disponibles: ${availableIngredients || preferences || "Ingredientes frescos del mercado"}
+5. Clinical benefits and storage advice.`;
 
-Genera una receta balanceada con:
-1. Nombre claro y apetitoso de la receta.
-2. Porciones y calorías exactas para 1 día (${pet?.weightKg || 10}kg).
-3. Lista de ingredientes en gramos precisos con balance proteico, vegetales seguros y fuentes de calcio/grasas saludables.
-4. Pasos de cocción a fuego lento / vapor preservando nutrientes.
-5. Beneficios clínicos y notas de conservación.`;
-
-        const systemInstruction = isEn 
-          ? "You are a Veterinary Nutritionist specialized in animal clinical nutrition and natural homemade feeding." 
-          : "Eres un Nutricionista Veterinario especializado en nutrición clínica animal y alimentación natural casera.";
+        const systemInstruction = `You are a Veterinary Nutritionist specialized in animal clinical nutrition and natural homemade feeding. Always respond fluently in ${targetLangName}.`;
 
         const recipeText = await callGeminiCascade(prompt, systemInstruction);
 

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Pet } from '../types';
+import { Pet, Language } from '../types';
 import { isHighPerformancePet } from '../utils/dietPlanner';
 import { AlertTriangle, Clock, Droplets, UtensilsCrossed, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface HighPerformanceExerciseAlertProps {
   pet: Pet;
-  language?: 'es' | 'en';
+  language?: Language;
   variant?: 'compact' | 'full';
   className?: string;
 }

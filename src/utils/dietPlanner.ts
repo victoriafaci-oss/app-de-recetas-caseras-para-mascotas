@@ -1,4 +1,4 @@
-import { Pet, DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem } from '../types';
+import { Pet, DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem, Language } from '../types';
 import { calculateMER } from './nutrition';
 import { parseAllergens, hasAllergenConflict, getSafeSubstituteProtein } from './allergyUtils';
 
@@ -195,7 +195,7 @@ export function getCurrentWeekDates(refDate: Date = new Date()): {
  * Generates a 7-day complete, balanced weekly diet plan adapted to the specific pet's
  * species, weight, condition, and caloric/gram requirements.
  */
-export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): DayDietPlan[] {
+export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): DayDietPlan[] {
   const merData = calculateMER(pet);
   const totalGrams = merData.dailyFoodGrams;
   const morningGrams = merData.mealPortions.breakfastGrams;
@@ -1023,7 +1023,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: 'es' | 'en' = 'es'): 
 /**
  * Helper to fetch a single day's diet plan adapted to the pet
  */
-export function generateDailyDietPlan(pet: Pet, dateStr: string, dayIndex: number, language: 'es' | 'en' = 'es'): DayDietPlan {
+export function generateDailyDietPlan(pet: Pet, dateStr: string, dayIndex: number, language: Language = 'es'): DayDietPlan {
   const weekly = generateWeeklyDietPlan(pet, language);
   const normalizedIndex = ((dayIndex % 7) + 7) % 7;
   return weekly[normalizedIndex] || weekly[0];

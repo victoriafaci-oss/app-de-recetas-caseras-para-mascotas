@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pet, DayDietPlan } from '../types';
+import { Pet, DayDietPlan, Language } from '../types';
 import { 
   ShieldAlert, 
   ShieldCheck, 
@@ -18,7 +18,7 @@ import { COMMON_FOOD_ALLERGENS, parseAllergens } from '../utils/allergyUtils';
 
 interface PetAllergiesTabProps {
   pet: Pet;
-  language: 'es' | 'en';
+  language: Language;
   todayPlan: DayDietPlan;
   onUpdateAllergies: (newAllergies: string) => void;
   onOpenEditPetModal: () => void;

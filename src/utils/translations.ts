@@ -626,7 +626,34 @@ export const TRANSLATIONS = {
 
 export type TranslationKey = keyof typeof TRANSLATIONS.es;
 
+import { 
+  FR_TRANSLATIONS, 
+  DE_TRANSLATIONS, 
+  IT_TRANSLATIONS, 
+  PT_TRANSLATIONS, 
+  NL_TRANSLATIONS 
+} from './extraTranslations';
+
+export const EXTRA_TRANSLATIONS: Record<string, Partial<Record<TranslationKey, string>>> = {
+  fr: FR_TRANSLATIONS,
+  de: DE_TRANSLATIONS,
+  it: IT_TRANSLATIONS,
+  pt: PT_TRANSLATIONS,
+  nl: NL_TRANSLATIONS,
+};
+
 export function getTranslation(lang: Language, key: TranslationKey): string {
-  const dict = TRANSLATIONS[lang] || TRANSLATIONS.es;
-  return (dict as any)[key] || (TRANSLATIONS.es as any)[key] || key;
+  if (lang === 'es') {
+    return TRANSLATIONS.es[key] || key;
+  }
+  if (lang === 'en') {
+    return TRANSLATIONS.en[key] || TRANSLATIONS.es[key] || key;
+  }
+  const extra = EXTRA_TRANSLATIONS[lang];
+  if (extra && extra[key]) {
+    return extra[key]!;
+  }
+  // Fallback to English, then Spanish
+  return TRANSLATIONS.en[key] || TRANSLATIONS.es[key] || key;
 }
+

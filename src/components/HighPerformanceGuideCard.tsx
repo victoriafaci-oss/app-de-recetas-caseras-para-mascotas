@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pet, DayDietPlan } from '../types';
+import { Pet, DayDietPlan, Language } from '../types';
 import { HIGH_PERFORMANCE_COGNITIVE_HABITS, isHighPerformancePet } from '../utils/dietPlanner';
 import { 
   Zap, 
@@ -19,7 +19,7 @@ import { useApp } from '../context/AppContext';
 interface HighPerformanceGuideCardProps {
   pet: Pet;
   todayPlan: DayDietPlan;
-  language: 'es' | 'en';
+  language: Language;
   onNavigateToRecipes?: () => void;
 }
 

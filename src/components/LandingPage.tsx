@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { RECIPES_CATALOG } from '../data/mockData';
 import { PRICING_PLANS, STRIPE_PAYMENT_LINKS, openStripeCheckout, redirectToStripeCheckout } from '../data/pricingData';
 import { FloatingPawsBackground } from './FloatingPawsBackground';
+import { LanguageSelector } from './LanguageSelector';
 import { 
   ChefHat, 
   Sparkles, 
@@ -227,15 +228,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing }) => {
               {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-700" />}
             </button>
 
-            {/* Toggle Idioma */}
-            <button
-              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-              title="Cambiar idioma"
-              className="h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full border border-stone-200/90 dark:border-stone-800 bg-stone-100/90 dark:bg-[#121B16] text-[11px] sm:text-xs font-bold text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-[#E8B84A] hover:border-stone-300 dark:hover:border-stone-700 transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs cursor-pointer shrink-0"
-            >
-              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-stone-500 dark:text-stone-400" />
-              <span>{language.toUpperCase()}</span>
-            </button>
+            {/* Selector de Idioma (Mundial / Europa) */}
+            <LanguageSelector idPrefix="landing-lang" align="right" />
 
             {/* Botón Tarifas */}
             <button

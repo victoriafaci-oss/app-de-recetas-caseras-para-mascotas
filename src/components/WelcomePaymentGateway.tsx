@@ -4,6 +4,7 @@ import { PRICING_PLANS, LEGAL_TERMS_SUMMARY, STRIPE_PAYMENT_LINKS, openStripeChe
 import { PricingPlan, PaymentMethodType } from '../types';
 import { PhoneVerificationModal } from './PhoneVerificationModal';
 import { PaymentCheckoutModal } from './PaymentCheckoutModal';
+import { LanguageSelector } from './LanguageSelector';
 import { 
   Check, 
   Sparkles, 
@@ -125,15 +126,8 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
               </button>
             )}
             
-            {/* Language Switch */}
-            <button
-              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-              className="px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] sm:text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:scale-105 transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
-              title={language === 'es' ? 'Cambiar a English' : 'Switch to Español'}
-            >
-              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-              <span className="font-mono">{language.toUpperCase()}</span>
-            </button>
+            {/* Language Selector */}
+            <LanguageSelector idPrefix="gateway-lang" align="right" />
 
             {/* Theme Toggle */}
             <button

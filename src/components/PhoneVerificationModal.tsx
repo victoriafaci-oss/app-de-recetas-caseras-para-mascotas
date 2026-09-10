@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { COUNTRY_PREFIXES } from '../data/countryPrefixes';
 import { 
   Phone, 
   KeyRound, 
@@ -206,19 +207,43 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-2.5 py-2.5 rounded-xl border border-[#E8DCCB] dark:border-[#D4AF37]/30 bg-stone-50 dark:bg-[#15231C] text-stone-900 dark:text-stone-100 text-xs font-semibold focus:ring-2 focus:ring-[#D4AF37] focus:outline-hidden"
+                  className="max-w-[140px] sm:max-w-[170px] px-2.5 py-2.5 rounded-xl border border-[#E8DCCB] dark:border-[#D4AF37]/30 bg-stone-50 dark:bg-[#15231C] text-stone-900 dark:text-stone-100 text-xs font-semibold focus:ring-2 focus:ring-[#D4AF37] focus:outline-hidden truncate"
                 >
-                  <option value="+34">🇪🇸 +34</option>
-                  <option value="+52">🇲🇽 +52</option>
-                  <option value="+54">🇦🇷 +54</option>
-                  <option value="+57">🇨🇴 +57</option>
-                  <option value="+56">🇨🇱 +56</option>
-                  <option value="+51">🇵🇪 +51</option>
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+33">🇫🇷 +33</option>
-                  <option value="+49">🇩🇪 +49</option>
-                  <option value="+351">🇵🇹 +351</option>
+                  <optgroup label="🇪🇺 Europa">
+                    {COUNTRY_PREFIXES.filter(c => c.region === 'Europa').map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>
+                        {c.flag} {c.code} ({c.name})
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🌎 América del Sur">
+                    {COUNTRY_PREFIXES.filter(c => c.region === 'América del Sur').map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>
+                        {c.flag} {c.code} ({c.name})
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🏝️ América Central y Caribe">
+                    {COUNTRY_PREFIXES.filter(c => c.region === 'América Central y Caribe').map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>
+                        {c.flag} {c.code} ({c.name})
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🗽 América del Norte">
+                    {COUNTRY_PREFIXES.filter(c => c.region === 'América del Norte').map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>
+                        {c.flag} {c.code} ({c.name})
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🌐 Otros">
+                    {COUNTRY_PREFIXES.filter(c => c.region === 'Otros').map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>
+                        {c.flag} {c.code} ({c.name})
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
 
                 <input
