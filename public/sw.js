@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pawlove-v1';
+const CACHE_NAME = 'pawlove-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -42,6 +42,26 @@ self.addEventListener('fetch', (event) => {
   // Skip Stripe, PayPal, and external APIs from SW cache
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname === '/promocion' || url.pathname.startsWith('/checkout/')) {
+    return;
+  }
+
+  // Network-First for HTML navigation so phone updates immediately upon publish
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match('/index.html') || caches.match('/');
+        })
+    );
     return;
   }
 

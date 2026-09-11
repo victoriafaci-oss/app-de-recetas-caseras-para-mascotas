@@ -27,7 +27,16 @@
     <script>
       (function() {
         try {
-          var t = localStorage.getItem('nutripet_theme_v1');
+          // Clear any legacy dark mode from prior versions
+          if (localStorage.getItem('nutripet_theme_v1')) {
+            localStorage.removeItem('nutripet_theme_v1');
+          }
+          var t = localStorage.getItem('pawlove_theme_v2');
+          if (t !== 'dark') {
+            t = 'light';
+            localStorage.setItem('pawlove_theme_v2', 'light');
+          }
+
           if (t === 'dark') {
             document.documentElement.classList.add('dark');
             document.documentElement.classList.remove('light');

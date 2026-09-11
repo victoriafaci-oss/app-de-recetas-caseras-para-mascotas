@@ -33,6 +33,7 @@ export const Header: React.FC = () => {
   const { 
     theme, 
     toggleTheme, 
+    setTheme,
     language,
     setLanguage,
     t,
@@ -468,6 +469,55 @@ export const Header: React.FC = () => {
 
             <div className="space-y-3.5 text-xs">
               
+              {/* Visual Theme Selection (Modo Claro vs Modo Oscuro) */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-stone-900 dark:text-[#F3E5AB] flex items-center gap-1.5">
+                    {theme === 'dark' ? <Moon className="w-4 h-4 text-[#D4AF37]" /> : <Sun className="w-4 h-4 text-[#B8860B]" />}
+                    <span>{language === 'es' ? 'Modo de Apariencia' : 'Visual Appearance Mode'}</span>
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-[#B8860B] dark:text-[#D4AF37] font-mono px-2 py-0.5 rounded-full bg-amber-100 dark:bg-[#D4AF37]/10 border border-amber-300 dark:border-[#D4AF37]/30">
+                    {theme === 'dark' 
+                      ? (language === 'es' ? 'Oscuro Activo' : 'Dark Active') 
+                      : (language === 'es' ? 'Claro Activo' : 'Light Active')}
+                  </span>
+                </div>
+                <div className="text-[11px] text-stone-600 dark:text-stone-400">
+                  {language === 'es'
+                    ? 'Elige el modo visual. El modo Claro está optimizado para alta visibilidad y lectura en móvil.'
+                    : 'Choose your visual mode. Light mode is optimized for high contrast and mobile clarity.'}
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setTheme('light')}
+                    id="settings-btn-theme-light"
+                    className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      theme === 'light'
+                        ? 'bg-[#B8860B] text-white shadow-md border border-[#996515]'
+                        : 'bg-white text-stone-800 border border-[#E8DCCB] hover:bg-stone-100'
+                    }`}
+                  >
+                    <Sun className="w-4 h-4 text-amber-300" />
+                    <span>{language === 'es' ? 'Modo Claro' : 'Light Mode'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTheme('dark')}
+                    id="settings-btn-theme-dark"
+                    className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      theme === 'dark'
+                        ? 'bg-[#D4AF37] text-stone-950 shadow-md border border-[#F3E5AB]'
+                        : 'bg-stone-800 text-stone-300 border border-stone-700 hover:bg-stone-700'
+                    }`}
+                  >
+                    <Moon className="w-4 h-4 text-[#D4AF37]" />
+                    <span>{language === 'es' ? 'Modo Oscuro' : 'Dark Mode'}</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Language Switch Section */}
               <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 space-y-2.5">
                 <div className="flex items-center justify-between">

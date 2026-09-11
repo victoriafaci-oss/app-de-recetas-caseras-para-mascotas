@@ -99,7 +99,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const THEME_KEY = 'nutripet_theme_v1';
+const THEME_KEY = 'pawlove_theme_v2';
 const LANG_KEY = 'nutripet_language_v1';
 const PETS_KEY = 'nutripet_pets_v1';
 const EVENTS_KEY = 'nutripet_events_v1';
@@ -260,12 +260,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [subscription]);
 
-  // Theme state: Default is 'light' (Claro Champán-Crema)
+  // Theme state: Default is strictly 'light' (Claro Champán-Crema)
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === 'dark' || saved === 'light') return saved;
-      return 'light'; // Default: Claro Champán-Crema
+      try {
+        // Clear any lingering dark setting from old version
+        if (localStorage.getItem('nutripet_theme_v1')) {
+          localStorage.removeItem('nutripet_theme_v1');
+        }
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved === 'dark') return 'dark';
+        localStorage.setItem(THEME_KEY, 'light');
+        return 'light';
+      } catch (e) {
+        return 'light';
+      }
     }
     return 'light';
   });
