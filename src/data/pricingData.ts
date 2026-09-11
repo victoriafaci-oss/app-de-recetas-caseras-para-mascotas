@@ -129,6 +129,24 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Asistente veterinario Nutri IA con IA activa',
       'Sin cobros ocultos ni cargos automáticos'
     ]
+  },
+  {
+    id: 'promo',
+    title: 'Tarifa Promoción Especial',
+    subtitle: 'Acceso especial promocional PawLove',
+    priceEur: 9.99,
+    priceFormatted: '9,99 €',
+    periodLabel: 'promoción especial',
+    badge: 'Oferta Especial',
+    billingModeSummary: 'Promoción especial activa',
+    quotaDescription: 'Acceso contratado mediante promoción especial con todas las herramientas de nutrición e IA activadas.',
+    stripePaymentLink: 'https://buy.stripe.com/eVqcN77VBdrlaNd60x1ZS03',
+    features: [
+      'Acceso total a todas las herramientas de la plataforma',
+      'Asistente Nutri IA para todas tus mascotas',
+      'Recetas caseras con calculadora de raciones',
+      'Sin restricciones de uso'
+    ]
   }
 ];
 

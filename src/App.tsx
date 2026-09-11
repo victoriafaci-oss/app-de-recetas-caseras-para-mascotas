@@ -14,6 +14,7 @@ import { WelcomePaymentGateway } from './components/WelcomePaymentGateway';
 import { LandingPage } from './components/LandingPage';
 import { PaymentPlansModal } from './components/PaymentPlansModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
+import { PostPurchaseInstallModal } from './components/PostPurchaseInstallModal';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
@@ -25,6 +26,8 @@ const MainLayout: React.FC = () => {
     setShowPaymentModal, 
     showPwaInstallModal,
     setShowPwaInstallModal,
+    showPostPurchaseInstallModal,
+    setShowPostPurchaseInstallModal,
     activeTab, 
     toast,
     currentView,
@@ -72,6 +75,14 @@ const MainLayout: React.FC = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
+        <PWAInstallModal 
+          isOpen={showPwaInstallModal} 
+          onClose={() => setShowPwaInstallModal(false)} 
+        />
+        <PostPurchaseInstallModal
+          isOpen={showPostPurchaseInstallModal}
+          onClose={() => setShowPostPurchaseInstallModal(false)}
+        />
         {renderToast()}
       </>
     );
@@ -87,6 +98,14 @@ const MainLayout: React.FC = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           initialSelectedPlanId={selectedPlanId}
+        />
+        <PWAInstallModal 
+          isOpen={showPwaInstallModal} 
+          onClose={() => setShowPwaInstallModal(false)} 
+        />
+        <PostPurchaseInstallModal
+          isOpen={showPostPurchaseInstallModal}
+          onClose={() => setShowPostPurchaseInstallModal(false)}
         />
         {renderToast()}
       </>
@@ -115,7 +134,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-stone-100' : 'light bg-[#FBF9F5] text-stone-900'} transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full`}>
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-stone-100' : 'light bg-[#FAF7F2] text-stone-900'} transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full`}>
       <PWAInstallBanner onOpenModal={() => setShowPwaInstallModal(true)} />
       {/* Top Main Atelier Header with Integrated Navigation & Language Switcher */}
       <Header />
@@ -139,6 +158,12 @@ const MainLayout: React.FC = () => {
       <PWAInstallModal 
         isOpen={showPwaInstallModal} 
         onClose={() => setShowPwaInstallModal(false)} 
+      />
+
+      {/* Post-Purchase Immediate Install Modal */}
+      <PostPurchaseInstallModal
+        isOpen={showPostPurchaseInstallModal}
+        onClose={() => setShowPostPurchaseInstallModal(false)}
       />
 
       {/* Global Toast Notification */}

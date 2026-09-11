@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, Smartphone, CheckCircle2, X, ExternalLink, ShieldCheck } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -12,6 +13,7 @@ interface PWAInstallModalProps {
 }
 
 export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClose }) => {
+  const { isAppInstalled, deferredInstallPrompt } = useApp();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -26,7 +28,9 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
     // Detect if already installed / standalone
     const isStandaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
-      (window.navigator as any).standalone === true;
+      (window.navigator as any).standalone === true ||
+      localStorage.getItem('pawlove_pwa_installed') === 'true' ||
+      isAppInstalled;
     setIsStandalone(isStandaloneMode);
 
     // Catch beforeinstallprompt (Android, Chrome, Edge)
@@ -40,16 +44,19 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [isAppInstalled]);
+
+  const activePrompt = deferredPrompt || (deferredInstallPrompt as BeforeInstallPromptEvent | null);
 
   const handleInstallClick = async () => {
-    if (deferredPrompt) {
+    if (activePrompt) {
       try {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
+        await activePrompt.prompt();
+        const choice = await activePrompt.userChoice;
         if (choice.outcome === 'accepted') {
           setInstallSuccess(true);
           setDeferredPrompt(null);
+          localStorage.setItem('pawlove_pwa_installed', 'true');
         }
       } catch (err) {
         console.warn('Install prompt error:', err);
@@ -111,7 +118,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
         ) : (
           <div className="space-y-4 mb-6">
             {/* If Chrome / Android has native prompt */}
-            {deferredPrompt && (
+            {activePrompt && (
               <button
                 onClick={handleInstallClick}
                 className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-[#E5C158] to-[#D4AF37] text-stone-950 font-bold text-sm shadow-lg hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer"

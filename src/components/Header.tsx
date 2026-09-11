@@ -50,6 +50,8 @@ export const Header: React.FC = () => {
     setShowPaymentModal,
     showPwaInstallModal,
     setShowPwaInstallModal,
+    isAppInstalled,
+    triggerPwaInstall,
     currentView,
     setCurrentView,
     resetToLanding
@@ -89,17 +91,17 @@ export const Header: React.FC = () => {
         {/* ========================================================================= */}
         {/* ROW 1: BRAND IDENTITY & PRIMARY PET / NUTRI IA SHORTCUTS                  */}
         {/* ========================================================================= */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 border-b border-[#E8DCCB]/60 dark:border-[#D4AF37]/15 sm:border-b-0">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-2 border-b border-[#E8DCCB]/60 dark:border-[#D4AF37]/15 sm:border-b-0">
           
           {/* Left: Brand Identity with Home Casita Icon */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 min-w-0">
             <button 
               onClick={() => {
                 setCurrentView('app');
                 setActiveTab('home');
               }}
               id="header-brand-pawlove"
-              className="flex items-center gap-1.5 sm:gap-2 text-left group shrink-0"
+              className="flex items-center gap-1.5 sm:gap-2 text-left group shrink-0 cursor-pointer"
               title={language === 'es' ? 'PAWLOVE • Ir a Inicio de la App' : 'PAWLOVE • Go to App Home'}
             >
               {/* Home Casita Icon next to title */}
@@ -111,25 +113,25 @@ export const Header: React.FC = () => {
                 <Home className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
 
-              <span className="font-editorial text-xl sm:text-2xl lg:text-3xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
-                PAWLOVE - MASCOTAS
+              <span className="font-editorial text-lg sm:text-xl lg:text-2xl font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A]">
+                PAWLOVE
               </span>
             </button>
 
-            <span className="hidden lg:inline-block w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
-            <span className="hidden lg:inline-block text-[11px] font-semibold tracking-wider uppercase text-stone-500 dark:text-[#D4AF37]/80">
-              {language === 'es' ? 'Nutrición Natural & Cuidados Caseros' : 'Homemade Precision Nutrition'}
+            <span className="hidden xl:inline-block w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+            <span className="hidden xl:inline-block text-[11px] font-semibold tracking-wider uppercase text-stone-500 dark:text-[#D4AF37]/80 truncate">
+              {language === 'es' ? 'Nutrición Natural & Cuidados' : 'Natural Pet Care'}
             </span>
           </div>
 
           {/* Right on Row 1: NutriIA & Pet Selector + Desktop Utility Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
             
             {/* NutriIA Assistant Button */}
             <button
               onClick={() => setActiveTab('concierge')}
               id="header-btn-nutria"
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 shadow-xs select-none shrink-0 ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 shadow-xs select-none shrink-0 cursor-pointer ${
                 activeTab === 'concierge'
                   ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-md ring-2 ring-[#D4AF37]/50 scale-102'
                   : 'bg-white dark:bg-[#112019] text-stone-800 dark:text-[#F3E5AB] border border-[#E8DCCB] dark:border-[#D4AF37]/40 hover:border-[#D4AF37] hover:bg-amber-50/50 dark:hover:bg-[#16271F]'
@@ -138,7 +140,7 @@ export const Header: React.FC = () => {
             >
               <Bot className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'concierge' ? 'text-white' : 'text-[#B8860B] dark:text-[#D4AF37]'}`} />
               <span className="font-bold text-xs whitespace-nowrap">Nutri IA</span>
-              <span className="hidden xs:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-[#D4AF37] text-stone-950 shadow-2xs">
+              <span className="hidden md:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-[#D4AF37] text-stone-950 shadow-2xs">
                 AI
               </span>
             </button>
@@ -148,7 +150,7 @@ export const Header: React.FC = () => {
               <div className="relative shrink-0">
                 <button
                   onClick={() => setShowPetDropdown(!showPetDropdown)}
-                  className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-800 dark:text-[#F3E5AB] shadow-xs hover:border-[#D4AF37] transition-all"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-800 dark:text-[#F3E5AB] shadow-xs hover:border-[#D4AF37] transition-all cursor-pointer"
                   title={currentPet?.name}
                 >
                   <div className="w-5 h-5 rounded-full overflow-hidden bg-amber-100 dark:bg-stone-800 shrink-0">
@@ -166,7 +168,7 @@ export const Header: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <span className="max-w-[65px] sm:max-w-[90px] truncate text-xs">{currentPet?.name || 'Mascota'}</span>
+                  <span className="max-w-[50px] sm:max-w-[70px] md:max-w-[90px] truncate text-xs">{currentPet?.name || 'Mascota'}</span>
                   <ChevronDown className="w-3 h-3 text-[#B8860B] dark:text-[#D4AF37]" />
                 </button>
 
@@ -244,48 +246,36 @@ export const Header: React.FC = () => {
             )}
 
             {/* Desktop-only Utility Buttons (On mobile they appear in Row 2) */}
-            <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+            <div className="hidden sm:flex items-center gap-1 sm:gap-1.5 shrink-0">
 
-              {/* Install PWA Button */}
-              <button
-                onClick={() => setShowPwaInstallModal(true)}
-                className="px-2.5 py-1.5 rounded-full bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
-                title={language === 'es' ? 'Descargar e instalar App en el móvil' : 'Install App on mobile'}
-                id="header-btn-install-app-desktop"
-              >
-                <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span className="hidden md:inline">{language === 'es' ? 'Instalar App' : 'Install App'}</span>
-              </button>
-
-              {/* App Home Button */}
-              <button
-                onClick={() => {
-                  setCurrentView('app');
-                  setActiveTab('home');
-                }}
-                className="px-2.5 py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-700 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
-                title={language === 'es' ? 'Ir al inicio de la App' : 'Go to App Home'}
-                id="header-btn-app-desktop"
-              >
-                <Smartphone className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                <span className="hidden md:inline">App</span>
-              </button>
+              {/* Install PWA Button - Only shown when NOT installed */}
+              {!isAppInstalled && (
+                <button
+                  onClick={triggerPwaInstall}
+                  className="p-1.5 sm:p-2 lg:px-2.5 lg:py-1.5 rounded-full bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                  title={language === 'es' ? 'Descargar e instalar App' : 'Install App'}
+                  id="header-btn-install-app-desktop"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="hidden xl:inline">{language === 'es' ? 'Instalar App' : 'Install App'}</span>
+                </button>
+              )}
 
               {/* View Pasarela de Pagos Button */}
               <button
                 onClick={() => setCurrentView('pricing')}
-                className="px-2.5 py-1.5 rounded-full bg-amber-50 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 text-xs font-bold text-amber-900 dark:text-[#F3E5AB] hover:border-[#B8860B] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                className="p-1.5 sm:p-2 lg:px-2.5 lg:py-1.5 rounded-full bg-amber-50 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 text-xs font-bold text-amber-900 dark:text-[#F3E5AB] hover:border-[#B8860B] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
                 title={language === 'es' ? 'Ver Pasarela de Pagos & Tarifas' : 'View Payment Gateway & Plans'}
                 id="header-btn-pricing-desktop"
               >
                 <CreditCard className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                <span className="hidden md:inline">{language === 'es' ? 'Tarifas' : 'Plans'}</span>
+                <span className="hidden lg:inline">{language === 'es' ? 'Tarifas' : 'Plans'}</span>
               </button>
               
               {/* Notification Bell Badge */}
               <button
                 onClick={() => setActiveTab('agenda')}
-                className="relative p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0"
+                className="relative p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
                 title={language === 'es' ? 'Avisos y agenda médica' : 'Reminders & agenda'}
                 id="header-btn-agenda-bell-desktop"
               >
@@ -298,12 +288,12 @@ export const Header: React.FC = () => {
               </button>
 
               {/* Language Selector (Desktop) */}
-              <LanguageSelector idPrefix="header-lang-desktop" align="right" />
+              <LanguageSelector idPrefix="header-lang-desktop" align="right" compact={true} />
 
               {/* Theme Switcher Toggle Button (Light/Dark) */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0"
+                className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
                 title={theme === 'dark' ? t('themeLight') : t('themeDark')}
                 id="header-btn-theme-desktop"
               >
@@ -317,7 +307,7 @@ export const Header: React.FC = () => {
               {/* Settings & Data Utilities */}
               <button
                 onClick={() => setShowSettingsModal(true)}
-                className="p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0"
+                className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
                 title={language === 'es' ? 'Ajustes y gestión de datos' : 'Settings & Data'}
                 id="header-btn-settings-desktop"
               >
@@ -331,9 +321,9 @@ export const Header: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2 (MOBILE ONLY): PHONE CONTROLS (CLARO/OSCURO, AJUSTES, IDIOMA, AGENDA)*/}
+        {/* ROW 2 (MOBILE ONLY): PHONE CONTROLS (CLARO/OSCURO, AJUSTES, IDIOMA, AGENDA, TARIFAS) */}
         {/* ========================================================================= */}
-        <div className="flex sm:hidden max-w-7xl mx-auto px-3 py-1.5 items-center justify-between gap-1.5 bg-[#F4EFE6]/90 dark:bg-[#0A1712]/90 border-b border-[#E8DCCB]/80 dark:border-[#D4AF37]/15">
+        <div className="flex sm:hidden max-w-7xl mx-auto px-2 py-1.5 items-center justify-between gap-1 bg-[#F4EFE6]/90 dark:bg-[#0A1712]/90 border-b border-[#E8DCCB]/80 dark:border-[#D4AF37]/15 overflow-x-auto scrollbar-none">
           
           {/* 1. Language Selector */}
           <LanguageSelector idPrefix="mobile-lang" compact={true} align="left" />
@@ -342,7 +332,7 @@ export const Header: React.FC = () => {
           <button
             onClick={toggleTheme}
             id="mobile-btn-theme"
-            className="flex-1 py-1 px-2 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all"
+            className="flex-1 py-1 px-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] xs:text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
             title={theme === 'dark' ? t('themeLight') : t('themeDark')}
           >
             {theme === 'dark' ? (
@@ -362,7 +352,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setActiveTab('agenda')}
             id="mobile-btn-agenda"
-            className={`flex-1 py-1 px-2 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all relative ${
+            className={`flex-1 py-1 px-1.5 rounded-xl border text-[10px] xs:text-[11px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all relative shrink-0 cursor-pointer ${
               activeTab === 'agenda'
                 ? 'bg-[#B8860B] text-white border-[#B8860B]'
                 : 'bg-white dark:bg-[#112019] border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB]'
@@ -372,32 +362,44 @@ export const Header: React.FC = () => {
             <Bell className={`w-3.5 h-3.5 ${activeTab === 'agenda' ? 'text-white' : 'text-[#B8860B] dark:text-[#D4AF37]'}`} />
             <span>{language === 'es' ? 'Agenda' : 'Agenda'}</span>
             {pendingEventsCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-rose-600 text-white font-mono text-[9px] flex items-center justify-center font-extrabold ml-0.5">
+              <span className="w-3.5 h-3.5 rounded-full bg-rose-600 text-white font-mono text-[8px] flex items-center justify-center font-extrabold ml-0.5">
                 {pendingEventsCount}
               </span>
             )}
           </button>
 
-          {/* 4. Install App Button (Mobile) */}
+          {/* 4. Tarifas Button */}
           <button
-            onClick={() => setShowPwaInstallModal(true)}
-            id="mobile-btn-install-app"
-            className="py-1 px-2 rounded-xl bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all"
-            title={language === 'es' ? 'Descargar e instalar App' : 'Install App'}
+            onClick={() => setCurrentView('pricing')}
+            id="mobile-btn-pricing"
+            className="flex-1 py-1 px-1.5 rounded-xl bg-amber-50 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 text-[10px] xs:text-[11px] font-bold text-amber-900 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
+            title={language === 'es' ? 'Ver Tarifas' : 'View Plans'}
           >
-            <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>App</span>
+            <CreditCard className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+            <span>{language === 'es' ? 'Tarifas' : 'Plans'}</span>
           </button>
 
-          {/* 5. Settings Modal Launcher */}
+          {/* 5. Install App Button (Mobile - Only if NOT installed) */}
+          {!isAppInstalled && (
+            <button
+              onClick={triggerPwaInstall}
+              id="mobile-btn-install-app"
+              className="py-1 px-1.5 rounded-xl bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-[10px] xs:text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
+              title={language === 'es' ? 'Descargar e instalar App' : 'Install App'}
+            >
+              <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{language === 'es' ? 'Instalar' : 'Install'}</span>
+            </button>
+          )}
+
+          {/* 6. Settings Modal Launcher */}
           <button
             onClick={() => setShowSettingsModal(true)}
             id="mobile-btn-settings"
-            className="flex-1 py-1 px-2 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all"
+            className="py-1 px-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] xs:text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
             title={language === 'es' ? 'Ajustes y gestión de datos' : 'Settings & Data'}
           >
             <Settings className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-            <span>{language === 'es' ? 'Ajustes' : 'Settings'}</span>
           </button>
 
         </div>

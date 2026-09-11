@@ -180,7 +180,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
   ];
 
   return (
-    <div className={`relative min-h-screen ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-[#EDE8DF]' : 'light bg-[#FBF9F5] text-stone-900'} font-sans transition-colors duration-300 overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-900 dark:selection:bg-[#E8B84A]/30 dark:selection:text-[#FFF8E7]`}>
+    <div className={`relative min-h-screen ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-[#EDE8DF]' : 'light bg-[#FAF7F2] text-stone-900'} font-sans transition-colors duration-300 overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-900 dark:selection:bg-[#E8B84A]/30 dark:selection:text-[#FFF8E7]`}>
       
       {/* ========================================================================= */}
       {/* FONDO DINÁMICO AMBIENTAL TRANSLÚCIDO (ORBS + PATRÓN ORGÁNICO)               */}
@@ -205,7 +205,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
       {/* ========================================================================= */}
       {/* HEADER: LOGO, SELECTOR DÍA/NOCHE, IDIOMA Y ACCESO                          */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 dark:border-[#E8B84A]/20 bg-[#FBF9F5]/90 dark:bg-[#0A0F0D]/90 backdrop-blur-md transition-colors duration-300">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E8DCCB] dark:border-[#E8B84A]/20 bg-[#FAF7F2]/95 dark:bg-[#0A0F0D]/90 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo Brand / Icono en pantalla que dirige a la App */}
@@ -225,7 +225,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
             </div>
             <div className="min-w-0 shrink">
               <div className="font-editorial text-xs sm:text-base md:text-lg font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate group-hover:text-amber-500 transition-colors">
-                PAWLOVE - MASCOTAS
+                PAWLOVE
               </div>
             </div>
           </button>
@@ -236,11 +236,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
             {/* Toggle Día / Noche */}
             <button
               onClick={toggleTheme}
-              title={theme === 'dark' ? 'Cambiar a modo Día' : 'Cambiar a modo Noche'}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-200/90 dark:border-stone-800 bg-stone-100/90 dark:bg-[#121B16] text-stone-700 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
+              title={theme === 'dark' ? (language === 'es' ? 'Cambiar a modo Claro champán-crema' : 'Switch to Light mode') : (language === 'es' ? 'Cambiar a modo Oscuro royal' : 'Switch to Dark mode')}
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#E8DCCB] dark:border-stone-800 bg-white dark:bg-[#121B16] text-stone-700 dark:text-amber-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
               id="landing-btn-toggle-theme"
             >
-              {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-700" />}
+              {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8B84A]" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#B8860B]" />}
             </button>
 
             {/* Selector de Idioma (Mundial / Europa) */}
@@ -1253,21 +1253,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
         </div>
       </footer>
 
-      {/* STICKY BOTTOM BAR FOR MOBILES */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0A0F0D]/95 backdrop-blur-md border-t border-stone-200 dark:border-[#E8B84A]/30 p-2.5 px-3 flex items-center justify-between shadow-2xl transition-colors duration-300 gap-2">
+      {/* STICKY BOTTOM BAR FOR MOBILES (CLARO/OSCURO + ACCESO APP + PRUEBA) */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7F2]/95 dark:bg-[#0A0F0D]/95 backdrop-blur-md border-t border-[#E8DCCB] dark:border-[#E8B84A]/30 p-2 px-3 flex items-center justify-between shadow-2xl transition-colors duration-300 gap-2">
+        {/* Toggle Modo Claro / Modo Oscuro */}
+        <button
+          onClick={toggleTheme}
+          id="landing-btn-mobile-toggle-theme"
+          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/40 text-stone-800 dark:text-[#F3E5AB] text-xs font-bold shadow-2xs cursor-pointer shrink-0 active:scale-95 transition-all"
+          title={theme === 'dark' ? 'Cambiar a modo Claro champán-crema' : 'Cambiar a modo Oscuro royal'}
+        >
+          {theme === 'dark' ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-[#E8B84A]" />
+              <span>{language === 'es' ? 'Claro' : 'Light'}</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-[#B8860B]" />
+              <span>{language === 'es' ? 'Oscuro' : 'Dark'}</span>
+            </>
+          )}
+        </button>
+
+        {/* Botón Ir a la App */}
         <button
           onClick={handleNavigateToApp}
           id="landing-btn-mobile-go-to-app"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-900 dark:bg-[#15271F] border border-[#D4AF37]/60 text-[#F3E5AB] text-xs font-bold shadow-md cursor-pointer shrink-0 active:scale-95 transition-all"
+          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-stone-900 dark:bg-[#15271F] border border-[#D4AF37]/60 text-[#F3E5AB] text-xs font-bold shadow-md cursor-pointer shrink-0 active:scale-95 transition-all"
         >
           <Smartphone className="w-3.5 h-3.5 text-[#E8B84A]" />
-          <span>{language === 'es' ? 'Ir a la App' : 'App'}</span>
+          <span>{language === 'es' ? 'App' : 'App'}</span>
         </button>
+
+        {/* Botón Prueba 48h Gratis */}
         <button
           onClick={() => onGoToPricing('free_trial_48h')}
           className="flex-1 px-3 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 text-xs font-black shadow-md hover:opacity-95 flex items-center justify-center gap-1 cursor-pointer"
         >
-          <span className="text-stone-950 font-black">{language === 'es' ? 'Prueba 48h Gratis' : 'Start Free'}</span>
+          <span className="text-stone-950 font-black">{language === 'es' ? 'Prueba 48h' : 'Start Free'}</span>
           <ArrowRight className="w-3.5 h-3.5 text-stone-950" />
         </button>
       </div>

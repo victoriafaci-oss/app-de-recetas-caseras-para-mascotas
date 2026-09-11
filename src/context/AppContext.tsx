@@ -80,6 +80,11 @@ interface AppContextType {
   setShowPaymentModal: (show: boolean) => void;
   showPwaInstallModal: boolean;
   setShowPwaInstallModal: (show: boolean) => void;
+  showPostPurchaseInstallModal: boolean;
+  setShowPostPurchaseInstallModal: (show: boolean) => void;
+  isAppInstalled: boolean;
+  deferredInstallPrompt: any;
+  triggerPwaInstall: () => Promise<void>;
   activateSubscription: (
     planId: SubscriptionPlanId, 
     method: PaymentMethodType, 
@@ -125,6 +130,76 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPwaInstallModal, setShowPwaInstallModal] = useState(false);
+  const [showPostPurchaseInstallModal, setShowPostPurchaseInstallModal] = useState(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true ||
+      localStorage.getItem('pawlove_pwa_installed') === 'true'
+    );
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkInstalled = () => {
+      const standalone = 
+        window.matchMedia('(display-mode: standalone)').matches || 
+        (window.navigator as any).standalone === true ||
+        localStorage.getItem('pawlove_pwa_installed') === 'true';
+      if (standalone) {
+        setIsAppInstalled(true);
+      }
+    };
+
+    checkInstalled();
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredInstallPrompt(null);
+      localStorage.setItem('pawlove_pwa_installed', 'true');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const triggerPwaInstall = async () => {
+    if (deferredInstallPrompt) {
+      try {
+        await deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          setIsAppInstalled(true);
+          localStorage.setItem('pawlove_pwa_installed', 'true');
+          setDeferredInstallPrompt(null);
+          showToast(
+            language === 'es' ? '¡PawLove instalada con éxito en tu teléfono!' : 'PawLove installed successfully on your phone!',
+            'success'
+          );
+          setShowPwaInstallModal(false);
+          setShowPostPurchaseInstallModal(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Direct prompt failed, opening modal guide:', err);
+      }
+    }
+    // Fallback or iOS Safari: open guided modal
+    setShowPwaInstallModal(true);
+  };
   
   // Intelligent view initialization: if opened via home screen icon / standalone / URL param, goes to app
   const [currentView, setCurrentViewState] = useState<'landing' | 'pricing' | 'app'>(() => {
@@ -185,14 +260,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [subscription]);
 
-  // Theme state
+  // Theme state: Default is 'light' (Claro Champán-Crema)
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(THEME_KEY);
-      if (saved === 'light' || saved === 'dark') return saved;
-      return 'dark'; // Default: Atelier Royal Dark & Gold
+      if (saved === 'dark' || saved === 'light') return saved;
+      return 'light'; // Default: Claro Champán-Crema
     }
-    return 'dark';
+    return 'light';
   });
 
   // Language state (default: 'es' with translator to 'en' in settings menu next to dark/light mode)
@@ -513,18 +588,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       localStorage.setItem(THEME_KEY, theme);
       const root = document.documentElement;
       const body = document.body;
+      const meta = document.getElementById('meta-theme-color');
       if (theme === 'dark') {
         root.classList.add('dark');
         root.classList.remove('light');
         body.classList.add('dark');
         body.classList.remove('light');
         root.style.colorScheme = 'dark';
+        if (meta) meta.setAttribute('content', '#0A0F0D');
       } else {
         root.classList.remove('dark');
         root.classList.add('light');
         body.classList.remove('dark');
         body.classList.add('light');
         root.style.colorScheme = 'light';
+        if (meta) meta.setAttribute('content', '#FAF7F2');
       }
     } catch (e) {
       console.warn('Theme synchronization notice:', e);
@@ -906,7 +984,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const planConfig = PRICING_PLANS.find(p => p.id === planId) || PRICING_PLANS[0];
     const now = Date.now();
     let expiresAt: string | null = null;
-    let billingPeriod: '48h_trial' | 'monthly' | 'annual' | 'lifetime' = 'monthly';
+    let billingPeriod: '48h_trial' | 'monthly' | 'annual' | 'lifetime' | 'promo' = 'monthly';
 
     if (planId === 'free_trial_48h') {
       expiresAt = new Date(now + 48 * 3600 * 1000).toISOString();
@@ -917,9 +995,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } else if (planId === 'annual') {
       expiresAt = new Date(now + 365 * 24 * 3600 * 1000).toISOString();
       billingPeriod = 'annual';
-    } else if (planId === 'lifetime') {
+    } else if (planId === 'lifetime' || planId === 'promo') {
       expiresAt = null;
-      billingPeriod = 'lifetime';
+      billingPeriod = planId === 'promo' ? 'promo' : 'lifetime';
     }
 
     const newSub: UserSubscription = {
@@ -938,7 +1016,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setSubscription(newSub);
     setShowPaymentModal(false);
-    setCurrentView('app');
     playLuxuryChime('success');
     confetti({ particleCount: 65, spread: 85, origin: { y: 0.6 } });
 
@@ -948,13 +1025,38 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         : `"${planConfig.title}" activated successfully! Welcome to the app.`,
       'success'
     );
+
+    // If the app is not already installed as standalone PWA, show direct install modal immediately!
+    const isAlreadyInstalled = 
+      typeof window !== 'undefined' && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true ||
+        localStorage.getItem('pawlove_pwa_installed') === 'true'
+      );
+
+    if (!isAlreadyInstalled) {
+      setShowPostPurchaseInstallModal(true);
+    } else {
+      setCurrentView('app');
+    }
+
     return true;
   };
 
-  // Automatically activate subscription when returning from Stripe or PayPal checkout URL
+  // Automatically activate subscription when returning from Stripe or PayPal checkout URL (including promo links)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      const pathname = window.location.pathname.toLowerCase();
+      const isPromoUrl = 
+        params.get('promo') === 'success' ||
+        params.get('promo') === 'true' ||
+        params.get('promocion') === 'success' ||
+        params.get('promocion') === 'true' ||
+        params.get('plan') === 'promo' ||
+        pathname.includes('/promocion') ||
+        pathname.includes('/promo');
+
       const isSuccess = 
         params.get('pago') === 'exito' ||
         params.get('pago') === 'success' ||
@@ -964,18 +1066,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         params.get('redirect_status') === 'succeeded' ||
         params.get('paid') === 'true' ||
         params.has('session_id') || 
-        params.get('success') === 'true';
+        params.get('success') === 'true' ||
+        isPromoUrl;
 
       if (isSuccess) {
-        const plan = (params.get('plan') as SubscriptionPlanId) || 'annual';
+        let plan: SubscriptionPlanId = 'annual';
+        if (params.get('plan')) {
+          plan = params.get('plan') as SubscriptionPlanId;
+        } else if (isPromoUrl) {
+          plan = 'promo';
+        }
+
         const provider = (params.get('provider') as PaymentMethodType) || 'stripe';
         const sessionId = params.get('session_id') || `STRIPE_SES_${Date.now()}`;
         activateSubscription(plan, provider, { transactionId: sessionId });
-        setCurrentView('app');
-        // Automatically open the official PWA Install prompt for the new customer!
-        setTimeout(() => {
-          setShowPwaInstallModal(true);
-        }, 600);
 
         try {
           window.history.replaceState({}, document.title, window.location.pathname);
@@ -1062,6 +1166,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setShowPaymentModal,
         showPwaInstallModal,
         setShowPwaInstallModal,
+        showPostPurchaseInstallModal,
+        setShowPostPurchaseInstallModal,
+        isAppInstalled,
+        deferredInstallPrompt,
+        triggerPwaInstall,
         activateSubscription,
         cancelOrResetSubscription,
         currentPricingPlan,

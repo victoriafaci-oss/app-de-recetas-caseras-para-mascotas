@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Smartphone, X } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 interface PWAInstallBannerProps {
-  onOpenModal: () => void;
+  onOpenModal?: () => void;
 }
 
 export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal }) => {
+  const { isAppInstalled, triggerPwaInstall } = useApp();
   const [dismissed, setDismissed] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true); // default true to avoid flash
 
   useEffect(() => {
     const isStandaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
-      (window.navigator as any).standalone === true;
+      (window.navigator as any).standalone === true ||
+      localStorage.getItem('pawlove_pwa_installed') === 'true';
     
     setIsStandalone(isStandaloneMode);
 
@@ -26,7 +29,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal 
     }
   }, []);
 
-  if (isStandalone || dismissed) return null;
+  if (isStandalone || isAppInstalled || dismissed) return null;
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -34,9 +37,14 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal 
     localStorage.setItem('pawlove_pwa_banner_dismissed', Date.now().toString());
   };
 
+  const handleInstallClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    triggerPwaInstall();
+  };
+
   return (
     <div 
-      onClick={onOpenModal}
+      onClick={handleInstallClick}
       className="bg-gradient-to-r from-[#0d2818] via-[#133c24] to-[#0d2818] border-b border-[#D4AF37]/30 text-white px-3 py-2 text-xs flex items-center justify-between shadow-md cursor-pointer hover:bg-opacity-95 transition-all select-none"
     >
       <div className="flex items-center gap-2.5 overflow-hidden">
@@ -52,10 +60,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal 
       <div className="flex items-center gap-2 shrink-0">
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenModal();
-          }}
+          onClick={handleInstallClick}
           className="px-2.5 py-1 rounded-lg bg-[#D4AF37] text-stone-950 font-bold text-[11px] shadow hover:bg-[#E5C158] transition-colors flex items-center gap-1 cursor-pointer"
         >
           <Download className="w-3 h-3" />
@@ -64,7 +69,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal 
         <button
           type="button"
           onClick={handleDismiss}
-          className="p-1 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition-colors"
+          className="p-1 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           aria-label="Cerrar aviso"
         >
           <X className="w-3.5 h-3.5" />

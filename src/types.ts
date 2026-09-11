@@ -254,7 +254,7 @@ export type WeeklyTrackingMap = {
   };
 };
 
-export type SubscriptionPlanId = 'free_trial_48h' | 'monthly' | 'annual' | 'lifetime';
+export type SubscriptionPlanId = 'free_trial_48h' | 'monthly' | 'annual' | 'lifetime' | 'promo';
 
 export type PaymentMethodType = 'stripe' | 'paypal' | 'card' | 'phone_sms';
 
@@ -265,7 +265,7 @@ export interface UserSubscription {
   planId: SubscriptionPlanId;
   planTitle: string;
   amountEur: number;
-  billingPeriod: '48h_trial' | 'monthly' | 'annual' | 'lifetime';
+  billingPeriod: '48h_trial' | 'monthly' | 'annual' | 'lifetime' | 'promo';
   paymentMethod: PaymentMethodType;
   activatedAt: string; // ISO Date string
   expiresAt: string | null; // ISO Date string or null for lifetime

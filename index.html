@@ -12,10 +12,10 @@
 
     <!-- PWA & Mobile Web App Capabilities -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0d2818" />
+    <meta name="theme-color" content="#FAF7F2" id="meta-theme-color" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="PawLove" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
@@ -28,12 +28,16 @@
       (function() {
         try {
           var t = localStorage.getItem('nutripet_theme_v1');
-          if (t === 'light') {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-          } else {
+          if (t === 'dark') {
             document.documentElement.classList.add('dark');
             document.documentElement.classList.remove('light');
+            var meta = document.getElementById('meta-theme-color');
+            if (meta) meta.setAttribute('content', '#0A0F0D');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+            var meta = document.getElementById('meta-theme-color');
+            if (meta) meta.setAttribute('content', '#FAF7F2');
           }
         } catch (e) {}
       })();

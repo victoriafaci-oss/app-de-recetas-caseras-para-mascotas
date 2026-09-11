@@ -8,9 +8,26 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
+  html {
+    background-color: #FAF7F2;
+    color: #1c1917;
+  }
+
+  html.dark {
+    background-color: #0A0F0D;
+    color: #EDE8DF;
+  }
+
   body {
     font-family: var(--font-sans);
+    background-color: #FAF7F2;
+    color: #1c1917;
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark body, body.dark {
+    background-color: #0A0F0D;
+    color: #EDE8DF;
   }
 
   h1, h2, h3, h4, .font-editorial, .font-serif {
