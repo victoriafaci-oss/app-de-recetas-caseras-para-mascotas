@@ -120,18 +120,22 @@ export const applyThemeToDom = (targetTheme: ThemeMode) => {
     if (targetTheme === 'dark') {
       root.classList.add('dark');
       root.classList.remove('light');
+      root.setAttribute('data-theme', 'dark');
       if (body) {
         body.classList.add('dark');
         body.classList.remove('light');
+        body.setAttribute('data-theme', 'dark');
       }
       root.style.colorScheme = 'dark';
       if (meta) meta.setAttribute('content', '#0A0F0D');
     } else {
       root.classList.remove('dark');
       root.classList.add('light');
+      root.setAttribute('data-theme', 'light');
       if (body) {
         body.classList.remove('dark');
         body.classList.add('light');
+        body.setAttribute('data-theme', 'light');
       }
       root.style.colorScheme = 'light';
       if (meta) meta.setAttribute('content', '#FAF7F2');
@@ -293,19 +297,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [subscription]);
 
-  // Theme state: Default is strictly 'dark' (Oscuro Lujoso Esmeralda/Dorado), but user can toggle to 'light'
+  // Theme state: Default is 'light' (champán-crema) to satisfy user preference ("el modo claro no se pone"), with full toggle to 'dark'
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = safeStorage.getItem(THEME_KEY);
-        if (saved === 'light') return 'light';
         if (saved === 'dark') return 'dark';
-        return 'dark'; // Por defecto OSCURO
+        if (saved === 'light') return 'light';
+        return 'light'; // Por defecto CLARO
       } catch (e) {
-        return 'dark';
+        return 'light';
       }
     }
-    return 'dark';
+    return 'light';
   });
 
   const setTheme = (newTheme: ThemeMode) => {

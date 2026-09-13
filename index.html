@@ -48,28 +48,30 @@
           }
         } catch (e) {}
 
-        // Theme initialization
+        // Theme initialization (defaults to light mode unless explicitly saved as dark)
         try {
           var t = null;
           try {
             t = localStorage.getItem('pawlove_theme');
           } catch (storageErr) {}
 
-          var isLight = (t === 'light');
+          var isDark = (t === 'dark');
           var root = document.documentElement;
 
-          if (isLight) {
-            root.classList.remove('dark');
-            root.classList.add('light');
-            root.style.colorScheme = 'light';
-            var meta = document.getElementById('meta-theme-color');
-            if (meta) meta.setAttribute('content', '#FAF7F2');
-          } else {
+          if (isDark) {
             root.classList.add('dark');
             root.classList.remove('light');
             root.style.colorScheme = 'dark';
+            root.setAttribute('data-theme', 'dark');
             var meta = document.getElementById('meta-theme-color');
             if (meta) meta.setAttribute('content', '#0A0F0D');
+          } else {
+            root.classList.remove('dark');
+            root.classList.add('light');
+            root.style.colorScheme = 'light';
+            root.setAttribute('data-theme', 'light');
+            var meta = document.getElementById('meta-theme-color');
+            if (meta) meta.setAttribute('content', '#FAF7F2');
           }
         } catch (e) {}
       })();

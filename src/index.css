@@ -8,7 +8,7 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
-  html {
+  html, html.light {
     background-color: #FAF7F2;
     color: #1c1917;
   }
@@ -18,7 +18,7 @@
     color: #EDE8DF;
   }
 
-  body {
+  body, html.light body, body.light {
     font-family: var(--font-sans);
     background-color: #FAF7F2;
     color: #1c1917;
