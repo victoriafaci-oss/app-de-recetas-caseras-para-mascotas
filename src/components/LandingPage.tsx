@@ -223,10 +223,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div className="min-w-0 shrink">
-              <div className="font-editorial text-xs sm:text-base md:text-lg font-black tracking-tight sm:tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-tight truncate group-hover:text-amber-500 transition-colors">
-                PAWLOVE
-              </div>
+            <div className="flex flex-col justify-center leading-none shrink-0 select-none">
+              <span className="font-editorial text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-none group-hover:text-amber-500 transition-colors">
+                PAW
+              </span>
+              <span className="font-editorial text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-none mt-0.5 group-hover:text-amber-500 transition-colors">
+                LOVE
+              </span>
             </div>
           </button>
 
