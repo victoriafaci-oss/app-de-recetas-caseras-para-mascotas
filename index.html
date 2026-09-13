@@ -12,10 +12,10 @@
 
     <!-- PWA & Mobile Web App Capabilities -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#FAF7F2" id="meta-theme-color" />
+    <meta name="theme-color" content="#0A0F0D" id="meta-theme-color" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PawLove" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
@@ -26,29 +26,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       (function() {
+        // Dismantle any service workers on localhost / preview
         try {
-          // Clear any legacy dark mode from prior versions
-          if (localStorage.getItem('nutripet_theme_v1')) {
-            localStorage.removeItem('nutripet_theme_v1');
-          }
-          var t = localStorage.getItem('pawlove_theme_v2');
-          if (t !== 'dark') {
-            t = 'light';
-            localStorage.setItem('pawlove_theme_v2', 'light');
-          }
-
-          if (t === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-            var meta = document.getElementById('meta-theme-color');
-            if (meta) meta.setAttribute('content', '#0A0F0D');
-          } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-            var meta = document.getElementById('meta-theme-color');
-            if (meta) meta.setAttribute('content', '#FAF7F2');
+          if ('serviceWorker' in navigator && (
+            location.hostname === 'localhost' ||
+            location.hostname === '127.0.0.1' ||
+            location.hostname.includes('run.app')
+          )) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              for (var i = 0; i < regs.length; i++) {
+                regs[i].unregister();
+              }
+            });
+            if (window.caches) {
+              caches.keys().then(function(keys) {
+                for (var i = 0; i < keys.length; i++) {
+                  caches.delete(keys[i]);
+                }
+              });
+            }
           }
         } catch (e) {}
+
+        // Theme initialization
+        try {
+          var t = localStorage.getItem('pawlove_theme');
+          var isLight = (t === 'light');
+          var root = document.documentElement;
+
+          if (isLight) {
+            root.classList.remove('dark');
+            root.classList.add('light');
+            root.style.colorScheme = 'light';
+            var meta = document.getElementById('meta-theme-color');
+            if (meta) meta.setAttribute('content', '#FAF7F2');
+          } else {
+            root.classList.add('dark');
+            root.classList.remove('light');
+            root.style.colorScheme = 'dark';
+            var meta = document.getElementById('meta-theme-color');
+            if (meta) meta.setAttribute('content', '#0A0F0D');
+          }
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
       })();
     </script>
   </head>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Smartphone, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { safeStorage } from '../utils/safeStorage';
 
 interface PWAInstallBannerProps {
   onOpenModal?: () => void;
@@ -15,12 +16,12 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal 
     const isStandaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
       (window.navigator as any).standalone === true ||
-      localStorage.getItem('pawlove_pwa_installed') === 'true';
+      safeStorage.getItem('pawlove_pwa_installed') === 'true';
     
     setIsStandalone(isStandaloneMode);
 
     // Check if user dismissed recently
-    const dismissedTimestamp = localStorage.getItem('pawlove_pwa_banner_dismissed');
+    const dismissedTimestamp = safeStorage.getItem('pawlove_pwa_banner_dismissed');
     if (dismissedTimestamp) {
       const elapsed = Date.now() - parseInt(dismissedTimestamp, 10);
       if (elapsed < 24 * 60 * 60 * 1000) { // 24 hours
@@ -34,7 +35,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onOpenModal 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
     setDismissed(true);
-    localStorage.setItem('pawlove_pwa_banner_dismissed', Date.now().toString());
+    safeStorage.setItem('pawlove_pwa_banner_dismissed', Date.now().toString());
   };
 
   const handleInstallClick = (e: React.MouseEvent) => {

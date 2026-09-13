@@ -19,6 +19,7 @@ import { PRICING_PLANS } from '../data/pricingData';
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { getTranslation, TranslationKey, TRANSLATIONS } from '../utils/translations';
 import { formatLocalDateKey } from '../utils/dietPlanner';
+import { safeStorage } from '../utils/safeStorage';
 import confetti from 'canvas-confetti';
 
 interface AppContextType {
@@ -99,7 +100,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const THEME_KEY = 'pawlove_theme_v2';
+const THEME_KEY = 'pawlove_theme';
 const LANG_KEY = 'nutripet_language_v1';
 const PETS_KEY = 'nutripet_pets_v1';
 const EVENTS_KEY = 'nutripet_events_v1';
@@ -113,7 +114,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Subscription & Payment Gateway state
   const [subscription, setSubscription] = useState<UserSubscription | null>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(SUBSCRIPTION_KEY);
+      const saved = safeStorage.getItem(SUBSCRIPTION_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -137,7 +138,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true ||
-      localStorage.getItem('pawlove_pwa_installed') === 'true'
+      safeStorage.getItem('pawlove_pwa_installed') === 'true'
     );
   });
 
@@ -148,7 +149,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const standalone = 
         window.matchMedia('(display-mode: standalone)').matches || 
         (window.navigator as any).standalone === true ||
-        localStorage.getItem('pawlove_pwa_installed') === 'true';
+        safeStorage.getItem('pawlove_pwa_installed') === 'true';
       if (standalone) {
         setIsAppInstalled(true);
       }
@@ -164,7 +165,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const handleAppInstalled = () => {
       setIsAppInstalled(true);
       setDeferredInstallPrompt(null);
-      localStorage.setItem('pawlove_pwa_installed', 'true');
+      safeStorage.setItem('pawlove_pwa_installed', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -201,7 +202,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setShowPwaInstallModal(true);
   };
   
-  // Intelligent view initialization: if opened via home screen icon / standalone / URL param, goes to app
+  // View initialization: Default to 'landing' with access to pricing gateway and full app
   const [currentView, setCurrentViewState] = useState<'landing' | 'pricing' | 'app'>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -211,7 +212,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (paramView === 'pricing') return 'pricing';
         if (paramView === 'landing') return 'landing';
 
-        // Detect if launched from mobile home screen icon / PWA standalone mode
+        // If launched in standalone PWA installed mode on phone
         const isStandalone = 
           window.matchMedia('(display-mode: standalone)').matches || 
           (window.navigator as any).standalone === true ||
@@ -222,10 +223,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           return 'app';
         }
 
-        // Restore view from localStorage if user was using the app
-        const savedView = localStorage.getItem(VIEW_KEY);
+        const savedView = safeStorage.getItem(VIEW_KEY);
         if (savedView === 'app') return 'app';
         if (savedView === 'pricing') return 'pricing';
+        if (savedView === 'landing') return 'landing';
       } catch (e) {
         console.warn('View initialization notice:', e);
       }
@@ -237,7 +238,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCurrentViewState(view);
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem(VIEW_KEY, view);
+        safeStorage.setItem(VIEW_KEY, view);
       } catch (e) {
         // ignore
       }
@@ -254,35 +255,60 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     if (subscription) {
-      localStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscription));
+      safeStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscription));
     } else {
-      localStorage.removeItem(SUBSCRIPTION_KEY);
+      safeStorage.removeItem(SUBSCRIPTION_KEY);
     }
   }, [subscription]);
 
-  // Theme state: Default is strictly 'light' (Claro Champán-Crema)
-  const [theme, setTheme] = useState<ThemeMode>(() => {
+  // Theme state: Default is strictly 'dark' (Oscuro Lujoso Esmeralda/Dorado), but user can toggle to 'light'
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       try {
-        // Clear any lingering dark setting from old version
-        if (localStorage.getItem('nutripet_theme_v1')) {
-          localStorage.removeItem('nutripet_theme_v1');
-        }
-        const saved = localStorage.getItem(THEME_KEY);
+        const saved = safeStorage.getItem(THEME_KEY);
+        if (saved === 'light') return 'light';
         if (saved === 'dark') return 'dark';
-        localStorage.setItem(THEME_KEY, 'light');
-        return 'light';
+        return 'dark'; // Por defecto OSCURO
       } catch (e) {
-        return 'light';
+        return 'dark';
       }
     }
-    return 'light';
+    return 'dark';
   });
+
+  const setTheme = (newTheme: ThemeMode) => {
+    setThemeState(newTheme);
+    if (typeof window !== 'undefined') {
+      try {
+        safeStorage.setItem(THEME_KEY, newTheme);
+        const root = document.documentElement;
+        const body = document.body;
+        const meta = document.getElementById('meta-theme-color');
+        if (newTheme === 'dark') {
+          root.classList.add('dark');
+          root.classList.remove('light');
+          body.classList.add('dark');
+          body.classList.remove('light');
+          root.style.colorScheme = 'dark';
+          if (meta) meta.setAttribute('content', '#0A0F0D');
+        } else {
+          root.classList.remove('dark');
+          root.classList.add('light');
+          body.classList.remove('dark');
+          body.classList.add('light');
+          root.style.colorScheme = 'light';
+          if (meta) meta.setAttribute('content', '#FAF7F2');
+        }
+      } catch (e) {
+        console.warn('Set theme notice:', e);
+      }
+    }
+  };
 
   // Language state (default: 'es' with translator to 'en' in settings menu next to dark/light mode)
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(LANG_KEY);
+      const saved = safeStorage.getItem(LANG_KEY);
       if (saved === 'es' || saved === 'en') return saved;
       return 'es';
     }
@@ -292,7 +318,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(LANG_KEY, lang);
+      safeStorage.setItem(LANG_KEY, lang);
     }
   };
 
@@ -303,7 +329,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Pets state (max 4)
   const [pets, setPets] = useState<Pet[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(PETS_KEY);
+      const saved = safeStorage.getItem(PETS_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -321,7 +347,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Events state
   const [events, setEvents] = useState<HealthEvent[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(EVENTS_KEY);
+      const saved = safeStorage.getItem(EVENTS_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -369,7 +395,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Weekly meal & exercise tracking (stored by petId and dateKey YYYY-MM-DD)
   const [weeklyTracking, setWeeklyTracking] = useState<WeeklyTrackingMap>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(WEEKLY_TRACKING_KEY);
+      const saved = safeStorage.getItem(WEEKLY_TRACKING_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -549,7 +575,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Custom AI recipes
   const [customRecipes, setCustomRecipes] = useState<Recipe[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(RECIPES_KEY);
+      const saved = safeStorage.getItem(RECIPES_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -565,7 +591,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Chat conversation
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(CHAT_KEY);
+      const saved = safeStorage.getItem(CHAT_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -626,23 +652,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem(PETS_KEY, JSON.stringify(pets));
+    safeStorage.setItem(PETS_KEY, JSON.stringify(pets));
   }, [pets]);
 
   useEffect(() => {
-    localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+    safeStorage.setItem(EVENTS_KEY, JSON.stringify(events));
   }, [events]);
 
   useEffect(() => {
-    localStorage.setItem(RECIPES_KEY, JSON.stringify(customRecipes));
+    safeStorage.setItem(RECIPES_KEY, JSON.stringify(customRecipes));
   }, [customRecipes]);
 
   useEffect(() => {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(chatMessages));
+    safeStorage.setItem(CHAT_KEY, JSON.stringify(chatMessages));
   }, [chatMessages]);
 
   useEffect(() => {
-    localStorage.setItem(WEEKLY_TRACKING_KEY, JSON.stringify(weeklyTracking));
+    safeStorage.setItem(WEEKLY_TRACKING_KEY, JSON.stringify(weeklyTracking));
   }, [weeklyTracking]);
 
   const showToast = (message: string, type: 'success' | 'info' | 'warning' = 'info') => {
@@ -651,32 +677,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const toggleTheme = () => {
-    setTheme(prev => {
-      const nextTheme = prev === 'dark' ? 'light' : 'dark';
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(THEME_KEY, nextTheme);
-          const root = document.documentElement;
-          const body = document.body;
-          if (nextTheme === 'dark') {
-            root.classList.add('dark');
-            root.classList.remove('light');
-            body.classList.add('dark');
-            body.classList.remove('light');
-            root.style.colorScheme = 'dark';
-          } else {
-            root.classList.remove('dark');
-            root.classList.add('light');
-            body.classList.remove('dark');
-            body.classList.add('light');
-            root.style.colorScheme = 'light';
-          }
-        } catch (e) {
-          console.warn('Theme toggle notice:', e);
-        }
-      }
-      return nextTheme;
-    });
+    const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
     try {
       playLuxuryChime('gentle');
     } catch (e) {
@@ -948,10 +950,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCustomRecipes([]);
     setWeeklyTracking({});
     setSelectedPetId('');
-    localStorage.removeItem(PETS_KEY);
-    localStorage.removeItem(EVENTS_KEY);
-    localStorage.removeItem(RECIPES_KEY);
-    localStorage.removeItem(WEEKLY_TRACKING_KEY);
+    safeStorage.removeItem(PETS_KEY);
+    safeStorage.removeItem(EVENTS_KEY);
+    safeStorage.removeItem(RECIPES_KEY);
+    safeStorage.removeItem(WEEKLY_TRACKING_KEY);
     setActiveTab('home');
     showToast(language === 'es' ? 'Modo datos reales activo. Perfiles listos para rellenar.' : 'Fresh slate ready for your real pet data.', 'info');
     playLuxuryChime('gentle');
@@ -961,8 +963,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setPets(INITIAL_PETS);
     setEvents(INITIAL_EVENTS);
     setSelectedPetId(INITIAL_PETS[0]?.id || 'pet-1');
-    localStorage.setItem(PETS_KEY, JSON.stringify(INITIAL_PETS));
-    localStorage.setItem(EVENTS_KEY, JSON.stringify(INITIAL_EVENTS));
+    safeStorage.setItem(PETS_KEY, JSON.stringify(INITIAL_PETS));
+    safeStorage.setItem(EVENTS_KEY, JSON.stringify(INITIAL_EVENTS));
     setActiveTab('home');
     showToast(language === 'es' ? 'Ejemplo de referencia cargado.' : 'Reference sample loaded.', 'success');
     playLuxuryChime('success');
@@ -1040,7 +1042,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       typeof window !== 'undefined' && (
         window.matchMedia('(display-mode: standalone)').matches ||
         (window.navigator as any).standalone === true ||
-        localStorage.getItem('pawlove_pwa_installed') === 'true'
+        safeStorage.getItem('pawlove_pwa_installed') === 'true'
       );
 
     if (!isAlreadyInstalled) {
@@ -1101,7 +1103,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const cancelOrResetSubscription = () => {
     setSubscription(null);
-    localStorage.removeItem(SUBSCRIPTION_KEY);
+    safeStorage.removeItem(SUBSCRIPTION_KEY);
     setCurrentView('landing');
     showToast(
       language === 'es'

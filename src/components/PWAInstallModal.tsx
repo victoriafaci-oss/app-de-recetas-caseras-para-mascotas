@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, Smartphone, CheckCircle2, X, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { safeStorage } from '../utils/safeStorage';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -29,7 +30,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
     const isStandaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
       (window.navigator as any).standalone === true ||
-      localStorage.getItem('pawlove_pwa_installed') === 'true' ||
+      safeStorage.getItem('pawlove_pwa_installed') === 'true' ||
       isAppInstalled;
     setIsStandalone(isStandaloneMode);
 
@@ -56,7 +57,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
         if (choice.outcome === 'accepted') {
           setInstallSuccess(true);
           setDeferredPrompt(null);
-          localStorage.setItem('pawlove_pwa_installed', 'true');
+          safeStorage.setItem('pawlove_pwa_installed', 'true');
         }
       } catch (err) {
         console.warn('Install prompt error:', err);
@@ -187,6 +188,10 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
                 </div>
               </div>
             )}
+
+            <div className="p-2.5 rounded-xl bg-stone-900/60 border border-stone-800 text-[11px] text-stone-400 text-left">
+              <span className="font-bold text-amber-300">Nota sobre la instalación:</span> Al instalar una PWA, se crea un icono/botón oficial en la pantalla de inicio de tu teléfono. Al abrirlo, funciona a pantalla completa sin barras de navegador, con memoria propia y soporte sin conexión.
+            </div>
           </div>
         )}
 

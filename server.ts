@@ -168,6 +168,31 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "PawLove - Mascotas Server" });
 });
 
+// Self-destructing service worker handler for preview/dev container
+app.get("/sw.js", (_req, res) => {
+  res.setHeader("Content-Type", "application/javascript");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.send(`
+    self.addEventListener('install', () => self.skipWaiting());
+    self.addEventListener('activate', (event) => {
+      event.waitUntil(
+        caches.keys()
+          .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+          .then(() => self.registration.unregister())
+          .then(() => self.clients.claim())
+          .then(() => {
+            return self.clients.matchAll({ type: 'window' }).then((clients) => {
+              clients.forEach((c) => c.navigate(c.url));
+            });
+          })
+      );
+    });
+    self.addEventListener('fetch', (event) => {
+      event.respondWith(fetch(event.request));
+    });
+  `);
+});
+
 // Secure server-side redirect for promotional link and plans
 // This protects external Stripe links from being exposed in browser status bars on hover
 app.get("/promocion", (_req, res) => {
@@ -878,7 +903,10 @@ Generate a balanced recipe in ${targetLangName} with:
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === "true" ? false : undefined,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);

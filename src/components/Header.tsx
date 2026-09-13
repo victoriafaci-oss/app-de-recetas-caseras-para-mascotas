@@ -262,6 +262,17 @@ export const Header: React.FC = () => {
                 </button>
               )}
 
+              {/* View Landing Page Button */}
+              <button
+                onClick={() => setCurrentView('landing')}
+                className="p-1.5 sm:p-2 lg:px-2.5 lg:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                title={language === 'es' ? 'Ver Landing Page inicial' : 'View Landing Page'}
+                id="header-btn-landing-desktop"
+              >
+                <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+                <span className="hidden xl:inline">{language === 'es' ? 'Landing' : 'Landing'}</span>
+              </button>
+
               {/* View Pasarela de Pagos Button */}
               <button
                 onClick={() => setCurrentView('pricing')}
@@ -369,7 +380,18 @@ export const Header: React.FC = () => {
             )}
           </button>
 
-          {/* 4. Tarifas Button */}
+          {/* 4. Landing Page Button */}
+          <button
+            onClick={() => setCurrentView('landing')}
+            id="mobile-btn-landing"
+            className="flex-1 py-1 px-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] xs:text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
+            title={language === 'es' ? 'Ver Landing Page' : 'View Landing'}
+          >
+            <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
+            <span>Landing</span>
+          </button>
+
+          {/* 5. Tarifas Button */}
           <button
             onClick={() => setCurrentView('pricing')}
             id="mobile-btn-pricing"
