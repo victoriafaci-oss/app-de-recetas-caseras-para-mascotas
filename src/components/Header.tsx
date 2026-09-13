@@ -335,7 +335,7 @@ export const Header: React.FC = () => {
         {/* ========================================================================= */}
         {/* ROW 2 (MOBILE ONLY): PHONE CONTROLS (CLARO/OSCURO, AJUSTES, IDIOMA, AGENDA, TARIFAS) */}
         {/* ========================================================================= */}
-        <div className="flex sm:hidden max-w-7xl mx-auto px-2 py-1.5 items-center justify-between gap-1 bg-[#F4EFE6]/90 dark:bg-[#0A1712]/90 border-b border-[#E8DCCB]/80 dark:border-[#D4AF37]/15 overflow-x-auto scrollbar-none">
+        <div className="flex sm:hidden max-w-7xl mx-auto px-2 py-1.5 items-center justify-between gap-1 bg-[#F4EFE6]/90 dark:bg-[#0A1712]/90 border-b border-[#E8DCCB]/80 dark:border-[#D4AF37]/15 overflow-visible relative z-30">
           
           {/* 1. Language Selector */}
           <LanguageSelector idPrefix="mobile-lang" compact={true} align="left" />
@@ -358,6 +358,16 @@ export const Header: React.FC = () => {
                 <span>{language === 'es' ? 'Oscuro' : 'Dark'}</span>
               </>
             )}
+          </button>
+
+          {/* Settings Modal Button on Mobile */}
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            id="mobile-btn-settings"
+            className="py-1 px-2 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB] text-[10px] xs:text-[11px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
+            title={language === 'es' ? 'Ajustes e idiomas' : 'Settings & languages'}
+          >
+            <Settings className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
           </button>
 
           {/* 3. Agenda & Alarms Bell */}

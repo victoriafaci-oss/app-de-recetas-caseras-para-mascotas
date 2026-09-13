@@ -7,7 +7,8 @@ export const safeStorage = {
   getItem: (key: string): string | null => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem(key);
+        const val = window.localStorage.getItem(key);
+        if (val !== null) return val;
       }
     } catch {
       // Access denied or not supported in iframe sandbox
@@ -16,18 +17,18 @@ export const safeStorage = {
   },
 
   setItem: (key: string, value: string): void => {
+    memoryStorage.set(key, value);
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(key, value);
-        return;
       }
     } catch {
       // Storage unavailable or quota exceeded
     }
-    memoryStorage.set(key, value);
   },
 
   removeItem: (key: string): void => {
+    memoryStorage.delete(key);
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.removeItem(key);
@@ -35,6 +36,5 @@ export const safeStorage = {
     } catch {
       // Ignore
     }
-    memoryStorage.delete(key);
   }
 };

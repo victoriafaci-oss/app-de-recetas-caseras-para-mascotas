@@ -50,7 +50,11 @@
 
         // Theme initialization
         try {
-          var t = localStorage.getItem('pawlove_theme');
+          var t = null;
+          try {
+            t = localStorage.getItem('pawlove_theme');
+          } catch (storageErr) {}
+
           var isLight = (t === 'light');
           var root = document.documentElement;
 
@@ -67,9 +71,7 @@
             var meta = document.getElementById('meta-theme-color');
             if (meta) meta.setAttribute('content', '#0A0F0D');
           }
-        } catch (e) {
-          document.documentElement.classList.add('dark');
-        }
+        } catch (e) {}
       })();
     </script>
   </head>

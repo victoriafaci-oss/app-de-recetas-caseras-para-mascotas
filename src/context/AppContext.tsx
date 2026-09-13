@@ -108,6 +108,38 @@ const RECIPES_KEY = 'nutripet_custom_recipes_v1';
 const CHAT_KEY = 'nutripet_chat_v1';
 const WEEKLY_TRACKING_KEY = 'nutripet_weekly_tracking_v1';
 const SUBSCRIPTION_KEY = 'nutripet_subscription_v1';
+
+// Unified DOM theme applicator that reliably applies classes to <html> and <body>
+export const applyThemeToDom = (targetTheme: ThemeMode) => {
+  if (typeof document === 'undefined') return;
+  try {
+    const root = document.documentElement;
+    const body = document.body;
+    const meta = document.getElementById('meta-theme-color');
+
+    if (targetTheme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+      if (body) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+      }
+      root.style.colorScheme = 'dark';
+      if (meta) meta.setAttribute('content', '#0A0F0D');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+      if (body) {
+        body.classList.remove('dark');
+        body.classList.add('light');
+      }
+      root.style.colorScheme = 'light';
+      if (meta) meta.setAttribute('content', '#FAF7F2');
+    }
+  } catch (e) {
+    console.warn('Theme DOM application error:', e);
+  }
+};
 const VIEW_KEY = 'nutripet_view_v1';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -184,7 +216,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const choice = await deferredInstallPrompt.userChoice;
         if (choice && choice.outcome === 'accepted') {
           setIsAppInstalled(true);
-          localStorage.setItem('pawlove_pwa_installed', 'true');
+          safeStorage.setItem('pawlove_pwa_installed', 'true');
           setDeferredInstallPrompt(null);
           showToast(
             language === 'es' ? '¡PawLove instalada con éxito en tu teléfono!' : 'PawLove installed successfully on your phone!',
@@ -278,38 +310,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const setTheme = (newTheme: ThemeMode) => {
     setThemeState(newTheme);
-    if (typeof window !== 'undefined') {
-      try {
-        safeStorage.setItem(THEME_KEY, newTheme);
-        const root = document.documentElement;
-        const body = document.body;
-        const meta = document.getElementById('meta-theme-color');
-        if (newTheme === 'dark') {
-          root.classList.add('dark');
-          root.classList.remove('light');
-          body.classList.add('dark');
-          body.classList.remove('light');
-          root.style.colorScheme = 'dark';
-          if (meta) meta.setAttribute('content', '#0A0F0D');
-        } else {
-          root.classList.remove('dark');
-          root.classList.add('light');
-          body.classList.remove('dark');
-          body.classList.add('light');
-          root.style.colorScheme = 'light';
-          if (meta) meta.setAttribute('content', '#FAF7F2');
-        }
-      } catch (e) {
-        console.warn('Set theme notice:', e);
-      }
-    }
+    applyThemeToDom(newTheme);
+    safeStorage.setItem(THEME_KEY, newTheme);
   };
 
-  // Language state (default: 'es' with translator to 'en' in settings menu next to dark/light mode)
+  const SUPPORTED_LANG_CODES: Language[] = ['es', 'en', 'fr', 'de', 'it', 'pt', 'nl'];
+
+  // Language state (default: 'es' with multilingual support for 7 languages)
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
       const saved = safeStorage.getItem(LANG_KEY);
-      if (saved === 'es' || saved === 'en') return saved;
+      if (saved && (SUPPORTED_LANG_CODES as string[]).includes(saved)) {
+        return saved as Language;
+      }
       return 'es';
     }
     return 'es';
@@ -617,31 +630,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Toast feedback
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'warning' } | null>(null);
 
-  // Sync to localStorage and document attributes
+  // Sync to safeStorage and document attributes
   useEffect(() => {
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-      const root = document.documentElement;
-      const body = document.body;
-      const meta = document.getElementById('meta-theme-color');
-      if (theme === 'dark') {
-        root.classList.add('dark');
-        root.classList.remove('light');
-        body.classList.add('dark');
-        body.classList.remove('light');
-        root.style.colorScheme = 'dark';
-        if (meta) meta.setAttribute('content', '#0A0F0D');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-        body.classList.remove('dark');
-        body.classList.add('light');
-        root.style.colorScheme = 'light';
-        if (meta) meta.setAttribute('content', '#FAF7F2');
-      }
-    } catch (e) {
-      console.warn('Theme synchronization notice:', e);
-    }
+    applyThemeToDom(theme);
+    safeStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   useEffect(() => {
@@ -978,6 +970,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (data.customRecipes && Array.isArray(data.customRecipes)) setCustomRecipes(data.customRecipes);
       if (data.weeklyTracking && typeof data.weeklyTracking === 'object') setWeeklyTracking(data.weeklyTracking);
       if (data.theme && (data.theme === 'dark' || data.theme === 'light')) setTheme(data.theme);
+      if (data.language && (SUPPORTED_LANG_CODES as string[]).includes(data.language)) setLanguage(data.language);
       showToast('Datos restaurados con éxito.', 'success');
       playLuxuryChime('success');
       return true;
