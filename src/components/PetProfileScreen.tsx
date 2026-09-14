@@ -1443,9 +1443,12 @@ export const PetProfileScreen: React.FC = () => {
 
               {/* Simple Responsive SVG Chart */}
               <div className="h-24 w-full flex items-end justify-between gap-2 pt-2 px-1">
-                {selectedPet.weightHistory.slice(-5).map((rec, i) => {
-                  const maxW = Math.max(...selectedPet.weightHistory.map(w => w.weightKg), selectedPet.targetWeightKg + 1);
-                  const minW = Math.min(...selectedPet.weightHistory.map(w => w.weightKg), selectedPet.targetWeightKg - 1);
+                {(selectedPet.weightHistory || []).slice(-5).map((rec, i) => {
+                  const historyList = selectedPet.weightHistory || [];
+                  const validWeights = historyList.map(w => w.weightKg).filter(w => typeof w === 'number' && !isNaN(w));
+                  const target = selectedPet.targetWeightKg || 10;
+                  const maxW = validWeights.length > 0 ? Math.max(...validWeights, target + 1) : target + 1;
+                  const minW = validWeights.length > 0 ? Math.min(...validWeights, target - 1) : Math.max(1, target - 1);
                   const range = maxW - minW || 1;
                   const barHeightPct = Math.max(20, Math.min(100, Math.round(((rec.weightKg - minW) / range) * 100)));
 
@@ -1461,7 +1464,7 @@ export const PetProfileScreen: React.FC = () => {
                         ></div>
                       </div>
                       <span className="text-[9px] text-stone-600 dark:text-stone-400 truncate max-w-[48px]">
-                        {rec.date.slice(5)}
+                        {rec.date ? rec.date.slice(5) : ''}
                       </span>
                     </div>
                   );

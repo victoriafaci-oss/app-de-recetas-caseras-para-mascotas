@@ -131,11 +131,10 @@ function getGeminiClient(): GoogleGenAI {
   return geminiClient;
 }
 
-// Resilient Gemini model cascade
+// Resilient Gemini model cascade using standard supported models
 const GEMINI_MODELS = [
+  "gemini-3.8-flash",
   "gemini-3.1-flash-lite",
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
   "gemini-3.1-pro-preview",
 ];
 
@@ -157,6 +156,16 @@ async function callGeminiCascade(contents: string, systemInstruction?: string): 
     } catch (err: any) {
       lastErr = err;
       console.warn(`[Gemini API] Model ${model} request failed:`, err.message);
+      // If quota or prepayment credits are depleted, fail fast to built-in clinical engine
+      if (
+        err.message &&
+        (err.message.includes("429") ||
+          err.message.includes("RESOURCE_EXHAUSTED") ||
+          err.message.includes("depleted") ||
+          err.message.includes("quota"))
+      ) {
+        break;
+      }
     }
   }
 
@@ -180,11 +189,6 @@ app.get("/sw.js", (_req, res) => {
           .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
           .then(() => self.registration.unregister())
           .then(() => self.clients.claim())
-          .then(() => {
-            return self.clients.matchAll({ type: 'window' }).then((clients) => {
-              clients.forEach((c) => c.navigate(c.url));
-            });
-          })
       );
     });
     self.addEventListener('fetch', (event) => {
@@ -893,11 +897,55 @@ Generate a balanced recipe in ${targetLangName} with:
 2. Mezclar e integrar el aceite de salmón y el calcio una vez templado.
 3. Dividir en 2 tomas equilibradas (50% en la mañana y 50% en la noche).`;
 
-    return res.json({ recipeText });
+    const recipe = {
+      id: `custom_recipe_${Date.now()}`,
+      title: isEn ? `Custom Gourmet: ${goal || "Veterinary Recipe"}` : `Gourmet Personalizado: ${goal || "Receta Veterinaria"}`,
+      species: pet?.species === "cat" ? "cat" : "dog",
+      growthStage: pet?.ageYears > 7 ? "senior" : pet?.ageYears < 1 ? "puppy" : "adult",
+      category: "vitality_gourmet",
+      caloriesKcal: mer,
+      dailyFoodGrams: dailyGrams,
+      prepTimeMin: 20,
+      description: recipeText.slice(0, 180).replace(/[#*]/g, "").trim(),
+      ingredients: [
+        { name: isEn ? "Lean protein (turkey/chicken)" : "Pavo o pollo magro picado", grams: Math.round(dailyGrams * 0.65), notes: "Cocinado al vapor" },
+        { name: isEn ? "Steamed pumpkin or zucchini" : "Puré de calabaza o calabacín", grams: Math.round(dailyGrams * 0.20), notes: "Fibra suave" },
+        { name: isEn ? "Steamed oats or sweet potato" : "Avena cocida o batata al vapor", grams: Math.round(dailyGrams * 0.10), notes: "Carbohidratos complejos" },
+        { name: isEn ? "Pure salmon oil (Omega-3)" : "Aceite de salmón salvaje", grams: Math.max(1, Math.round(dailyGrams * 0.01)), notes: "Omega-3 EPA/DHA" },
+        { name: isEn ? "Eggshell calcium powder" : "Cáscara de huevo micropulverizada", grams: Number((dailyGrams * 0.005).toFixed(1)), notes: "Calcio biodisponible" },
+      ],
+      instructions: [
+        isEn ? "Steam protein and vegetables gently to preserve vital nutrients." : "Cocinar las proteínas y verduras al vapor o a fuego lento.",
+        isEn ? "Let cool to lukewarm and fold in salmon oil and calcium." : "Templar y mezclar el aceite de salmón y el calcio micropulverizado.",
+        isEn ? "Divide portion into two balanced meals." : "Dividir la porción en 2 tomas equilibradas (mañana y noche).",
+      ],
+      clinicalBenefits: [
+        isEn ? "Balanced mineral ratio and bioavailable moisture" : "Relación calcio:fósforo óptima y alta digestibilidad",
+        isEn ? "Natural joint and renal protection" : "Protección articular y renal con hidratación natural",
+      ],
+      nutritionalProfile: {
+        proteinPct: 45,
+        fatPct: 22,
+        carbsPct: 18,
+        moisturePct: 75,
+        calciumPhosphorusRatio: "1.2:1",
+      },
+    };
+
+    return res.json({ recipeText, recipe });
   } catch (error: any) {
     console.error("Error in /api/custom-recipe-ai:", error);
     return res.status(500).json({ error: "Could not generate custom recipe", details: error.message });
   }
+});
+
+// Global Express error handler to guarantee valid JSON responses
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[Internal Server Error]:", err);
+  res.status(500).json({
+    error: "Error interno del servidor",
+    message: err?.message || "Ocurrió un error inesperado. Por favor, reintente.",
+  });
 });
 
 async function startServer() {

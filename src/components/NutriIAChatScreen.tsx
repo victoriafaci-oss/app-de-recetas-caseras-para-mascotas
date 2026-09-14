@@ -183,19 +183,15 @@ export const NutriIAChatScreen: React.FC = () => {
 
       const data = await response.json();
 
-      if (data.reply) {
+      if (response.ok && data && data.reply) {
         addChatMessage({
           role: 'assistant',
           content: data.reply,
         });
         playLuxuryChime('gentle');
       } else {
-        addChatMessage({
-          role: 'assistant',
-          content: language === 'es'
-            ? 'Lo lamento, ha ocurrido una intermitencia al contactar con el servicio de NutriIA. Por favor, reintente en unos momentos.'
-            : 'Sorry, an issue occurred while reaching the NutriAI service. Please retry in a few moments.',
-        });
+        // Trigger smart clinical fallback so user never experiences an error
+        throw new Error(data?.error || 'Clinical fallback required');
       }
     } catch (err) {
       console.warn('Backend chat unreachable, utilizing local clinical knowledge engine', err);

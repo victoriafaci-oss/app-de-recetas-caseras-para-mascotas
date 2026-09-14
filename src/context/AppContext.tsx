@@ -350,7 +350,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map((p: any) => ({
+              ...p,
+              weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : [],
+              walksHistory: Array.isArray(p.walksHistory) ? p.walksHistory : [],
+              cookedRecipesHistory: Array.isArray(p.cookedRecipesHistory) ? p.cookedRecipesHistory : [],
+              allergies: Array.isArray(p.allergies) ? p.allergies : [],
+              todayWaterMl: typeof p.todayWaterMl === 'number' ? p.todayWaterMl : 0,
+              todayBrothMl: typeof p.todayBrothMl === 'number' ? p.todayBrothMl : 0,
+            }));
+          }
         } catch (e) {
           console.error('Error parsing stored pets', e);
         }
@@ -819,7 +829,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     setPets(prev => prev.map(p => {
       if (p.id === petId) {
-        return { ...p, walksHistory: [record, ...p.walksHistory] };
+        return { ...p, walksHistory: [record, ...(p.walksHistory || [])] };
       }
       return p;
     }));
@@ -838,7 +848,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return {
           ...p,
           weightKg,
-          weightHistory: [...p.weightHistory, record],
+          weightHistory: [...(p.weightHistory || []), record],
         };
       }
       return p;
@@ -870,7 +880,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (p.id === petId) {
         return {
           ...p,
-          cookedRecipesHistory: [cookedEntry, ...p.cookedRecipesHistory],
+          cookedRecipesHistory: [cookedEntry, ...(p.cookedRecipesHistory || [])],
         };
       }
       return p;

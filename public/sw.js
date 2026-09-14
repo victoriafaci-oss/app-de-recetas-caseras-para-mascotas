@@ -9,11 +9,6 @@ if (self.location.hostname.includes('run.app') || self.location.hostname === 'lo
         .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
         .then(() => self.registration.unregister())
         .then(() => self.clients.claim())
-        .then(() => {
-          return self.clients.matchAll({ type: 'window' }).then((clients) => {
-            clients.forEach((c) => c.navigate(c.url));
-          });
-        })
     );
   });
   self.addEventListener('fetch', (event) => {

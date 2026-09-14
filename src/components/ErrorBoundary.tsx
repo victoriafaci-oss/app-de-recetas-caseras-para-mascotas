@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
               type="button"
               onClick={() => {
                 safeStorage.removeItem('nutripet_view_v1');
-                safeStorage.setItem('pawlove_theme', 'dark');
+                safeStorage.removeItem('pawlove_view_mode');
                 window.location.reload();
               }}
               className="px-5 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#C49A45] text-[#0A0F0D] font-bold text-sm transition-all shadow-md cursor-pointer"
