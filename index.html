@@ -26,28 +26,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       (function() {
-        // Dismantle any service workers on localhost / preview
-        try {
-          if ('serviceWorker' in navigator && (
-            location.hostname === 'localhost' ||
-            location.hostname === '127.0.0.1' ||
-            location.hostname.includes('run.app')
-          )) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              for (var i = 0; i < regs.length; i++) {
-                regs[i].unregister();
-              }
-            });
-            if (window.caches) {
-              caches.keys().then(function(keys) {
-                for (var i = 0; i < keys.length; i++) {
-                  caches.delete(keys[i]);
-                }
-              });
-            }
-          }
-        } catch (e) {}
-
         // Theme initialization (defaults to light mode unless explicitly saved as dark)
         try {
           var t = null;

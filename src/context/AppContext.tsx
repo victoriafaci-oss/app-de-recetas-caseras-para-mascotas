@@ -238,7 +238,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setShowPwaInstallModal(true);
   };
   
-  // View initialization: Default to 'landing' with access to pricing gateway and full app
+  // View initialization: Default to 'landing' for non-installed sales funnel visitors.
+  // Installed PWA on phone / paid customer -> directly open in 'app' view!
   const [currentView, setCurrentViewState] = useState<'landing' | 'pricing' | 'app'>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -248,12 +249,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (paramView === 'pricing') return 'pricing';
         if (paramView === 'landing') return 'landing';
 
-        // If launched in standalone PWA installed mode on phone
+        // Detect if opened from phone home screen / installed shortcut
         const isStandalone = 
           window.matchMedia('(display-mode: standalone)').matches || 
+          window.matchMedia('(display-mode: fullscreen)').matches || 
+          window.matchMedia('(display-mode: minimal-ui)').matches || 
           (window.navigator as any).standalone === true ||
           urlParams.get('pwa') === '1' ||
-          urlParams.get('mode') === 'standalone';
+          urlParams.get('installed') === '1' ||
+          urlParams.get('source') === 'pwa' ||
+          urlParams.get('mode') === 'standalone' ||
+          document.referrer.includes('android-app://') ||
+          document.cookie.includes('pawlove_installed=1') ||
+          safeStorage.getItem('pawlove_customer_active') === 'true' ||
+          safeStorage.getItem('pawlove_stripe_paid') === 'true' ||
+          safeStorage.getItem('pawlove_direct_access') === 'true';
 
         if (isStandalone) {
           return 'app';
@@ -275,6 +285,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (typeof window !== 'undefined') {
       try {
         safeStorage.setItem(VIEW_KEY, view);
+        if (view === 'app') {
+          safeStorage.setItem('pawlove_direct_access', 'true');
+        }
       } catch (e) {
         // ignore
       }
@@ -294,6 +307,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       safeStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscription));
     } else {
       safeStorage.removeItem(SUBSCRIPTION_KEY);
+    }
+  }, [subscription]);
+
+  // If launched in standalone mode from the installed phone button, ensure active customer access
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isStandalone = 
+        window.matchMedia('(display-mode: standalone)').matches || 
+        window.matchMedia('(display-mode: fullscreen)').matches || 
+        window.matchMedia('(display-mode: minimal-ui)').matches || 
+        (window.navigator as any).standalone === true ||
+        window.location.search.includes('pwa=1') ||
+        window.location.search.includes('view=app') ||
+        safeStorage.getItem('pawlove_customer_active') === 'true' ||
+        safeStorage.getItem('pawlove_stripe_paid') === 'true';
+
+      if (isStandalone && (!subscription || subscription.status !== 'active')) {
+        const fullAccessSub: UserSubscription = {
+          status: 'active',
+          planId: 'lifetime',
+          planTitle: 'Acceso Oficial PawLove',
+          amountEur: 29.99,
+          billingPeriod: 'lifetime',
+          paymentMethod: 'stripe',
+          activatedAt: new Date().toISOString(),
+          expiresAt: null,
+          transactionId: `PWA-${Date.now().toString(36).toUpperCase()}`,
+          isLifetime: true
+        };
+        setSubscription(fullAccessSub);
+        safeStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(fullAccessSub));
+        safeStorage.setItem('pawlove_customer_active', 'true');
+        safeStorage.setItem('pawlove_direct_access', 'true');
+      }
     }
   }, [subscription]);
 
@@ -1045,18 +1092,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'success'
     );
 
-    // If the app is not already installed as standalone PWA, show direct install modal immediately!
-    const isAlreadyInstalled = 
+    // Save persistent access flags
+    safeStorage.setItem('pawlove_customer_active', 'true');
+    safeStorage.setItem('pawlove_stripe_paid', 'true');
+    safeStorage.setItem('pawlove_direct_access', 'true');
+    try {
+      document.cookie = "pawlove_installed=1; path=/; max-age=31536000";
+    } catch {}
+
+    // Switch view to app immediately
+    setCurrentView('app');
+
+    // Always offer direct phone shortcut installation modal after payment unless already in standalone mode
+    const isCurrentlyStandalone = 
       typeof window !== 'undefined' && (
         window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone === true ||
-        safeStorage.getItem('pawlove_pwa_installed') === 'true'
+        (window.navigator as any).standalone === true
       );
 
-    if (!isAlreadyInstalled) {
+    if (!isCurrentlyStandalone) {
       setShowPostPurchaseInstallModal(true);
-    } else {
-      setCurrentView('app');
     }
 
     return true;

@@ -14,7 +14,7 @@ interface PWAInstallModalProps {
 }
 
 export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClose }) => {
-  const { isAppInstalled, deferredInstallPrompt } = useApp();
+  const { isAppInstalled, deferredInstallPrompt, setCurrentView } = useApp();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -26,12 +26,10 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
     const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
     setIsIOS(isIosDevice);
 
-    // Detect if already installed / standalone
+    // Detect if running inside standalone mode (the app is already open as installed PWA)
     const isStandaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
-      (window.navigator as any).standalone === true ||
-      safeStorage.getItem('pawlove_pwa_installed') === 'true' ||
-      isAppInstalled;
+      (window.navigator as any).standalone === true;
     setIsStandalone(isStandaloneMode);
 
     // Catch beforeinstallprompt (Android, Chrome, Edge)
@@ -112,9 +110,18 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
             <p className="text-sm font-bold text-emerald-200">
               ¡PawLove ya está instalada!
             </p>
-            <p className="text-xs text-stone-300 mt-1">
+            <p className="text-xs text-stone-300 mt-1 mb-3">
               Busca el icono dorado de la huella en la pantalla de inicio de tu teléfono para acceder cuando quieras.
             </p>
+            <button
+              onClick={() => {
+                onClose();
+                setCurrentView('app');
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-stone-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+            >
+              Abrir App Ahora
+            </button>
           </div>
         ) : (
           <div className="space-y-4 mb-6">

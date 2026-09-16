@@ -4,24 +4,22 @@ import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
-// Manage Service Worker registration safely
+// Manage Service Worker registration safely for PWA installability
 try {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    const isDevOrPreview =
+    const isLocalhost =
       window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname.includes('run.app') ||
-      window.location.hostname.includes('webcontainer');
+      window.location.hostname === '127.0.0.1';
 
-    if (isDevOrPreview) {
-      // In dev / preview environment, unregister any service workers to prevent hijacking Vite modules
+    if (isLocalhost) {
+      // In local dev, unregister to avoid module caching
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         for (const reg of registrations) {
           reg.unregister().catch(() => {});
         }
       }).catch(() => {});
     } else {
-      // In production (e.g. Cloudflare Pages or custom domains), register PWA service worker
+      // Register PWA service worker on preview and production
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')

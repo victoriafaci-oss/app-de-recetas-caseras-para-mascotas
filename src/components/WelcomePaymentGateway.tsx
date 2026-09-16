@@ -100,12 +100,12 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
       <header className="sticky top-0 z-30 w-full border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 bg-[#FAF7F2]/95 dark:bg-[#07130E]/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-13 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
           
-          {/* Brand Logo & Name / Click to go to App */}
+          {/* Brand Logo & Name / Click to go to Landing */}
           <button
-            onClick={() => setCurrentView('app')}
+            onClick={onBackToLanding}
             className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink text-left cursor-pointer group transition-all"
-            title={language === 'es' ? 'Ir a la App' : 'Go to App'}
-            id="gateway-logo-btn-app"
+            title={language === 'es' ? 'Volver a la presentación' : 'Back to presentation'}
+            id="gateway-logo-brand"
           >
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden shadow-xs shrink-0 border border-[#D4AF37]/40 bg-[#07130E] flex items-center justify-center group-hover:scale-105 transition-transform">
               <img 
@@ -125,7 +125,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
             </div>
           </button>
 
-          {/* Minimal Controls: Language & Theme & App & Landing */}
+          {/* Minimal Controls: Language & Theme & Landing */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Direct Install App Button - Only if NOT installed */}
             {!isAppInstalled && (
@@ -139,17 +139,6 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
                 <span className="inline">{language === 'es' ? 'Instalar App' : 'Install App'}</span>
               </button>
             )}
-
-            {/* Ir a la App button */}
-            <button
-              onClick={() => setCurrentView('app')}
-              id="gateway-btn-go-to-app"
-              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/40 text-[10px] sm:text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
-              title={language === 'es' ? 'Entrar a la App' : 'Go to App'}
-            >
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Abrir App' : 'App'}</span>
-            </button>
 
             {onBackToLanding && (
               <button

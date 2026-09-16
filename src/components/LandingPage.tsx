@@ -78,21 +78,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
     setShowPwaInstallModal, 
     setCurrentView,
     activateSubscription,
-    setShowPostPurchaseInstallModal
+    setShowPostPurchaseInstallModal,
+    triggerPwaInstall,
+    showToast
   } = useApp();
   const lt = getLandingTranslation(language);
-
-  // Modal para usuarios que ya pagaron en Stripe
-  const [showStripeRecoveryModal, setShowStripeRecoveryModal] = useState(false);
-  const [recoverySelectedPlan, setRecoverySelectedPlan] = useState<'annual' | 'monthly' | 'lifetime' | 'promo'>('annual');
-
-  const handleNavigateToApp = () => {
-    if (onGoToApp) {
-      onGoToApp();
-    } else {
-      setCurrentView('app');
-    }
-  };
 
   // Miniatura de muestra de recetas
   const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
@@ -226,32 +216,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
       <header className="sticky top-0 z-40 w-full border-b border-[#E8DCCB] dark:border-[#E8B84A]/20 bg-[#FAF7F2]/95 dark:bg-[#0A0F0D]/90 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Logo Brand / Icono en pantalla que dirige a la App */}
-          <button
-            onClick={handleNavigateToApp}
-            className="flex items-center gap-2 sm:gap-3 min-w-0 shrink cursor-pointer group text-left transition-all"
-            title={language === 'es' ? 'Ir a la App PAWLOVE' : 'Go to PAWLOVE App'}
-            id="landing-logo-btn-app"
+          {/* Logo Brand / Icono e Identidad Visual (Sin acceso directo a la App) */}
+          <div
+            className="flex items-center gap-2 sm:gap-3 min-w-0 shrink select-none text-left"
+            id="landing-logo-brand"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/60 bg-[#07130E] flex items-center justify-center group-hover:scale-105 group-hover:border-[#D4AF37] transition-all">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-2xs shrink-0 border border-[#D4AF37]/60 bg-[#07130E] flex items-center justify-center">
               <img 
                 src="/apple-touch-icon.png" 
                 alt="PAWLOVE Mascotas" 
-                className="w-full h-full object-cover aspect-square"
+                className="w-full h-full object-cover aspect-square pointer-events-none"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div className="flex flex-col justify-center leading-none shrink-0 select-none">
-              <span className="font-editorial text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-none group-hover:text-amber-500 transition-colors">
+              <span className="font-editorial text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-none">
                 paw
               </span>
-              <span className="font-editorial text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-none mt-0.5 group-hover:text-amber-500 transition-colors">
+              <span className="font-editorial text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-[#B8860B] dark:text-[#E8B84A] leading-none mt-0.5">
                 love
               </span>
             </div>
-          </button>
+          </div>
 
-          {/* Controles: Modo Día/Noche, Idioma, Botón a la App y Tarifas */}
+          {/* Controles: Modo Día/Noche, Idioma y Botón Tarifas */}
           <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 shrink-0">
             
             {/* Single Theme Switcher Toggle */}
@@ -278,28 +266,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
 
             {/* Selector de Idioma (Mundial / Europa) */}
             <LanguageSelector idPrefix="landing-lang" align="right" />
-
-            {/* Botón-Icono para Dirigir Directamente a la App */}
-            <button
-              onClick={handleNavigateToApp}
-              id="landing-btn-enter-app"
-              className="h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full bg-white dark:bg-[#112019] border border-stone-300/80 dark:border-[#D4AF37]/50 text-stone-800 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
-              title={lt.openApp}
-            >
-              <Smartphone className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#E8B84A]" />
-              <span className="font-bold text-[11px] sm:text-xs hidden xs:inline">{lt.openApp}</span>
-            </button>
-
-            {/* Botón ¿Ya pagaste en Stripe? */}
-            <button
-              onClick={() => setShowStripeRecoveryModal(true)}
-              id="landing-btn-header-stripe-recovery"
-              className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] sm:text-xs shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
-              title={language === 'es' ? '¿Ya compraste en Stripe? Descargar App' : 'Paid on Stripe? Download App'}
-            >
-              <Download className="w-3.5 h-3.5 text-emerald-200" />
-              <span className="hidden md:inline">{language === 'es' ? '¿Ya pagaste? Descargar' : 'Paid? Download'}</span>
-            </button>
 
             {/* Botón Tarifas */}
             <button
@@ -1328,22 +1294,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
         {/* Selector de Idiomas con despliegue hacia arriba */}
         <LanguageSelector idPrefix="landing-mobile-lang" compact={true} align="left" dropDirection="up" />
 
-        {/* Botón Ir a la App */}
-        <button
-          onClick={handleNavigateToApp}
-          id="landing-btn-mobile-go-to-app"
-          className="flex items-center gap-1 px-2 py-2 rounded-xl bg-stone-900 dark:bg-[#15271F] border border-[#D4AF37]/60 text-[#F3E5AB] text-[11px] font-bold shadow-md cursor-pointer shrink-0 active:scale-95 transition-all"
-        >
-          <Smartphone className="w-3.5 h-3.5 text-[#E8B84A]" />
-          <span>App</span>
-        </button>
-
-        {/* Botón Prueba 48h Gratis */}
+        {/* Botón Tarifas / Prueba 48h */}
         <button
           onClick={() => onGoToPricing('free_trial_48h')}
-          className="flex-1 px-2.5 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 text-[11px] font-black shadow-md hover:opacity-95 flex items-center justify-center gap-1 cursor-pointer"
+          id="landing-btn-mobile-pricing"
+          className="flex-1 px-3 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C49F2E] text-stone-950 text-xs font-black shadow-md hover:opacity-95 flex items-center justify-center gap-1.5 cursor-pointer"
         >
-          <span className="text-stone-950 font-black">{language === 'es' ? 'Prueba 48h' : 'Start Free'}</span>
+          <span className="text-stone-950 font-black">{language === 'es' ? 'Ver Tarifas & Prueba' : 'Pricing & Trial'}</span>
           <ArrowRight className="w-3.5 h-3.5 text-stone-950" />
         </button>
       </div>
