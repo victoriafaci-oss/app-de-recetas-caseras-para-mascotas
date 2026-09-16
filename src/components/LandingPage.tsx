@@ -39,7 +39,9 @@ import {
   Flame,
   CheckCircle,
   Info,
-  Smartphone
+  Smartphone,
+  Download,
+  X
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -67,8 +69,22 @@ interface DemoPetProfile {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToApp }) => {
-  const { theme, toggleTheme, setTheme, language, setLanguage, setShowPwaInstallModal, setCurrentView } = useApp();
+  const { 
+    theme, 
+    toggleTheme, 
+    setTheme, 
+    language, 
+    setLanguage, 
+    setShowPwaInstallModal, 
+    setCurrentView,
+    activateSubscription,
+    setShowPostPurchaseInstallModal
+  } = useApp();
   const lt = getLandingTranslation(language);
+
+  // Modal para usuarios que ya pagaron en Stripe
+  const [showStripeRecoveryModal, setShowStripeRecoveryModal] = useState(false);
+  const [recoverySelectedPlan, setRecoverySelectedPlan] = useState<'annual' | 'monthly' | 'lifetime' | 'promo'>('annual');
 
   const handleNavigateToApp = () => {
     if (onGoToApp) {
@@ -272,6 +288,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
             >
               <Smartphone className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#E8B84A]" />
               <span className="font-bold text-[11px] sm:text-xs hidden xs:inline">{lt.openApp}</span>
+            </button>
+
+            {/* Botón ¿Ya pagaste en Stripe? */}
+            <button
+              onClick={() => setShowStripeRecoveryModal(true)}
+              id="landing-btn-header-stripe-recovery"
+              className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] sm:text-xs shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
+              title={language === 'es' ? '¿Ya compraste en Stripe? Descargar App' : 'Paid on Stripe? Download App'}
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-200" />
+              <span className="hidden md:inline">{language === 'es' ? '¿Ya pagaste? Descargar' : 'Paid? Download'}</span>
             </button>
 
             {/* Botón Tarifas */}

@@ -124,9 +124,20 @@ export const COMMON_FOOD_ALLERGENS: AllergenDef[] = [
 /**
  * Parses freeform allergies string into clean normalized lowercase array of tokens.
  */
-export function parseAllergens(allergiesStr?: string): string[] {
-  if (!allergiesStr || !allergiesStr.trim()) return [];
-  const lower = allergiesStr.toLowerCase();
+export function parseAllergens(allergiesInput?: string | string[] | any): string[] {
+  if (!allergiesInput) return [];
+  
+  let rawStr = '';
+  if (Array.isArray(allergiesInput)) {
+    rawStr = allergiesInput.map(x => String(x || '')).join(', ');
+  } else if (typeof allergiesInput === 'string') {
+    rawStr = allergiesInput;
+  } else {
+    rawStr = String(allergiesInput || '');
+  }
+
+  if (!rawStr || !rawStr.trim()) return [];
+  const lower = rawStr.toLowerCase();
   
   // If explicitly states "ninguna" or "no tiene"
   if (lower.includes('ningun') || lower.includes('no detectada') || lower.includes('sin alergia') || lower.includes('none')) {

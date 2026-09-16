@@ -1,6 +1,7 @@
 import { Pet, DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem, Language } from '../types';
 import { calculateMER } from './nutrition';
 import { parseAllergens, hasAllergenConflict, getSafeSubstituteProtein } from './allergyUtils';
+import { INITIAL_PETS } from '../data/mockData';
 
 export const HIGH_PERFORMANCE_BREEDS = [
   'border collie',
@@ -28,8 +29,8 @@ export const HIGH_PERFORMANCE_BREEDS = [
   'bodeguero'
 ];
 
-export function isHighPerformancePet(pet: Pet): boolean {
-  if (pet.species !== 'dog') return false;
+export function isHighPerformancePet(pet?: Pet | null): boolean {
+  if (!pet || pet.species !== 'dog') return false;
   if (pet.activityLevel === 'working' || pet.activityLevel === 'high_performance') return true;
   if (pet.clinicalCondition === 'high_performance_hyperactivity') return true;
   const breedLower = (pet.breed || '').toLowerCase();
@@ -191,24 +192,27 @@ export function getCurrentWeekDates(refDate: Date = new Date()): {
   return result;
 }
 
+const DEFAULT_FALLBACK_PET: Pet = INITIAL_PETS[0];
+
 /**
  * Generates a 7-day complete, balanced weekly diet plan adapted to the specific pet's
  * species, weight, condition, and caloric/gram requirements.
  */
-export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): DayDietPlan[] {
-  const merData = calculateMER(pet);
+export function generateWeeklyDietPlan(pet?: Pet | null, language: Language = 'es'): DayDietPlan[] {
+  const activePet: Pet = pet && typeof pet === 'object' && pet.species ? pet : DEFAULT_FALLBACK_PET;
+  const merData = calculateMER(activePet);
   const totalGrams = merData.dailyFoodGrams;
   const morningGrams = merData.mealPortions.breakfastGrams;
   const nightGrams = merData.mealPortions.dinnerGrams;
-  const isDog = pet.species === 'dog';
-  const isRenal = pet.clinicalCondition === 'renal';
-  const isWeightControl = pet.clinicalCondition === 'weight_loss' || pet.bodyConditionScore >= 6;
-  const isJoint = pet.clinicalCondition === 'joint_support';
-  const isSensitive = pet.clinicalCondition === 'sensitive_digestive';
-  const isHighPerf = isHighPerformancePet(pet);
+  const isDog = activePet.species === 'dog';
+  const isRenal = activePet.clinicalCondition === 'renal';
+  const isWeightControl = activePet.clinicalCondition === 'weight_loss' || (activePet.bodyConditionScore || 5) >= 6;
+  const isJoint = activePet.clinicalCondition === 'joint_support';
+  const isSensitive = activePet.clinicalCondition === 'sensitive_digestive';
+  const isHighPerf = isHighPerformancePet(activePet);
 
   // Base multiplier per 10kg
-  const weightFactor = Math.max(0.4, pet.weightKg / 10);
+  const weightFactor = Math.max(0.4, (activePet.weightKg || 15) / 10);
 
   const daysEs = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const daysEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -749,13 +753,13 @@ export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): Day
     },
   ];
 
-  const petAllergens = parseAllergens(pet.allergies);
+  const petAllergens = parseAllergens(activePet.allergies);
   const hasAllergies = petAllergens.length > 0;
 
   return weekTemplates.map((template, dayIndex) => {
     const isEn = language === 'en';
-    const isPuppyOrKitten = pet.ageYears < 1;
-    const isSenior = pet.ageYears >= 7 || pet.clinicalCondition === 'senior_vitality';
+    const isPuppyOrKitten = (activePet.ageYears || 0) < 1;
+    const isSenior = (activePet.ageYears || 0) >= 7 || activePet.clinicalCondition === 'senior_vitality';
 
     const stageBenefit = isPuppyOrKitten
       ? (isEn ? 'Growth profile: High biological value protein + DHA for brain development' : 'Etapa Crecimiento: Proteína de alta asimilación + DHA para desarrollo cognitivo')
@@ -796,10 +800,11 @@ export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): Day
       ...(isEn ? template.dish1.benefitsEn : template.dish1.benefitsEs)
     ];
     if (dish1HasSub || hasAllergies) {
+      const allergyLabel = Array.isArray(activePet.allergies) ? activePet.allergies.join(', ') : (activePet.allergies || 'alérgenos');
       dish1Benefits.unshift(
         isEn
-          ? `🛡️ 100% Allergen-Free: strictly excludes ${pet.allergies}`
-          : `🛡️ Receta 100% segura: excluye ${pet.allergies} por alergia de ${pet.name}`
+          ? `🛡️ 100% Allergen-Free: strictly excludes ${allergyLabel}`
+          : `🛡️ Receta 100% segura: excluye ${allergyLabel} por alergia de ${activePet.name || 'tu mascota'}`
       );
     }
 
@@ -809,7 +814,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): Day
       category: 'dish1',
       mealSlot: 'morning',
       description: dish1HasSub
-        ? (isEn ? `Adapted recipe avoiding ${pet.allergies} with easily digestible ${subProtein1.substituteTitleWord}.` : `Receta adaptada evitando ${pet.allergies} con ${subProtein1.substituteTitleWord} de alta digestibilidad.`)
+        ? (isEn ? `Adapted recipe avoiding alérgenos with easily digestible ${subProtein1.substituteTitleWord}.` : `Receta adaptada evitando alérgenos con ${subProtein1.substituteTitleWord} de alta digestibilidad.`)
         : (isHighPerf
           ? 'Aporte calórico denso (3.5% peso corporal) con aminoácidos ramificados BCAA, grasas nobles MCT y carbohidratos de bajo índice glucémico para energía sostenida sin sobreexcitación.'
           : (isEn ? template.dish1.descEn : template.dish1.descEs)),
@@ -863,10 +868,11 @@ export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): Day
       ...(isEn ? template.dish2.benefitsEn : template.dish2.benefitsEs)
     ];
     if (dish2HasSub || hasAllergies) {
+      const allergyLabel = Array.isArray(activePet.allergies) ? activePet.allergies.join(', ') : (activePet.allergies || 'alérgenos');
       dish2Benefits.unshift(
         isEn
-          ? `🛡️ 100% Allergen-Free: strictly excludes ${pet.allergies}`
-          : `🛡️ Cena 100% segura: libre de ${pet.allergies} para ${pet.name}`
+          ? `🛡️ 100% Allergen-Free: strictly excludes ${allergyLabel}`
+          : `🛡️ Cena 100% segura: libre de ${allergyLabel} para ${activePet.name || 'tu mascota'}`
       );
     }
 
@@ -876,7 +882,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): Day
       category: 'dish2',
       mealSlot: 'night',
       description: dish2HasSub
-        ? (isEn ? `Night meal formulated without ${pet.allergies}, soothing digestive mucosa.` : `Cena regenerativa formulada sin ${pet.allergies}, protegiendo la mucosa gástrica.`)
+        ? (isEn ? `Night meal formulated avoiding allergens, soothing digestive mucosa.` : `Cena regenerativa formulada sin alérgenos, protegiendo la mucosa gástrica.`)
         : (isHighPerf
           ? 'Cena regenerativa rica en colágeno soluble, glicina y antioxidantes marinos para restaurar micro-fibras musculares y lubricar cartílagos durante el descanso.'
           : (isEn ? template.dish2.descEn : template.dish2.descEs)),
@@ -914,7 +920,7 @@ export function generateWeeklyDietPlan(pet: Pet, language: Language = 'es'): Day
       benefits: template.snack1.benefitsEs,
       ingredients: snack1Ingredients,
       instructions: [
-        isEn ? `Step 1: Slice the ingredients thinly into bite-sized portions suitable for ${pet.name}.` : `Paso 1: Cortar finamente los ingredientes en porciones pequeñas aptas para ${pet.name}.`,
+        isEn ? `Step 1: Slice the ingredients thinly into bite-sized portions suitable for ${activePet.name || 'your pet'}.` : `Paso 1: Cortar finamente los ingredientes en porciones pequeñas aptas para ${activePet.name || 'tu mascota'}.`,
         isEn ? `Step 2: Steam or bake gently at low temperature (75°C - 80°C) without oil or salt.` : `Paso 2: Cocer al vapor suave o deshidratar al horno a baja temperatura (75°C - 80°C) sin sal ni aceites añadidos.`,
         isEn ? `Step 3: Allow to cool down completely before offering as a positive reward.` : `Paso 3: Dejar enfriar por completo a temperatura ambiente antes de ofrecer como premio positivo.`
       ],

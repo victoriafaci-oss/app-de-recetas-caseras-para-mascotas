@@ -13,7 +13,8 @@ import {
   Check,
   Zap,
   Info,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react';
 
 interface PaymentCheckoutModalProps {
@@ -41,6 +42,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isPaypalProcessing, setIsPaypalProcessing] = useState(false);
+  const [stripeLaunched, setStripeLaunched] = useState(false);
   const [gatewayConfig, setGatewayConfig] = useState<{ 
     stripeConfigured: boolean; 
     paypalConfigured: boolean;
@@ -108,6 +110,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   const handleStripeCheckout = async () => {
     setIsLoading(true);
     setErrorMessage('');
+    setStripeLaunched(true);
     try {
       // 1. Try server-side Stripe checkout session
       const stripeRes = await fetch('/api/payment/stripe/create-checkout-session', {
@@ -426,6 +429,39 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
                 </>
               )}
             </button>
+
+            {/* Post-Stripe Payment Confirmation & App Download Card */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50/90 dark:bg-[#10241B] border border-emerald-300/80 dark:border-emerald-600/40 text-center space-y-2.5">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>
+                  {language === 'es' 
+                    ? '¿Ya has realizado tu pago en Stripe?' 
+                    : 'Already made your payment on Stripe?'}
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">
+                {language === 'es'
+                  ? 'Si ya pagaste en la ventana de Stripe o Stripe no te devolvió automáticamente, pulsa este botón para confirmar tu acceso y descargar la aplicación en tu móvil ahora mismo:'
+                  : 'If you paid in Stripe or Stripe did not redirect you automatically, click below to confirm your access and download the app now:'}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  onSuccess('stripe', { transactionId: `STRIPE_CONFIRM_${Date.now()}` });
+                  onClose();
+                }}
+                id="checkout-btn-confirm-stripe-paid"
+                className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98"
+              >
+                <Download className="w-4 h-4 text-emerald-200" />
+                <span>
+                  {language === 'es'
+                    ? `✓ Ya he pagado en Stripe — Activar y Descargar App`
+                    : `✓ I already paid on Stripe — Activate & Download App`}
+                </span>
+              </button>
+            </div>
           </div>
         ) : selectedMethod === 'paypal' ? (
           /* PayPal Checkout Direct */

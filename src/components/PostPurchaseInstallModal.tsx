@@ -23,6 +23,7 @@ export const PostPurchaseInstallModal: React.FC<PostPurchaseInstallModalProps> =
   };
 
   const handleInstallClick = async () => {
+    onClose();
     await triggerPwaInstall();
   };
 

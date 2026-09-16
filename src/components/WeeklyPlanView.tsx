@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { generateWeeklyDietPlan, getCurrentWeekDates } from '../utils/dietPlanner';
 import { DayDietPlan, DailyMealItem, DailySnackItem, DailyDessertItem } from '../types';
+import { INITIAL_PETS } from '../data/mockData';
 import { 
   CalendarRange, 
   Utensils, 
@@ -50,6 +51,8 @@ export const WeeklyPlanView: React.FC = () => {
     showToast
   } = useApp();
 
+  const activePet = selectedPet || pets[0] || INITIAL_PETS[0];
+
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
 
   const [avatarError, setAvatarError] = useState(false);
@@ -81,7 +84,7 @@ export const WeeklyPlanView: React.FC = () => {
   const openAnnotationModal = (idx: number) => {
     const dateObj = weekDates[idx];
     if (!dateObj) return;
-    const tracking = getTrackingForDay(selectedPet.id, dateObj.dateStr);
+    const tracking = getTrackingForDay(activePet.id, dateObj.dateStr);
     setAnnotationText(tracking.dayNote || '');
     setAnnotationModalDayIndex(idx);
   };
@@ -90,7 +93,7 @@ export const WeeklyPlanView: React.FC = () => {
     if (annotationModalDayIndex === null) return;
     const dateObj = weekDates[annotationModalDayIndex];
     if (!dateObj) return;
-    setDayNote(selectedPet.id, dateObj.dateStr, annotationText.trim());
+    setDayNote(activePet.id, dateObj.dateStr, annotationText.trim());
     showToast(
       language === 'es'
         ? (annotationText.trim() ? '📝 ¡Anotación guardada con éxito!' : 'Anotación eliminada')
@@ -104,7 +107,7 @@ export const WeeklyPlanView: React.FC = () => {
     if (annotationModalDayIndex === null) return;
     const dateObj = weekDates[annotationModalDayIndex];
     if (!dateObj) return;
-    setDayNote(selectedPet.id, dateObj.dateStr, '');
+    setDayNote(activePet.id, dateObj.dateStr, '');
     showToast(
       language === 'es' ? 'Anotación eliminada' : 'Note deleted',
       'info'
@@ -149,12 +152,12 @@ export const WeeklyPlanView: React.FC = () => {
 
   // Generate 7-day dynamic personalized plan for the selected pet
   const weeklyPlan: DayDietPlan[] = useMemo(() => {
-    return generateWeeklyDietPlan(selectedPet, language);
-  }, [selectedPet, language]);
+    return generateWeeklyDietPlan(activePet, language);
+  }, [activePet, language]);
 
   const activeDay = weeklyPlan[selectedDayIndex] || weeklyPlan[0];
   const activeDateInfo = weekDates[selectedDayIndex] || weekDates[0];
-  const activeDayTracking = getTrackingForDay(selectedPet.id, activeDateInfo.dateStr);
+  const activeDayTracking = getTrackingForDay(activePet.id, activeDateInfo.dateStr);
 
   // Calculate week compliance statistics
   const weekStats = useMemo(() => {
@@ -164,7 +167,7 @@ export const WeeklyPlanView: React.FC = () => {
     let daysWithExerciseCount = 0;
 
     weekDates.forEach(dateObj => {
-      const tracking = getTrackingForDay(selectedPet.id, dateObj.dateStr);
+      const tracking = getTrackingForDay(activePet.id, dateObj.dateStr);
       
       const mealKeys: ('dish1Given' | 'dish2Given' | 'snack1Given' | 'snack2Given' | 'dessert1Given' | 'dessert2Given')[] = [
         'dish1Given', 'dish2Given', 'snack1Given', 'snack2Given', 'dessert1Given', 'dessert2Given'
@@ -191,7 +194,7 @@ export const WeeklyPlanView: React.FC = () => {
       adherencePercent,
       daysWithExerciseCount,
     };
-  }, [selectedPet.id, weekDates, weeklyTracking, getTrackingForDay]);
+  }, [activePet.id, weekDates, weeklyTracking, getTrackingForDay]);
 
   const handlePrint = () => {
     window.print();
@@ -211,17 +214,17 @@ export const WeeklyPlanView: React.FC = () => {
             className="w-14 h-14 rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-800 border-2 border-[#D4AF37] shrink-0 shadow-inner cursor-pointer hover:scale-105 transition-transform"
             title={language === 'es' ? 'Ver Ficha de la Mascota' : 'View Pet Profile'}
           >
-            {selectedPet.avatarUrl && !avatarError ? (
+            {activePet.avatarUrl && !avatarError ? (
               <img 
-                src={selectedPet.avatarUrl} 
-                alt={selectedPet.name} 
+                src={activePet.avatarUrl} 
+                alt={activePet.name} 
                 className="w-full h-full object-cover" 
                 referrerPolicy="no-referrer"
                 onError={() => setAvatarError(true)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">
-                {selectedPet.avatarIcon || (selectedPet.species === 'cat' ? '🐈' : '🐕')}
+                {activePet.avatarIcon || (activePet.species === 'cat' ? '🐈' : '🐕')}
               </div>
             )}
           </div>
@@ -231,7 +234,7 @@ export const WeeklyPlanView: React.FC = () => {
                 {t('weeklyPlanTitle')}
               </h1>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#B8860B]/15 dark:bg-[#D4AF37]/20 text-[#B8860B] dark:text-[#F3E5AB] border border-[#B8860B]/30 dark:border-[#D4AF37]/40">
-                {selectedPet.name} ({selectedPet.weightKg} kg)
+                {activePet.name} ({activePet.weightKg} kg)
               </span>
             </div>
             <p className="text-xs text-stone-600 dark:text-stone-400 mt-1 max-w-2xl leading-relaxed">

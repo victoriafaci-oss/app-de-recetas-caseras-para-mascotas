@@ -356,7 +356,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : [],
               walksHistory: Array.isArray(p.walksHistory) ? p.walksHistory : [],
               cookedRecipesHistory: Array.isArray(p.cookedRecipesHistory) ? p.cookedRecipesHistory : [],
-              allergies: Array.isArray(p.allergies) ? p.allergies : [],
+              allergies: typeof p.allergies === 'string' ? p.allergies : (Array.isArray(p.allergies) ? p.allergies.join(', ') : ''),
               todayWaterMl: typeof p.todayWaterMl === 'number' ? p.todayWaterMl : 0,
               todayBrothMl: typeof p.todayBrothMl === 'number' ? p.todayBrothMl : 0,
             }));
@@ -369,7 +369,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return INITIAL_PETS;
   });
 
-  const [selectedPetId, setSelectedPetId] = useState<string>(() => pets[0]?.id || 'pet-1');
+  const [selectedPetId, setSelectedPetId] = useState<string>(() => pets[0]?.id || INITIAL_PETS[0].id);
 
   // Events state
   const [events, setEvents] = useState<HealthEvent[]>(() => {
@@ -733,13 +733,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const deletePet = (id: string) => {
     const petToDelete = pets.find(p => p.id === id);
     const remaining = pets.filter(p => p.id !== id);
-    setPets(remaining);
     if (remaining.length > 0) {
+      setPets(remaining);
       if (selectedPetId === id) {
         setSelectedPetId(remaining[0].id);
       }
     } else {
-      setSelectedPetId('');
+      setPets(INITIAL_PETS);
+      setSelectedPetId(INITIAL_PETS[0].id);
     }
     showToast(language === 'es' ? `Perfil de ${petToDelete?.name || 'Mascota'} eliminado.` : `Profile of ${petToDelete?.name || 'Pet'} deleted.`, 'info');
   };
@@ -1077,22 +1078,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       const isSuccess = 
         params.get('pago') === 'exito' ||
+        params.get('pago') === 'completado' ||
         params.get('pago') === 'success' ||
         params.get('payment') === 'success' || 
+        params.get('payment') === 'paid' || 
+        params.get('payment') === 'completed' || 
+        params.has('payment_intent') ||
         params.get('status') === 'success' || 
         params.get('checkout_status') === 'complete' ||
         params.get('redirect_status') === 'succeeded' ||
         params.get('paid') === 'true' ||
         params.has('session_id') || 
         params.get('success') === 'true' ||
+        params.get('descargar') === '1' ||
+        params.get('download') === 'app' ||
         isPromoUrl;
 
       if (isSuccess) {
         let plan: SubscriptionPlanId = 'annual';
-        if (params.get('plan')) {
-          plan = params.get('plan') as SubscriptionPlanId;
-        } else if (isPromoUrl) {
+        const rawPlan = params.get('plan')?.toLowerCase();
+        if (rawPlan === 'monthly' || rawPlan === 'mensual') {
+          plan = 'monthly';
+        } else if (rawPlan === 'annual' || rawPlan === 'anual') {
+          plan = 'annual';
+        } else if (rawPlan === 'lifetime' || rawPlan === 'vitalicio' || rawPlan === 'vitalicia') {
+          plan = 'lifetime';
+        } else if (rawPlan === 'promo' || rawPlan === 'promocion' || isPromoUrl) {
           plan = 'promo';
+        } else if (params.get('plan')) {
+          plan = params.get('plan') as SubscriptionPlanId;
         }
 
         const provider = (params.get('provider') as PaymentMethodType) || 'stripe';

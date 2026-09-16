@@ -13,7 +13,7 @@ export function calculateRER(weightKg: number): number {
  * Calculates Maintenance Energy Requirement (MER) in kcal/day
  * based on species, age, sterilization, BCS, activity, and clinical condition.
  */
-export function calculateMER(pet: Pet): {
+export function calculateMER(pet?: Pet | null): {
   rer: number;
   mer: number;
   multiplier: number;
@@ -28,14 +28,38 @@ export function calculateMER(pet: Pet): {
     notes: string;
   };
 } {
-  const rer = calculateRER(pet.weightKg);
+  const safeWeight = (pet && typeof pet.weightKg === 'number' && pet.weightKg > 0) ? pet.weightKg : 14;
+  const rer = calculateRER(safeWeight);
   let multiplier = 1.6;
   let reason = 'Mantenimiento adulto';
 
-  const isSenior = pet.ageYears >= 7;
-  const isPuppyKitten = pet.ageYears < 1;
-  const isOverweight = pet.bodyConditionScore >= 6;
-  const isUnderweight = pet.bodyConditionScore <= 3;
+  if (!pet) {
+    const dailyFoodGrams = Math.round(rer * multiplier * 0.45);
+    return {
+      rer,
+      mer: Math.round(rer * multiplier),
+      multiplier,
+      multiplierReason: reason,
+      dailyFoodGrams,
+      mealPortions: {
+        breakfastGrams: Math.round(dailyFoodGrams * 0.5),
+        dinnerGrams: Math.round(dailyFoodGrams * 0.5),
+        optionalLunchGrams: 0
+      },
+      waterTargetMl: Math.round(safeWeight * 55),
+      macronutrientSplit: {
+        proteinPct: 40,
+        fatPct: 30,
+        fiberCarbsPct: 30,
+        notes: 'Equilibrio estándar'
+      }
+    };
+  }
+
+  const isSenior = (pet.ageYears || 0) >= 7;
+  const isPuppyKitten = (pet.ageYears || 0) < 1;
+  const isOverweight = (pet.bodyConditionScore || 5) >= 6;
+  const isUnderweight = (pet.bodyConditionScore || 5) <= 3;
 
   if (pet.species === 'dog') {
     if (isPuppyKitten) {

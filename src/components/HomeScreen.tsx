@@ -5,7 +5,7 @@ import { generateWeeklyDietPlan, getCurrentWeekDates } from '../utils/dietPlanne
 import { playLuxuryChime } from '../utils/alertsAndAudio';
 import { AddPetModal } from './AddPetModal';
 import { HighPerformanceExerciseAlert } from './HighPerformanceExerciseAlert';
-import { RECIPES_CATALOG } from '../data/mockData';
+import { RECIPES_CATALOG, INITIAL_PETS } from '../data/mockData';
 import { 
   HeartPulse, 
   CalendarDays, 
@@ -76,12 +76,12 @@ export const HomeScreen: React.FC = () => {
     chefTip?: string;
   } | null>(null);
 
-  // Active selected pet
-  const selectedPet = pets.find(p => p.id === selectedPetId) || pets[0];
+  // Active selected pet with safe fallback
+  const selectedPet = pets.find(p => p.id === selectedPetId) || pets[0] || INITIAL_PETS[0];
 
   // Calculated nutritional values
-  const merData = selectedPet ? calculateMER(selectedPet) : { rer: 500, mer: 800, dailyFoodGrams: 400, waterTargetMl: 1500 };
-  const rerVal = selectedPet ? calculateRER(selectedPet.weightKg) : 500;
+  const merData = calculateMER(selectedPet);
+  const rerVal = calculateRER(selectedPet?.weightKg || 14);
 
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
 
