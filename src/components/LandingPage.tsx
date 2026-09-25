@@ -41,7 +41,8 @@ import {
   Info,
   Smartphone,
   Download,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -86,6 +87,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
 
   // Miniatura de muestra de recetas
   const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
+
+  // Modal de textos legales (Términos y Condiciones / Política de Privacidad)
+  const [legalModalType, setLegalModalType] = useState<'terminos' | 'privacidad' | null>(null);
 
   // Pestaña de tarifas activa en móvil y modo de visualización
   const [landingActiveTab, setLandingActiveTab] = useState<'monthly' | 'annual' | 'lifetime'>('annual');
@@ -1245,12 +1249,71 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
       {/* FOOTER */}
       <footer className="relative z-10 border-t border-stone-200 dark:border-[#E8B84A]/15 bg-stone-100/90 dark:bg-[#060A08]/90 backdrop-blur-md pt-8 pb-20 sm:pb-8 px-4 text-center text-xs text-stone-500 dark:text-gray-500 transition-colors duration-300">
         <p className="mb-2">© {new Date().getFullYear()} PawLove • Cuidarte360. Todos los derechos reservados.</p>
-        <div className="flex justify-center gap-5 text-xs text-stone-500 dark:text-gray-400">
-          <a href="#terminos" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Términos y Condiciones</a>
-          <span>•</span>
-          <a href="#privacidad" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Política de Privacidad</a>
-          <span>•</span>
-          <a href="#contacto" onClick={(e) => { e.preventDefault(); onGoToPricing(); }} className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors">Contacto</a>
+        <div className="flex flex-col items-center justify-center gap-2.5 text-xs text-stone-500 dark:text-gray-400 max-w-xl mx-auto px-2">
+          <p className="text-xs text-stone-600 dark:text-stone-300 font-medium leading-relaxed">
+            Al realizar el pago, aceptas nuestros{' '}
+            <a
+              href="/terminos.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                setLegalModalType('terminos');
+              }}
+              className="font-semibold text-amber-700 dark:text-[#E8B84A] underline hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer"
+            >
+              Términos y Condiciones
+            </a>{' '}
+            y la{' '}
+            <a
+              href="/privacidad.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                setLegalModalType('privacidad');
+              }}
+              className="font-semibold text-amber-700 dark:text-[#E8B84A] underline hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer"
+            >
+              Política de Privacidad
+            </a>
+            .
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-stone-500 dark:text-gray-400 pt-0.5">
+            <a
+              href="/terminos.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                setLegalModalType('terminos');
+              }}
+              className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors cursor-pointer"
+            >
+              Términos y Condiciones
+            </a>
+            <span>•</span>
+            <a
+              href="/privacidad.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                setLegalModalType('privacidad');
+              }}
+              className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors cursor-pointer"
+            >
+              Política de Privacidad
+            </a>
+            <span>•</span>
+            <a
+              href="mailto:soporte@pawlove.app"
+              className="hover:text-amber-700 dark:hover:text-[#E8B84A] transition-colors cursor-pointer"
+            >
+              Contacto
+            </a>
+          </div>
         </div>
 
         {/* Botón de Promoción conectado directamente a Stripe */}
@@ -1305,6 +1368,114 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
         </button>
       </div>
 
+      {/* MODAL DE TEXTOS LEGALES (ESPAÑA & UE) */}
+      {legalModalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl max-h-[85vh] bg-white dark:bg-[#111C16] border border-[#E8DCCB] dark:border-[#D4AF37]/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-stone-800 dark:text-stone-200">
+            {/* Header modal */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 bg-stone-50 dark:bg-[#15231C]">
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-700 dark:text-[#E8B84A]">
+                  Aviso Legal • España & UE
+                </span>
+                <h3 className="font-editorial text-lg sm:text-xl font-bold text-stone-900 dark:text-white">
+                  {legalModalType === 'terminos' ? 'Términos y Condiciones' : 'Política de Privacidad'}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={legalModalType === 'terminos' ? '/terminos.html' : '/privacidad.html'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 rounded-lg text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  title="Abrir página completa en pestaña nueva"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  onClick={() => setLegalModalType(null)}
+                  className="p-1.5 rounded-lg text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  aria-label="Cerrar modal"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body scroll */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs leading-relaxed text-stone-700 dark:text-stone-300">
+              {legalModalType === 'terminos' ? (
+                <>
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-[#E8B84A]/30 text-stone-800 dark:text-[#F3E5AB]">
+                    <strong>Aviso importante:</strong> PawLove es una herramienta interactiva de apoyo nutricional doméstico y cálculo dietético. En ningún caso constituye ni sustituye un diagnóstico, prescripción o tratamiento veterinario clínico.
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">1. Titular del Servicio</h4>
+                    <p>PawLove • Cuidarte360. Correo de contacto oficial: soporte@pawlove.app.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">2. Modalidades de Contratación</h4>
+                    <p>Acceso mediante Plan Anual (19,99 €/año), Plan Mensual (3,99 €/mes), Plan Vitalicio (39,99 € pago único) o Prueba Gratuita de 48 horas verificada por SMS.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">3. Pasarela de Pago y Seguridad</h4>
+                    <p>Los pagos se procesan de manera cifrada a través de Stripe Payments Europe, Ltd. con certificación PCI-DSS Nivel 1 y cifrado SSL de 256 bits.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">4. Derecho de Desistimiento (Contenido Digital)</h4>
+                    <p>Conforme al art. 103.m del Real Decreto Legislativo 1/2007 (Consumidores y Usuarios de España), el derecho de desistimiento no es aplicable al suministro de contenido digital inmediato no prestado en soporte material una vez iniciada la ejecución con consentimiento previo del usuario.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">5. Ley Aplicable</h4>
+                    <p>Legislación española y fueros correspondientes al domicilio del consumidor.</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-700/30 text-stone-800 dark:text-emerald-100">
+                    <strong>Cumplimiento RGPD & LOPDGDD:</strong> Tratamos sus datos con máxima seguridad y confidencialidad. No vendemos ni cedemos sus datos personales a terceros comerciales.
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">1. Responsable del Tratamiento</h4>
+                    <p>PawLove (Cuidarte360). Contacto: soporte@pawlove.app.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">2. Finalidad y Legitimación</h4>
+                    <p>Gestión del servicio, cálculo y ajuste personalizado de raciones de mascotas (edad, raza, peso, alergias), gestión del cobro seguro con Stripe y soporte técnico (art. 6.1.b y 6.1.a del RGPD).</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">3. Conservación de Datos</h4>
+                    <p>Durante la vigencia de la suscripción o hasta que el usuario solicite la supresión de sus datos.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-white mb-1">4. Ejercicio de Derechos</h4>
+                    <p>Puede ejercitar sus derechos de acceso, rectificación, supresión, limitación y portabilidad enviando un email a soporte@pawlove.app, o reclamar ante la AEPD (www.aepd.es).</p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer modal */}
+            <div className="p-3.5 sm:p-4 border-t border-[#E8DCCB] dark:border-[#D4AF37]/20 bg-stone-50 dark:bg-[#15231C] flex items-center justify-between gap-3">
+              <a
+                href={legalModalType === 'terminos' ? '/terminos.html' : '/privacidad.html'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-amber-700 dark:text-[#E8B84A] hover:underline font-semibold"
+              >
+                <span>Abrir página completa independiente</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <button
+                onClick={() => setLegalModalType(null)}
+                className="px-4 py-2 rounded-xl bg-stone-900 dark:bg-[#D4AF37] text-white dark:text-stone-950 font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
