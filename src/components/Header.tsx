@@ -8,7 +8,6 @@ import {
   Volume2, 
   PlusCircle, 
   Settings, 
-  Globe, 
   X, 
   Check,
   ChevronDown,
@@ -262,17 +261,6 @@ export const Header: React.FC = () => {
                 </button>
               )}
 
-              {/* View Landing Page Button */}
-              <button
-                onClick={() => setCurrentView('landing')}
-                className="p-1.5 sm:p-2 lg:px-2.5 lg:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-xs font-bold text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer"
-                title={language === 'es' ? 'Ver Landing Page inicial' : 'View Landing Page'}
-                id="header-btn-landing-desktop"
-              >
-                <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                <span className="hidden xl:inline">{language === 'es' ? 'Landing' : 'Landing'}</span>
-              </button>
-
               {/* View Pasarela de Pagos Button */}
               <button
                 onClick={() => setCurrentView('pricing')}
@@ -302,31 +290,42 @@ export const Header: React.FC = () => {
               {/* Language Selector (Desktop) */}
               <LanguageSelector idPrefix="header-lang-desktop" align="right" compact={true} />
 
-              {/* Single Theme Toggle Button (Light / Dark) */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                id="header-btn-theme-toggle"
-                className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
-                title={theme === 'dark' ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode') : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')}
-                aria-label={theme === 'dark' ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode') : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')}
+              {/* Segmented Theme Switcher (Desktop) */}
+              <div 
+                role="group"
+                aria-label={language === 'es' ? 'Selector de Modo Claro y Oscuro' : 'Light and Dark mode selector'}
+                className="flex items-center p-0.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 shadow-2xs shrink-0"
               >
-                {theme === 'dark' ? (
-                  <>
-                    <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span className="hidden xl:inline text-[11px] font-bold text-amber-400">
-                      {language === 'es' ? 'Modo Claro' : 'Light'}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="w-4 h-4 text-stone-700 shrink-0" />
-                    <span className="hidden xl:inline text-[11px] font-bold text-stone-700">
-                      {language === 'es' ? 'Modo Oscuro' : 'Dark'}
-                    </span>
-                  </>
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setTheme('light')}
+                  id="header-btn-theme-light"
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    theme === 'light'
+                      ? 'bg-[#B8860B] text-white shadow-xs scale-102 ring-1 ring-amber-600/40'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
+                  }`}
+                  title={language === 'es' ? 'Activar Modo Claro (Champán & Luz)' : 'Switch to Light Mode'}
+                >
+                  <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-200' : 'text-amber-500'}`} />
+                  <span className="hidden xl:inline">{language === 'es' ? 'Claro' : 'Light'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTheme('dark')}
+                  id="header-btn-theme-dark"
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    theme === 'dark'
+                      ? 'bg-[#16271F] text-[#F3E5AB] shadow-xs scale-102 ring-1 ring-[#D4AF37]/50'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
+                  }`}
+                  title={language === 'es' ? 'Activar Modo Oscuro (Verde Imperial & Oro)' : 'Switch to Dark Mode'}
+                >
+                  <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-[#D4AF37]' : 'text-stone-500'}`} />
+                  <span className="hidden xl:inline">{language === 'es' ? 'Oscuro' : 'Dark'}</span>
+                </button>
+              </div>
 
               {/* Settings & Data Utilities */}
               <button
@@ -345,110 +344,81 @@ export const Header: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2 (MOBILE ONLY): PHONE CONTROLS (CLARO/OSCURO, AJUSTES, IDIOMA, AGENDA, TARIFAS) */}
+        {/* ROW 2 (MOBILE ONLY): PHONE CONTROLS (IDIOMA, SELECTOR CLARO/OSCURO, AGENDA, AJUSTES) */}
         {/* ========================================================================= */}
-        <div className="flex sm:hidden max-w-7xl mx-auto px-2 py-1.5 items-center justify-between gap-1 bg-[#F4EFE6]/90 dark:bg-[#0A1712]/90 border-b border-[#E8DCCB]/80 dark:border-[#D4AF37]/15 overflow-visible relative z-30">
+        <div className="flex sm:hidden max-w-7xl mx-auto px-2.5 py-1.5 items-center justify-between gap-1.5 bg-[#FAF7F2]/95 dark:bg-[#07130E]/95 border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 shadow-xs relative z-30">
           
-          {/* 1. Language Selector */}
+          {/* 1. Language Selector (Mobile) */}
           <LanguageSelector idPrefix="mobile-lang" compact={true} align="left" />
 
-          {/* 2. Single Light / Dark Toggle on Mobile */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            id="mobile-btn-theme-toggle"
-            className="py-1 px-2.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB] text-[10px] xs:text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
-            title={theme === 'dark' ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode') : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')}
-            aria-label={theme === 'dark' ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode') : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')}
+          {/* 2. Clear Segmented Light / Dark Toggle on Mobile */}
+          <div 
+            role="group"
+            aria-label={language === 'es' ? 'Modo de apariencia' : 'Theme mode'}
+            className="flex items-center p-0.5 rounded-xl bg-stone-200/90 dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/35 shadow-2xs shrink-0"
           >
-            {theme === 'dark' ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>{language === 'es' ? 'Claro' : 'Light'}</span>
-              </>
-            ) : (
-              <>
-                <Moon className="w-3.5 h-3.5 text-stone-700 dark:text-[#D4AF37] shrink-0" />
-                <span>{language === 'es' ? 'Oscuro' : 'Dark'}</span>
-              </>
-            )}
-          </button>
-
-          {/* Settings Modal Button on Mobile */}
-          <button
-            onClick={() => setShowSettingsModal(true)}
-            id="mobile-btn-settings"
-            className="py-1 px-2 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB] text-[10px] xs:text-[11px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
-            title={language === 'es' ? 'Ajustes e idiomas' : 'Settings & languages'}
-          >
-            <Settings className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-          </button>
-
-          {/* 3. Agenda & Alarms Bell */}
-          <button
-            onClick={() => setActiveTab('agenda')}
-            id="mobile-btn-agenda"
-            className={`flex-1 py-1 px-1.5 rounded-xl border text-[10px] xs:text-[11px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all relative shrink-0 cursor-pointer ${
-              activeTab === 'agenda'
-                ? 'bg-[#B8860B] text-white border-[#B8860B]'
-                : 'bg-white dark:bg-[#112019] border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB]'
-            }`}
-            title={language === 'es' ? 'Agenda de avisos y recordatorios' : 'Reminders & agenda'}
-          >
-            <Bell className={`w-3.5 h-3.5 ${activeTab === 'agenda' ? 'text-white' : 'text-[#B8860B] dark:text-[#D4AF37]'}`} />
-            <span>{language === 'es' ? 'Agenda' : 'Agenda'}</span>
-            {pendingEventsCount > 0 && (
-              <span className="w-3.5 h-3.5 rounded-full bg-rose-600 text-white font-mono text-[8px] flex items-center justify-center font-extrabold ml-0.5">
-                {pendingEventsCount}
-              </span>
-            )}
-          </button>
-
-          {/* 4. Landing Page Button */}
-          <button
-            onClick={() => setCurrentView('landing')}
-            id="mobile-btn-landing"
-            className="flex-1 py-1 px-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] xs:text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
-            title={language === 'es' ? 'Ver Landing Page' : 'View Landing'}
-          >
-            <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-            <span>Landing</span>
-          </button>
-
-          {/* 5. Tarifas Button */}
-          <button
-            onClick={() => setCurrentView('pricing')}
-            id="mobile-btn-pricing"
-            className="flex-1 py-1 px-1.5 rounded-xl bg-amber-50 dark:bg-[#16271F] border border-amber-300/80 dark:border-[#D4AF37]/40 text-[10px] xs:text-[11px] font-bold text-amber-900 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
-            title={language === 'es' ? 'Ver Tarifas' : 'View Plans'}
-          >
-            <CreditCard className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-            <span>{language === 'es' ? 'Tarifas' : 'Plans'}</span>
-          </button>
-
-          {/* 5. Install App Button (Mobile - Only if NOT installed) */}
-          {!isAppInstalled && (
             <button
-              onClick={triggerPwaInstall}
-              id="mobile-btn-install-app"
-              className="py-1 px-1.5 rounded-xl bg-emerald-900/15 dark:bg-emerald-950/40 border border-emerald-500/40 text-[10px] xs:text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
-              title={language === 'es' ? 'Descargar e instalar App' : 'Install App'}
+              type="button"
+              onClick={() => setTheme('light')}
+              id="mobile-btn-theme-light"
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer ${
+                theme === 'light'
+                  ? 'bg-[#B8860B] text-white shadow-xs scale-102 ring-1 ring-amber-600/50'
+                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
+              }`}
+              title={language === 'es' ? 'Activar Modo Claro (Champán)' : 'Activate Light Mode'}
             >
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>{language === 'es' ? 'Instalar' : 'Install'}</span>
+              <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-200' : 'text-amber-500'}`} />
+              <span>{language === 'es' ? 'Claro' : 'Light'}</span>
             </button>
-          )}
 
-          {/* 6. Settings Modal Launcher */}
-          <button
-            onClick={() => setShowSettingsModal(true)}
-            id="mobile-btn-settings"
-            className="py-1 px-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-[10px] xs:text-[11px] font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
-            title={language === 'es' ? 'Ajustes y gestión de datos' : 'Settings & Data'}
-          >
-            <Settings className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-          </button>
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              id="mobile-btn-theme-dark"
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#16271F] text-[#F3E5AB] shadow-xs scale-102 ring-1 ring-[#D4AF37]/50'
+                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
+              }`}
+              title={language === 'es' ? 'Activar Modo Oscuro' : 'Activate Dark Mode'}
+            >
+              <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-[#D4AF37]' : 'text-stone-500'}`} />
+              <span>{language === 'es' ? 'Oscuro' : 'Dark'}</span>
+            </button>
+          </div>
 
+          {/* Right Action Icons on Mobile */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Agenda Bell */}
+            <button
+              onClick={() => setActiveTab('agenda')}
+              id="mobile-btn-agenda"
+              className={`p-1.5 rounded-xl border text-xs font-bold flex items-center justify-center relative transition-all cursor-pointer ${
+                activeTab === 'agenda'
+                  ? 'bg-[#B8860B] text-white border-[#B8860B] shadow-xs'
+                  : 'bg-white dark:bg-[#112019] border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB]'
+              }`}
+              title={language === 'es' ? 'Agenda & Avisos' : 'Agenda & Alarms'}
+            >
+              <Bell className={`w-4 h-4 ${activeTab === 'agenda' ? 'text-white' : 'text-[#B8860B] dark:text-[#D4AF37]'}`} />
+              {pendingEventsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-600 text-white font-mono text-[8px] flex items-center justify-center font-extrabold">
+                  {pendingEventsCount}
+                </span>
+              )}
+            </button>
+
+            {/* Settings Modal Launcher */}
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              id="mobile-btn-settings"
+              className="p-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] flex items-center justify-center transition-all cursor-pointer"
+              title={language === 'es' ? 'Ajustes y apariencia' : 'Settings & theme'}
+            >
+              <Settings className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
+            </button>
+          </div>
         </div>
 
       </header>
@@ -495,10 +465,10 @@ export const Header: React.FC = () => {
 
       {/* Settings / Utilities Modal */}
       {showSettingsModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 rounded-3xl p-4 sm:p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 my-auto max-h-[92vh] flex flex-col">
             
-            <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800 shrink-0">
               <div className="flex items-center gap-2">
                 <Settings className="w-5 h-5 text-[#B8860B] dark:text-[#D4AF37]" />
                 <h3 className="font-editorial text-lg font-bold text-stone-900 dark:text-[#F3E5AB]">
@@ -507,22 +477,27 @@ export const Header: React.FC = () => {
               </div>
               <button 
                 onClick={() => setShowSettingsModal(false)}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                aria-label="Cerrar ajustes"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3.5 text-xs">
+            <div className="space-y-3.5 text-xs overflow-y-auto pr-1 overscroll-contain flex-1">
               
               {/* Visual Theme Selection (Modo Claro vs Modo Oscuro) */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-bold text-stone-900 dark:text-[#F3E5AB] flex items-center gap-1.5">
                     {theme === 'dark' ? <Moon className="w-4 h-4 text-[#D4AF37]" /> : <Sun className="w-4 h-4 text-[#B8860B]" />}
                     <span>{language === 'es' ? 'Modo de Apariencia' : 'Visual Appearance Mode'}</span>
                   </div>
-                  <span className="text-[10px] uppercase font-bold text-[#B8860B] dark:text-[#D4AF37] font-mono px-2 py-0.5 rounded-full bg-amber-100 dark:bg-[#D4AF37]/10 border border-amber-300 dark:border-[#D4AF37]/30">
+                  <span className={`text-[10px] uppercase font-bold font-mono px-2 py-0.5 rounded-full border ${
+                    theme === 'light' 
+                      ? 'bg-amber-100 text-amber-900 border-amber-300' 
+                      : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/40'
+                  }`}>
                     {theme === 'dark' 
                       ? (language === 'es' ? 'Oscuro Activo' : 'Dark Active') 
                       : (language === 'es' ? 'Claro Activo' : 'Light Active')}
@@ -530,27 +505,72 @@ export const Header: React.FC = () => {
                 </div>
                 <div className="text-[11px] text-stone-600 dark:text-stone-400">
                   {language === 'es'
-                    ? 'Elige el modo visual. El modo Claro está optimizado para alta visibilidad y lectura en móvil.'
-                    : 'Choose your visual mode. Light mode is optimized for high contrast and mobile clarity.'}
+                    ? 'Selecciona tu apariencia visual preferida. El Modo Claro ofrece fondo champán con alto contraste para luz solar.'
+                    : 'Choose your visual mode. Light mode is optimized for high contrast and daylight readability.'}
                 </div>
-                <div className="pt-1">
+
+                {/* Dual Selector Cards */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* Option 1: MODO CLARO */}
                   <button
                     type="button"
-                    onClick={toggleTheme}
-                    id="settings-btn-theme-toggle"
-                    className="w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer bg-white dark:bg-[#16271F] text-stone-900 dark:text-[#F3E5AB] border border-[#E8DCCB] dark:border-[#D4AF37]/30 shadow-xs hover:border-[#D4AF37] hover:scale-[1.01] active:scale-[0.99]"
+                    onClick={() => setTheme('light')}
+                    id="settings-select-light"
+                    className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
+                      theme === 'light'
+                        ? 'bg-white border-[#B8860B] shadow-md ring-2 ring-[#B8860B]/40 scale-[1.02]'
+                        : 'bg-white/60 dark:bg-stone-900/40 border-stone-200 dark:border-stone-800 hover:border-amber-400 opacity-80 hover:opacity-100'
+                    }`}
                   >
-                    {theme === 'dark' ? (
-                      <>
-                        <Sun className="w-4 h-4 text-amber-400" />
-                        <span>{language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="w-4 h-4 text-stone-700 dark:text-[#D4AF37]" />
-                        <span>{language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode'}</span>
-                      </>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                        <Sun className="w-4 h-4 text-amber-600" />
+                      </div>
+                      {theme === 'light' && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-[#B8860B] text-white shadow-2xs">
+                          ACTIVO ✓
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-xs text-stone-900 dark:text-stone-100">
+                        {language === 'es' ? 'Modo Claro' : 'Light Mode'}
+                      </div>
+                      <div className="text-[10px] text-stone-600 dark:text-stone-400 leading-tight mt-0.5">
+                        {language === 'es' ? 'Champán luminoso y fresco' : 'Luminous & fresh champagne'}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Option 2: MODO OSCURO */}
+                  <button
+                    type="button"
+                    onClick={() => setTheme('dark')}
+                    id="settings-select-dark"
+                    className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
+                      theme === 'dark'
+                        ? 'bg-[#112019] border-[#D4AF37] shadow-md ring-2 ring-[#D4AF37]/50 scale-[1.02]'
+                        : 'bg-white/60 dark:bg-stone-900/40 border-stone-200 dark:border-stone-800 hover:border-[#D4AF37]/40 opacity-80 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-xl bg-[#16271F] text-[#D4AF37] flex items-center justify-center font-bold">
+                        <Moon className="w-4 h-4 text-[#D4AF37]" />
+                      </div>
+                      {theme === 'dark' && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-[#D4AF37] text-stone-950 shadow-2xs">
+                          ACTIVO ✓
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-xs text-stone-900 dark:text-[#F3E5AB]">
+                        {language === 'es' ? 'Modo Oscuro' : 'Dark Mode'}
+                      </div>
+                      <div className="text-[10px] text-stone-600 dark:text-stone-400 leading-tight mt-0.5">
+                        {language === 'es' ? 'Verde imperial y oro real' : 'Imperial night with gold'}
+                      </div>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -619,7 +639,7 @@ export const Header: React.FC = () => {
                     : 'Review your active subscription plan or switch tariffs anytime to monthly, annual or lifetime.'}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <div className="pt-1">
                   <button
                     onClick={() => {
                       setShowSettingsModal(false);
@@ -629,19 +649,7 @@ export const Header: React.FC = () => {
                     className="w-full py-2.5 px-3 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] hover:opacity-90 text-white dark:text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <CreditCard className="w-3.5 h-3.5" />
-                    <span>{language === 'es' ? 'Ver Pasarela de Pagos' : 'View Payment Gateway'}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setShowSettingsModal(false);
-                      setCurrentView('landing');
-                    }}
-                    id="btn-settings-open-landing"
-                    className="w-full py-2.5 px-3 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-800 dark:text-[#F3E5AB] text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Globe className="w-3.5 h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
-                    <span>{language === 'es' ? 'Ver Landing Page' : 'View Landing Page'}</span>
+                    <span>{language === 'es' ? 'Cambiar de Tarifa / Ver Pasarela de Pagos' : 'Change Plan / View Payment Gateway'}</span>
                   </button>
                 </div>
               </div>

@@ -16,6 +16,8 @@ import { PaymentPlansModal } from './components/PaymentPlansModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
 import { PostPurchaseInstallModal } from './components/PostPurchaseInstallModal';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { FloatingPawsBackground } from './components/FloatingPawsBackground';
+import { Navigation } from './components/Navigation';
 import { Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
@@ -97,6 +99,10 @@ const MainLayout: React.FC = () => {
             setCurrentView('landing');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
+          onBackToApp={() => {
+            setCurrentView('app');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           initialSelectedPlanId={selectedPlanId}
         />
         <PWAInstallModal 
@@ -134,19 +140,40 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-stone-100' : 'light bg-[#FAF7F2] text-stone-900'} transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full`}>
-      <PWAInstallBanner onOpenModal={() => setShowPwaInstallModal(true)} />
-      {/* Top Main Atelier Header with Integrated Navigation & Language Switcher */}
-      <Header />
+    <div className={`min-h-screen flex flex-col relative ${theme === 'dark' ? 'dark bg-[#0A0F0D] text-stone-100' : 'light bg-[#FAF7F2] text-stone-900'} transition-colors duration-300 antialiased selection:bg-amber-500/30 selection:text-amber-900 dark:selection:text-[#F3E5AB] overflow-x-hidden w-full pb-16 md:pb-0`}>
+      {/* Dynamic Ambient Background (Glow orbs & subtle architectural pattern) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        {/* Glow Ámbar / Dorado Cálido */}
+        <div className="absolute -top-24 left-1/4 w-[28rem] h-[28rem] bg-amber-400/10 dark:bg-[#E8B84A]/10 rounded-full blur-3xl animate-float-slow" />
+        {/* Glow Verde Bosque / Esmeralda */}
+        <div className="absolute top-1/3 -right-20 w-[30rem] h-[30rem] bg-emerald-500/10 dark:bg-emerald-600/10 rounded-full blur-3xl animate-float-reverse" />
+        {/* Glow Inferior Ámbar Profundo */}
+        <div className="absolute bottom-1/4 -left-20 w-[26rem] h-[26rem] bg-amber-600/10 dark:bg-yellow-600/8 rounded-full blur-3xl animate-float-slow" />
+        <div 
+          className="absolute inset-0 opacity-[0.035] dark:opacity-[0.045] bg-[radial-gradient(#C49A45_1px,transparent_1px)] [background-size:24px_24px]" 
+        />
+      </div>
 
-      {/* Dynamic Screen Viewport */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 pb-16 overflow-x-hidden">
-        <PageReturnHeader />
-        {renderActiveScreen()}
-      </main>
+      {/* Floating Paws in Champagne & Gold */}
+      <FloatingPawsBackground />
 
-      {/* Global Interactive Alarm Sound & Visual Reminder Popup Modal */}
-      <AlarmModal />
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <PWAInstallBanner onOpenModal={() => setShowPwaInstallModal(true)} />
+        {/* Top Main Atelier Header with Integrated Navigation & Language Switcher */}
+        <Header />
+
+        {/* Dynamic Screen Viewport */}
+        <main className="flex-1 w-full max-w-7xl mx-auto p-3 sm:p-6 lg:p-8 pb-20 md:pb-12 overflow-x-hidden">
+          <PageReturnHeader />
+          {renderActiveScreen()}
+        </main>
+
+        {/* Mobile Bottom Navigation Bar */}
+        <Navigation />
+
+        {/* Global Interactive Alarm Sound & Visual Reminder Popup Modal */}
+        <AlarmModal />
+      </div>
 
       {/* Settings Modalidad de Pagos (Subscription Manager) */}
       <PaymentPlansModal 

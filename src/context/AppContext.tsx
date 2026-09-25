@@ -116,29 +116,34 @@ export const applyThemeToDom = (targetTheme: ThemeMode) => {
     const root = document.documentElement;
     const body = document.body;
     const meta = document.getElementById('meta-theme-color');
+    const appleMeta = document.getElementById('meta-apple-status-bar') || document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
 
     if (targetTheme === 'dark') {
       root.classList.add('dark');
       root.classList.remove('light');
       root.setAttribute('data-theme', 'dark');
+      root.style.colorScheme = 'dark';
       if (body) {
         body.classList.add('dark');
         body.classList.remove('light');
         body.setAttribute('data-theme', 'dark');
+        body.style.colorScheme = 'dark';
       }
-      root.style.colorScheme = 'dark';
       if (meta) meta.setAttribute('content', '#0A0F0D');
+      if (appleMeta) appleMeta.setAttribute('content', 'black-translucent');
     } else {
       root.classList.remove('dark');
       root.classList.add('light');
       root.setAttribute('data-theme', 'light');
+      root.style.colorScheme = 'light';
       if (body) {
         body.classList.remove('dark');
         body.classList.add('light');
         body.setAttribute('data-theme', 'light');
+        body.style.colorScheme = 'light';
       }
-      root.style.colorScheme = 'light';
       if (meta) meta.setAttribute('content', '#FAF7F2');
+      if (appleMeta) appleMeta.setAttribute('content', 'default');
     }
   } catch (e) {
     console.warn('Theme DOM application error:', e);
@@ -358,12 +363,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     return 'light';
   });
-
-  const setTheme = (newTheme: ThemeMode) => {
-    setThemeState(newTheme);
-    applyThemeToDom(newTheme);
-    safeStorage.setItem(THEME_KEY, newTheme);
-  };
 
   const SUPPORTED_LANG_CODES: Language[] = ['es', 'en', 'fr', 'de', 'it', 'pt', 'nl'];
 
@@ -729,9 +728,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimeout(() => setToast(null), 3500);
   };
 
+  const setTheme = (newTheme: ThemeMode, notify: boolean = true) => {
+    setThemeState(newTheme);
+    applyThemeToDom(newTheme);
+    safeStorage.setItem(THEME_KEY, newTheme);
+    if (notify) {
+      showToast(
+        newTheme === 'light'
+          ? (language === 'es' ? '☀️ Modo Claro activado (Champán & Crema)' : '☀️ Light Mode activated')
+          : (language === 'es' ? '🌙 Modo Oscuro activado (Verde Imperial & Oro)' : '🌙 Dark Mode activated'),
+        'info'
+      );
+    }
+  };
+
   const toggleTheme = () => {
     const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
+    setTheme(nextTheme, true);
     try {
       playLuxuryChime('gentle');
     } catch (e) {

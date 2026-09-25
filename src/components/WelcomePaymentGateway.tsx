@@ -25,11 +25,13 @@ import {
 
 interface WelcomePaymentGatewayProps {
   onBackToLanding?: () => void;
+  onBackToApp?: () => void;
   initialSelectedPlanId?: string;
 }
 
 export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({ 
   onBackToLanding, 
+  onBackToApp,
   initialSelectedPlanId 
 }) => {
   const { 
@@ -140,7 +142,16 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
               </button>
             )}
 
-            {onBackToLanding && (
+            {onBackToApp ? (
+              <button
+                onClick={onBackToApp}
+                id="gateway-btn-back-to-app"
+                className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-[10px] sm:text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0 hover:opacity-90"
+              >
+                <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span>{language === 'es' ? 'Volver a la App' : 'Back to App'}</span>
+              </button>
+            ) : onBackToLanding ? (
               <button
                 onClick={onBackToLanding}
                 className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/35 text-[10px] sm:text-xs font-bold text-stone-800 dark:text-[#F3E5AB] hover:border-[#B8860B] dark:hover:border-[#D4AF37] transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
@@ -148,7 +159,7 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
                 <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B8860B] dark:text-[#D4AF37]" />
                 <span className="hidden sm:inline">{language === 'es' ? 'Presentación' : 'Landing'}</span>
               </button>
-            )}
+            ) : null}
             
             {/* Language Selector */}
             <LanguageSelector idPrefix="gateway-lang" align="right" />
