@@ -245,6 +245,34 @@ export const Header: React.FC = () => {
               </button>
             )}
 
+            {/* Single Compact Theme Toggle Button (Always visible on mobile & desktop in Row 1) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              id="header-btn-theme-toggle"
+              aria-label={
+                theme === 'light'
+                  ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+                  : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
+              }
+              title={
+                theme === 'light'
+                  ? (language === 'es' ? '☀️ Modo Claro activo • Clic para cambiar a Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
+                  : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para cambiar a Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
+              }
+              className={`p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group ${
+                theme === 'light'
+                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 hover:scale-105 active:scale-95'
+                  : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:scale-105 active:scale-95'
+              }`}
+            >
+              {theme === 'light' ? (
+                <Sun className="w-4 h-4 text-amber-600 group-hover:rotate-45 transition-transform duration-300" />
+              ) : (
+                <Moon className="w-4 h-4 text-[#D4AF37] group-hover:-rotate-12 transition-transform duration-300" />
+              )}
+            </button>
+
             {/* Desktop-only Utility Buttons (On mobile they appear in Row 2) */}
             <div className="hidden sm:flex items-center gap-1 sm:gap-1.5 shrink-0">
 
@@ -290,30 +318,6 @@ export const Header: React.FC = () => {
               {/* Language Selector (Desktop) */}
               <LanguageSelector idPrefix="header-lang-desktop" align="right" compact={true} />
 
-              {/* Single Compact Theme Toggle Button (Desktop) */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                id="header-btn-theme-toggle"
-                aria-label={
-                  theme === 'dark'
-                    ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode')
-                    : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')
-                }
-                title={
-                  theme === 'dark'
-                    ? (language === 'es' ? 'Modo Oscuro activo • Clic para Modo Claro' : 'Dark Mode active • Click for Light Mode')
-                    : (language === 'es' ? 'Modo Claro activo • Clic para Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
-                }
-                className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group"
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-4 h-4 text-amber-300 group-hover:rotate-45 transition-transform duration-300" />
-                ) : (
-                  <Moon className="w-4 h-4 text-[#B8860B] group-hover:-rotate-12 transition-transform duration-300" />
-                )}
-              </button>
-
               {/* Settings & Data Utilities */}
               <button
                 onClick={() => setShowSettingsModal(true)}
@@ -344,21 +348,25 @@ export const Header: React.FC = () => {
             onClick={toggleTheme}
             id="mobile-btn-theme-toggle"
             aria-label={
-              theme === 'dark'
-                ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode')
-                : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')
+              theme === 'light'
+                ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+                : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
             }
             title={
-              theme === 'dark'
-                ? (language === 'es' ? 'Modo Oscuro activo • Clic para Modo Claro' : 'Dark Mode active • Click for Light Mode')
-                : (language === 'es' ? 'Modo Claro activo • Clic para Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+              theme === 'light'
+                ? (language === 'es' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
+                : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para activar Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
             }
-            className="p-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center"
+            className={`p-1.5 rounded-xl border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center ${
+              theme === 'light'
+                ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 active:scale-95'
+                : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] active:scale-95'
+            }`}
           >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-300" />
+            {theme === 'light' ? (
+              <Sun className="w-4 h-4 text-amber-600" />
             ) : (
-              <Moon className="w-4 h-4 text-[#B8860B]" />
+              <Moon className="w-4 h-4 text-[#D4AF37]" />
             )}
           </button>
 

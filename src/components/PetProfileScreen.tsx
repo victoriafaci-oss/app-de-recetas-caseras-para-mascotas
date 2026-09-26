@@ -254,12 +254,12 @@ export const PetProfileScreen: React.FC = () => {
                   className="w-full h-full object-cover rounded-[20px]"
                 />
               ) : (
-                <div className="w-full h-full bg-stone-900 rounded-[20px] flex items-center justify-center text-4xl">
+                <div className="w-full h-full bg-stone-100 dark:bg-stone-900 rounded-[20px] flex items-center justify-center text-4xl">
                   {selectedPet.avatarIcon || (selectedPet.species === 'dog' ? '🐕' : '🐈')}
                 </div>
               )}
             </div>
-            <span className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-xs font-bold bg-stone-900 text-[#D4AF37] border border-[#D4AF37]/40 shadow-md">
+            <span className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-stone-900 text-stone-900 dark:text-[#D4AF37] border border-stone-200 dark:border-[#D4AF37]/40 shadow-md">
               {selectedPet.avatarIcon} {selectedPet.species === 'dog' ? 'Canino' : 'Felino'}
             </span>
           </div>

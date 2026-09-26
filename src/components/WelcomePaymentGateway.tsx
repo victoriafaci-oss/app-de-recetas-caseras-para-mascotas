@@ -169,19 +169,31 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
               type="button"
               onClick={toggleTheme}
               id="gateway-btn-theme-toggle"
-              className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
-              title={theme === 'dark' ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode') : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')}
-              aria-label={theme === 'dark' ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode') : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')}
+              className={`p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5 ${
+                theme === 'light'
+                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 hover:scale-105 active:scale-95'
+                  : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:scale-105 active:scale-95'
+              }`}
+              title={
+                theme === 'light'
+                  ? (language === 'es' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
+                  : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para activar Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
+              }
+              aria-label={
+                theme === 'light'
+                  ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+                  : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
+              }
             >
-              {theme === 'dark' ? (
+              {theme === 'light' ? (
                 <>
-                  <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="hidden sm:inline text-[11px] font-bold text-amber-400">{language === 'es' ? 'Claro' : 'Light'}</span>
+                  <Sun className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span className="hidden sm:inline text-[11px] font-bold text-amber-900">{language === 'es' ? 'Claro' : 'Light'}</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-4 h-4 text-stone-700 shrink-0" />
-                  <span className="hidden sm:inline text-[11px] font-bold text-stone-700">{language === 'es' ? 'Oscuro' : 'Dark'}</span>
+                  <Moon className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                  <span className="hidden sm:inline text-[11px] font-bold text-[#F3E5AB]">{language === 'es' ? 'Oscuro' : 'Dark'}</span>
                 </>
               )}
             </button>

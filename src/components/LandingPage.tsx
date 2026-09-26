@@ -253,21 +253,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
               onClick={toggleTheme}
               id="landing-btn-theme-toggle"
               aria-label={
-                theme === 'dark'
-                  ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode')
-                  : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')
+                theme === 'light'
+                  ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+                  : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
               }
               title={
-                theme === 'dark'
-                  ? (language === 'es' ? 'Modo Oscuro activo • Clic para Modo Claro' : 'Dark Mode active • Click for Light Mode')
-                  : (language === 'es' ? 'Modo Claro activo • Clic para Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+                theme === 'light'
+                  ? (language === 'es' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
+                  : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para activar Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
               }
-              className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#121B16] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group"
+              className={`p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group ${
+                theme === 'light'
+                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 hover:scale-105 active:scale-95'
+                  : 'bg-[#121B16] text-[#F3E5AB] border-[#D4AF37]/30 hover:border-[#D4AF37] hover:scale-105 active:scale-95'
+              }`}
             >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-300 group-hover:rotate-45 transition-transform duration-300" />
+              {theme === 'light' ? (
+                <Sun className="w-4 h-4 text-amber-600 group-hover:rotate-45 transition-transform duration-300" />
               ) : (
-                <Moon className="w-4 h-4 text-[#B8860B] group-hover:-rotate-12 transition-transform duration-300" />
+                <Moon className="w-4 h-4 text-[#D4AF37] group-hover:-rotate-12 transition-transform duration-300" />
               )}
             </button>
 
@@ -284,11 +288,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
                 }
               }}
               id="btn-header-return-app"
-              className="h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-[#B8860B] hover:bg-[#996515] dark:bg-[#D4AF37] dark:hover:bg-[#C49F2E] text-white dark:text-stone-950 font-black text-[11px] sm:text-xs tracking-wide shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              className="h-7 sm:h-9 px-2 sm:px-4 rounded-full bg-[#B8860B] hover:bg-[#996515] dark:bg-[#D4AF37] dark:hover:bg-[#C49F2E] text-white dark:text-stone-950 font-bold sm:font-black text-[10px] sm:text-xs tracking-wide shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0"
               title={language === 'es' ? 'Volver a mi panel de la App' : 'Return to App Dashboard'}
             >
-              <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>{language === 'es' ? 'Volver a la App' : 'Back to App'}</span>
+              <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
+              <span>{language === 'es' ? 'Volver' : 'Back'}</span>
+              <span className="hidden min-[420px]:inline">{language === 'es' ? ' a la App' : ' to App'}</span>
             </button>
 
             {/* Botón Tarifas */}
@@ -302,7 +307,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
                 }
               }}
               id="btn-header-tarifas-small"
-              className="h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-[#F3E5AB] font-bold text-[11px] sm:text-xs tracking-wide shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0 border border-stone-200 dark:border-stone-700"
+              className="h-7 sm:h-9 px-2.5 sm:px-4 rounded-full bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-[#F3E5AB] font-bold text-[10px] sm:text-xs tracking-wide shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shrink-0 border border-stone-200 dark:border-stone-700"
             >
               <span>{lt.pricing}</span>
               <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-stone-700 dark:text-[#F3E5AB]" />
@@ -1358,21 +1363,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
           onClick={toggleTheme}
           id="landing-mobile-btn-theme-toggle"
           aria-label={
-            theme === 'dark'
-              ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode')
-              : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')
+            theme === 'light'
+              ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+              : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
           }
           title={
-            theme === 'dark'
-              ? (language === 'es' ? 'Modo Oscuro activo • Clic para Modo Claro' : 'Dark Mode active • Click for Light Mode')
-              : (language === 'es' ? 'Modo Claro activo • Clic para Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+            theme === 'light'
+              ? (language === 'es' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
+              : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para activar Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
           }
-          className="p-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/40 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center"
+          className={`p-1.5 rounded-xl border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center ${
+            theme === 'light'
+              ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 active:scale-95'
+              : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/40 hover:border-[#D4AF37] active:scale-95'
+          }`}
         >
-          {theme === 'dark' ? (
-            <Sun className="w-4 h-4 text-amber-300" />
+          {theme === 'light' ? (
+            <Sun className="w-4 h-4 text-amber-600" />
           ) : (
-            <Moon className="w-4 h-4 text-[#B8860B]" />
+            <Moon className="w-4 h-4 text-[#D4AF37]" />
           )}
         </button>
 
@@ -1389,11 +1398,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
             }
           }}
           id="landing-btn-mobile-return-app"
-          className="px-2.5 py-1.5 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-xs font-black shadow-md flex items-center justify-center gap-1 cursor-pointer shrink-0"
+          className="px-2 py-1 rounded-xl bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-[11px] font-bold shadow-xs flex items-center justify-center gap-1 cursor-pointer shrink-0"
           title={language === 'es' ? 'Volver a la App' : 'Back to App'}
         >
-          <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>{language === 'es' ? 'Volver a la App' : 'Back to App'}</span>
+          <ArrowLeft className="w-3 h-3 stroke-[2.5]" />
+          <span>{language === 'es' ? 'Volver' : 'Back'}</span>
+          <span className="hidden min-[380px]:inline">{language === 'es' ? ' a la App' : ' to App'}</span>
         </button>
 
         {/* Botón Tarifas / Prueba 48h */}
