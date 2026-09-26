@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Pet, Species, ClinicalCondition, ActivityLevel } from '../types';
-import { X, Sparkles, Plus, Check, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { X, Sparkles, Plus, Check, ShieldAlert, ShieldCheck, Camera, Upload, Trash2 } from 'lucide-react';
 import { COMMON_FOOD_ALLERGENS, parseAllergens } from '../utils/allergyUtils';
 import { formatLocalDateKey } from '../utils/dietPlanner';
 
@@ -38,6 +38,62 @@ export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petTo
   const [avatarUrl, setAvatarUrl] = useState(petToEdit?.avatarUrl || '');
   const [avatarIcon, setAvatarIcon] = useState(petToEdit?.avatarIcon || (species === 'dog' ? '🐕' : '🐈'));
   const [bathFrequencyDays, setBathFrequencyDays] = useState(petToEdit?.bathFrequencyDays ?? (species === 'dog' ? 21 : 45));
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // File picker handler: reads image from mobile gallery / camera, resizes to avatar thumbnail data URL
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError(language === 'es' ? 'Por favor selecciona un archivo de imagen válido (JPG, PNG, HEIC, WebP).' : 'Please select a valid image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Resize to maximum 800x800 for high quality yet fast storage
+        const canvas = document.createElement('canvas');
+        const maxDimension = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          setAvatarUrl(compressedDataUrl);
+        } else {
+          setAvatarUrl(event.target?.result as string);
+        }
+      };
+      img.onerror = () => {
+        setUploadError(language === 'es' ? 'No se pudo procesar la imagen elegida.' : 'Could not process selected image.');
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setUploadError(language === 'es' ? 'Error al leer la foto de la galería.' : 'Error reading photo from gallery.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!isOpen) return null;
 
@@ -533,18 +589,73 @@ export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petTo
             </div>
           </div>
 
-          {/* Avatar Image URL (Optional) */}
-          <div>
-            <label className="block font-semibold mb-1 text-stone-700 dark:text-stone-300">
-              URL de Foto (Opcional):
-            </label>
-            <input
-              type="url"
-              placeholder="https://images.unsplash.com/..."
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0A0F0D] text-stone-900 dark:text-stone-100 focus:outline-hidden"
-            />
+          {/* Avatar Image Selection (Gallery Upload or Web URL) */}
+          <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/25 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-stone-800 dark:text-[#F3E5AB] flex items-center gap-1.5 text-xs">
+                <Camera className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
+                <span>Foto de tu Mascota (Galería del Teléfono o Cámara)</span>
+              </label>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl('')}
+                  className="text-[11px] text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Quitar foto</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {/* Preview Avatar */}
+              <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl border-2 border-dashed border-[#B8860B]/40 dark:border-[#D4AF37]/50 p-1 bg-white dark:bg-[#0E1B15] flex items-center justify-center shrink-0 overflow-hidden shadow-xs relative group">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <div className="text-center p-1">
+                    <span className="text-2xl block">{avatarIcon || (species === 'dog' ? '🐕' : '🐈')}</span>
+                    <span className="text-[9px] text-stone-500 font-medium">Sin foto</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Button + Alternate URL */}
+              <div className="flex-1 w-full space-y-2">
+                <label className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#B8860B] hover:bg-[#9a7009] dark:bg-[#D4AF37] dark:hover:bg-[#c49f2b] text-white dark:text-stone-950 font-bold text-xs shadow-xs cursor-pointer transition-all active:scale-[0.98]">
+                  <Upload className="w-4 h-4" />
+                  <span>Subir foto desde la galería o hacer foto</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                </label>
+
+                {uploadError && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+                    ⚠️ {uploadError}
+                  </p>
+                )}
+
+                <div className="relative">
+                  <input
+                    type="url"
+                    placeholder="O pega una URL de internet (opcional)"
+                    value={avatarUrl.startsWith('data:') ? '' : avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0A0F0D] text-[11px] text-stone-900 dark:text-stone-100 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Submit Buttons */}
