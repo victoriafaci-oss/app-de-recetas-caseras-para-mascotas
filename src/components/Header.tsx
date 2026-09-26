@@ -290,42 +290,29 @@ export const Header: React.FC = () => {
               {/* Language Selector (Desktop) */}
               <LanguageSelector idPrefix="header-lang-desktop" align="right" compact={true} />
 
-              {/* Segmented Theme Switcher (Desktop) */}
-              <div 
-                role="group"
-                aria-label={language === 'es' ? 'Selector de Modo Claro y Oscuro' : 'Light and Dark mode selector'}
-                className="flex items-center p-0.5 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 shadow-2xs shrink-0"
+              {/* Single Compact Theme Toggle Button (Desktop) */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                id="header-btn-theme-toggle"
+                aria-label={
+                  theme === 'dark'
+                    ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode')
+                    : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')
+                }
+                title={
+                  theme === 'dark'
+                    ? (language === 'es' ? 'Modo Oscuro activo • Clic para Modo Claro' : 'Dark Mode active • Click for Light Mode')
+                    : (language === 'es' ? 'Modo Claro activo • Clic para Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+                }
+                className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group"
               >
-                <button
-                  type="button"
-                  onClick={() => setTheme('light')}
-                  id="header-btn-theme-light"
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    theme === 'light'
-                      ? 'bg-[#B8860B] text-white shadow-xs scale-102 ring-1 ring-amber-600/40'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
-                  }`}
-                  title={language === 'es' ? 'Activar Modo Claro (Champán & Luz)' : 'Switch to Light Mode'}
-                >
-                  <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-200' : 'text-amber-500'}`} />
-                  <span className="hidden xl:inline">{language === 'es' ? 'Claro' : 'Light'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setTheme('dark')}
-                  id="header-btn-theme-dark"
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    theme === 'dark'
-                      ? 'bg-[#16271F] text-[#F3E5AB] shadow-xs scale-102 ring-1 ring-[#D4AF37]/50'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
-                  }`}
-                  title={language === 'es' ? 'Activar Modo Oscuro (Verde Imperial & Oro)' : 'Switch to Dark Mode'}
-                >
-                  <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-[#D4AF37]' : 'text-stone-500'}`} />
-                  <span className="hidden xl:inline">{language === 'es' ? 'Oscuro' : 'Dark'}</span>
-                </button>
-              </div>
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-300 group-hover:rotate-45 transition-transform duration-300" />
+                ) : (
+                  <Moon className="w-4 h-4 text-[#B8860B] group-hover:-rotate-12 transition-transform duration-300" />
+                )}
+              </button>
 
               {/* Settings & Data Utilities */}
               <button
@@ -351,42 +338,29 @@ export const Header: React.FC = () => {
           {/* 1. Language Selector (Mobile) */}
           <LanguageSelector idPrefix="mobile-lang" compact={true} align="left" />
 
-          {/* 2. Clear Segmented Light / Dark Toggle on Mobile */}
-          <div 
-            role="group"
-            aria-label={language === 'es' ? 'Modo de apariencia' : 'Theme mode'}
-            className="flex items-center p-0.5 rounded-xl bg-stone-200/90 dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/35 shadow-2xs shrink-0"
+          {/* 2. Single Compact Theme Toggle Button (Mobile) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            id="mobile-btn-theme-toggle"
+            aria-label={
+              theme === 'dark'
+                ? (language === 'es' ? 'Cambiar a Modo Claro' : 'Switch to Light Mode')
+                : (language === 'es' ? 'Cambiar a Modo Oscuro' : 'Switch to Dark Mode')
+            }
+            title={
+              theme === 'dark'
+                ? (language === 'es' ? 'Modo Oscuro activo • Clic para Modo Claro' : 'Dark Mode active • Click for Light Mode')
+                : (language === 'es' ? 'Modo Claro activo • Clic para Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
+            }
+            className="p-1.5 rounded-xl bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:border-[#D4AF37] active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center"
           >
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              id="mobile-btn-theme-light"
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer ${
-                theme === 'light'
-                  ? 'bg-[#B8860B] text-white shadow-xs scale-102 ring-1 ring-amber-600/50'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
-              }`}
-              title={language === 'es' ? 'Activar Modo Claro (Champán)' : 'Activate Light Mode'}
-            >
-              <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-200' : 'text-amber-500'}`} />
-              <span>{language === 'es' ? 'Claro' : 'Light'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              id="mobile-btn-theme-dark"
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer ${
-                theme === 'dark'
-                  ? 'bg-[#16271F] text-[#F3E5AB] shadow-xs scale-102 ring-1 ring-[#D4AF37]/50'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-[#F3E5AB]'
-              }`}
-              title={language === 'es' ? 'Activar Modo Oscuro' : 'Activate Dark Mode'}
-            >
-              <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-[#D4AF37]' : 'text-stone-500'}`} />
-              <span>{language === 'es' ? 'Oscuro' : 'Dark'}</span>
-            </button>
-          </div>
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-300" />
+            ) : (
+              <Moon className="w-4 h-4 text-[#B8860B]" />
+            )}
+          </button>
 
           {/* Right Action Icons on Mobile */}
           <div className="flex items-center gap-1 shrink-0">
