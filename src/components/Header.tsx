@@ -243,33 +243,43 @@ export const Header: React.FC = () => {
               </button>
             )}
 
-            {/* Single Compact Theme Toggle Button (Desktop in Row 1; on mobile it is in Row 2 with clear label) */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              id="header-btn-theme-toggle"
-              aria-label={
-                theme === 'light'
-                  ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
-                  : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
-              }
-              title={
-                theme === 'light'
-                  ? (language === 'es' ? '☀️ Modo Claro activo • Clic para cambiar a Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
-                  : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para cambiar a Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
-              }
-              className={`hidden sm:flex p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer items-center justify-center group ${
-                theme === 'light'
-                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 hover:scale-105 active:scale-95'
-                  : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:scale-105 active:scale-95'
-              }`}
+            {/* Segmented Dual-State Theme Selector (Desktop in Row 1) */}
+            <div 
+              className="hidden sm:flex items-center p-0.5 rounded-full bg-amber-100/70 dark:bg-[#112019] border border-amber-300/80 dark:border-[#D4AF37]/35 shadow-xs shrink-0"
+              role="group"
+              aria-label="Selector de Modo Claro y Oscuro"
             >
-              {theme === 'light' ? (
-                <Sun className="w-4 h-4 text-amber-600 group-hover:rotate-45 transition-transform duration-300" />
-              ) : (
-                <Moon className="w-4 h-4 text-[#D4AF37] group-hover:-rotate-12 transition-transform duration-300" />
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                id="header-btn-theme-light"
+                aria-pressed={theme === 'light'}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-white text-amber-950 shadow-xs border border-amber-300 font-black scale-102'
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#F3E5AB]'
+                }`}
+                title="☀️ Activar Modo Claro (Champán & Crema)"
+              >
+                <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-600' : 'text-stone-400'}`} />
+                <span>Claro</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                id="header-btn-theme-dark"
+                aria-pressed={theme === 'dark'}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-[#D4AF37] text-stone-950 shadow-xs border border-[#D4AF37] font-black scale-102'
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#F3E5AB]'
+                }`}
+                title="🌙 Activar Modo Oscuro (Verde Imperial & Oro)"
+              >
+                <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-stone-950' : 'text-stone-400'}`} />
+                <span>Oscuro</span>
+              </button>
+            </div>
 
             {/* Desktop-only Utility Buttons (On mobile they appear in Row 2) */}
             <div className="hidden sm:flex items-center gap-1 sm:gap-1.5 shrink-0">
@@ -334,31 +344,43 @@ export const Header: React.FC = () => {
         {/* ========================================================================= */}
         <div className="flex sm:hidden max-w-7xl mx-auto px-2.5 py-1.5 items-center justify-between gap-1.5 bg-[#FAF7F2]/95 dark:bg-[#07130E]/95 border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 shadow-xs relative z-30">
           
-          {/* Theme Toggle Button (Mobile with indicator) */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            id="mobile-btn-theme-toggle"
-            aria-label={theme === 'light' ? 'Modo Claro activo • Clic para activar Modo Oscuro' : 'Modo Oscuro activo • Clic para activar Modo Claro'}
-            title={theme === 'light' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '🌙 Modo Oscuro activo • Clic para activar Modo Claro'}
-            className={`px-2.5 py-1.5 rounded-full border text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5 ${
-              theme === 'light'
-                ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 active:scale-95'
-                : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] active:scale-95'
-            }`}
+          {/* Segmented Dual-State Theme Selector (Mobile in Row 2) */}
+          <div 
+            className="flex items-center p-0.5 rounded-full bg-amber-100/70 dark:bg-[#112019] border border-amber-300/80 dark:border-[#D4AF37]/35 shadow-xs shrink-0"
+            role="group"
+            aria-label="Selector de Modo Claro y Oscuro móvil"
           >
-            {theme === 'light' ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-amber-600" />
-                <span className="text-[11px]">Modo Claro</span>
-              </>
-            ) : (
-              <>
-                <Moon className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span className="text-[11px]">Modo Oscuro</span>
-              </>
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              id="mobile-btn-theme-light"
+              aria-pressed={theme === 'light'}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                theme === 'light'
+                  ? 'bg-white text-amber-950 shadow-xs border border-amber-300 font-black scale-102'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#F3E5AB]'
+              }`}
+              title="☀️ Activar Modo Claro (Champán & Crema)"
+            >
+              <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-600' : 'text-stone-400'}`} />
+              <span>Claro</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              id="mobile-btn-theme-dark"
+              aria-pressed={theme === 'dark'}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-[#D4AF37] text-stone-950 shadow-xs border border-[#D4AF37] font-black scale-102'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#F3E5AB]'
+              }`}
+              title="🌙 Activar Modo Oscuro (Verde Imperial & Oro)"
+            >
+              <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-stone-950' : 'text-stone-400'}`} />
+              <span>Oscuro</span>
+            </button>
+          </div>
 
           {/* Right Action Icons on Mobile */}
           <div className="flex items-center gap-1 shrink-0">

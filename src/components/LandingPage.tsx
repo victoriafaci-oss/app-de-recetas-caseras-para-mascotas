@@ -243,33 +243,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
           {/* Controles: Modo Día/Noche, Idioma y Botón Tarifas */}
           <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 shrink-0">
             
-            {/* Single Compact Theme Toggle Button */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              id="landing-btn-theme-toggle"
-              aria-label={
-                theme === 'light'
-                  ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
-                  : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
-              }
-              title={
-                theme === 'light'
-                  ? (language === 'es' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
-                  : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para activar Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
-              }
-              className={`p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group ${
-                theme === 'light'
-                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 hover:scale-105 active:scale-95'
-                  : 'bg-[#121B16] text-[#F3E5AB] border-[#D4AF37]/30 hover:border-[#D4AF37] hover:scale-105 active:scale-95'
-              }`}
+            {/* Segmented Dual-State Theme Selector */}
+            <div 
+              className="flex items-center p-0.5 rounded-full bg-amber-100/70 dark:bg-[#112019] border border-amber-300/80 dark:border-[#D4AF37]/35 shadow-xs shrink-0"
+              role="group"
+              aria-label="Selector de Modo Claro y Oscuro"
             >
-              {theme === 'light' ? (
-                <Sun className="w-4 h-4 text-amber-600 group-hover:rotate-45 transition-transform duration-300" />
-              ) : (
-                <Moon className="w-4 h-4 text-[#D4AF37] group-hover:-rotate-12 transition-transform duration-300" />
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                id="landing-btn-theme-light"
+                aria-pressed={theme === 'light'}
+                className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-white text-amber-950 shadow-xs border border-amber-300 font-black scale-102'
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#F3E5AB]'
+                }`}
+                title="☀️ Activar Modo Claro (Champán & Crema)"
+              >
+                <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-600' : 'text-stone-400'}`} />
+                <span>Claro</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                id="landing-btn-theme-dark"
+                aria-pressed={theme === 'dark'}
+                className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-[#D4AF37] text-stone-950 shadow-xs border border-[#D4AF37] font-black scale-102'
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#F3E5AB]'
+                }`}
+                title="🌙 Activar Modo Oscuro (Verde Imperial & Oro)"
+              >
+                <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-stone-950' : 'text-stone-400'}`} />
+                <span>Oscuro</span>
+              </button>
+            </div>
 
             {/* Botón Volver a la App (Permite regresar inmediatamente a la aplicación) */}
             <button

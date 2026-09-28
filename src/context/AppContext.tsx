@@ -123,11 +123,15 @@ export const applyThemeToDom = (targetTheme: ThemeMode) => {
       root.classList.remove('light');
       root.setAttribute('data-theme', 'dark');
       root.style.colorScheme = 'dark';
+      root.style.backgroundColor = '#0A0F0D';
+      root.style.color = '#EDE8DF';
       if (body) {
         body.classList.add('dark');
         body.classList.remove('light');
         body.setAttribute('data-theme', 'dark');
         body.style.colorScheme = 'dark';
+        body.style.backgroundColor = '#0A0F0D';
+        body.style.color = '#EDE8DF';
       }
       if (meta) meta.setAttribute('content', '#0A0F0D');
       if (appleMeta) appleMeta.setAttribute('content', 'black-translucent');
@@ -136,11 +140,15 @@ export const applyThemeToDom = (targetTheme: ThemeMode) => {
       root.classList.add('light');
       root.setAttribute('data-theme', 'light');
       root.style.colorScheme = 'light';
+      root.style.backgroundColor = '#FAF7F2';
+      root.style.color = '#1c1917';
       if (body) {
         body.classList.remove('dark');
         body.classList.add('light');
         body.setAttribute('data-theme', 'light');
         body.style.colorScheme = 'light';
+        body.style.backgroundColor = '#FAF7F2';
+        body.style.color = '#1c1917';
       }
       if (meta) meta.setAttribute('content', '#FAF7F2');
       if (appleMeta) appleMeta.setAttribute('content', 'default');

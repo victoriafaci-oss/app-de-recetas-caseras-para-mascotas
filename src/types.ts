@@ -126,6 +126,7 @@ export interface Recipe {
   instructions: string[];
   chefTips?: string;
   storageInfo?: string;
+  imageUrl?: string;
   macronutrients: {
     proteinPct: number;
     fatPct: number;
