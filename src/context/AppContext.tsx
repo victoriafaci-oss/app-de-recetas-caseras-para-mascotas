@@ -364,29 +364,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return 'light';
   });
 
-  const SUPPORTED_LANG_CODES: Language[] = ['es', 'en', 'fr', 'de', 'it', 'pt', 'nl'];
+  // Fixed language: Spanish only
+  const [language] = useState<Language>('es');
 
-  // Language state (default: 'es' with multilingual support for 7 languages)
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = safeStorage.getItem(LANG_KEY);
-      if (saved && (SUPPORTED_LANG_CODES as string[]).includes(saved)) {
-        return saved as Language;
-      }
-      return 'es';
-    }
-    return 'es';
-  });
-
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    if (typeof window !== 'undefined') {
-      safeStorage.setItem(LANG_KEY, lang);
-    }
+  const setLanguage = (_lang?: Language) => {
+    // Single language: Spanish
   };
 
   const t = (key: TranslationKey): string => {
-    return getTranslation(language, key);
+    return getTranslation('es', key);
   };
 
   // Pets state (max 4)
@@ -697,11 +683,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.lang = language;
-    document.title = language === 'en' 
-      ? 'Homemade Pet Recipes - Homemade Nutrition & Daily Care'
-      : 'Recetas caseras para mascotas - Nutrición casera y hábitos diarios';
-  }, [language]);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = 'es';
+      document.title = 'PawLove - Recetas caseras para mascotas, nutrición y hábitos diarios';
+    }
+  }, []);
 
   useEffect(() => {
     safeStorage.setItem(PETS_KEY, JSON.stringify(pets));
@@ -735,8 +721,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (notify) {
       showToast(
         newTheme === 'light'
-          ? (language === 'es' ? '☀️ Modo Claro activado (Champán & Crema)' : '☀️ Light Mode activated')
-          : (language === 'es' ? '🌙 Modo Oscuro activado (Verde Imperial & Oro)' : '🌙 Dark Mode activated'),
+          ? '☀️ Modo Claro activado (Champán & Crema)'
+          : '🌙 Modo Oscuro activado (Verde Imperial & Oro)',
         'info'
       );
     }
@@ -1045,7 +1031,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (data.customRecipes && Array.isArray(data.customRecipes)) setCustomRecipes(data.customRecipes);
       if (data.weeklyTracking && typeof data.weeklyTracking === 'object') setWeeklyTracking(data.weeklyTracking);
       if (data.theme && (data.theme === 'dark' || data.theme === 'light')) setTheme(data.theme);
-      if (data.language && (SUPPORTED_LANG_CODES as string[]).includes(data.language)) setLanguage(data.language);
       showToast('Datos restaurados con éxito.', 'success');
       playLuxuryChime('success');
       return true;

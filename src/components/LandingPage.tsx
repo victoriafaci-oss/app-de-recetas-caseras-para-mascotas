@@ -4,7 +4,6 @@ import { getLandingTranslation } from '../data/landingTranslations';
 import { RECIPES_CATALOG } from '../data/mockData';
 import { PRICING_PLANS, STRIPE_PAYMENT_LINKS, openStripeCheckout, redirectToStripeCheckout } from '../data/pricingData';
 import { FloatingPawsBackground } from './FloatingPawsBackground';
-import { LanguageSelector } from './LanguageSelector';
 import { 
   ChefHat, 
   Sparkles, 
@@ -85,9 +84,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
     showToast
   } = useApp();
   const lt = getLandingTranslation(language);
-
-  // Miniatura de muestra de recetas
-  const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
 
   // Modal de textos legales (Términos y Condiciones / Política de Privacidad)
   const [legalModalType, setLegalModalType] = useState<'terminos' | 'privacidad' | null>(null);
@@ -274,9 +270,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
                 <Moon className="w-4 h-4 text-[#D4AF37] group-hover:-rotate-12 transition-transform duration-300" />
               )}
             </button>
-
-            {/* Selector de Idioma (Mundial / Europa) */}
-            <LanguageSelector idPrefix="landing-lang" align="right" />
 
             {/* Botón Volver a la App (Permite regresar inmediatamente a la aplicación) */}
             <button
@@ -721,19 +714,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
               key={dish.id}
               className="p-3.5 rounded-2xl bg-white/90 dark:bg-[#111A15]/90 backdrop-blur-md border border-stone-200 dark:border-[#E8B84A]/25 flex items-center gap-3.5 shadow-sm hover:border-amber-400 dark:hover:border-[#E8B84A]/50 transition-colors"
             >
-              <div className="w-13 h-13 rounded-xl overflow-hidden bg-stone-100 dark:bg-[#0A0F0D] shrink-0 border border-stone-200 dark:border-[#E8B84A]/20 flex items-center justify-center">
-                {!failedImageIds[dish.id] && dish.imageUrl ? (
-                  <img
-                    src={dish.imageUrl}
-                    alt={dish.title}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    loading="lazy"
-                    onError={() => setFailedImageIds(prev => ({ ...prev, [dish.id]: true }))}
-                  />
-                ) : (
-                  <Utensils className="w-5 h-5 text-amber-600 dark:text-[#E8B84A]" />
-                )}
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/15 via-amber-100/20 to-emerald-500/10 dark:from-[#1B2F25] dark:to-[#16271F] border border-amber-500/25 dark:border-[#E8B84A]/30 shrink-0 flex items-center justify-center text-xl shadow-2xs">
+                <span>{dish.species === 'dog' ? '🐕' : dish.species === 'cat' ? '🐈' : '🐾'}</span>
               </div>
 
               <div className="flex-1 min-w-0">
@@ -1384,9 +1366,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToPricing, onGoToA
             <Moon className="w-4 h-4 text-[#D4AF37]" />
           )}
         </button>
-
-        {/* Selector de Idiomas con despliegue hacia arriba */}
-        <LanguageSelector idPrefix="landing-mobile-lang" compact={true} align="left" dropDirection="up" />
 
         {/* Botón Volver a la App (Mobile) */}
         <button

@@ -627,17 +627,30 @@ export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petTo
 
               {/* Upload Button + Alternate URL */}
               <div className="flex-1 w-full space-y-2">
-                <label className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#B8860B] hover:bg-[#9a7009] dark:bg-[#D4AF37] dark:hover:bg-[#c49f2b] text-white dark:text-stone-950 font-bold text-xs shadow-xs cursor-pointer transition-all active:scale-[0.98]">
-                  <Upload className="w-4 h-4" />
-                  <span>Subir foto desde la galería o hacer foto</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <label className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#B8860B] hover:bg-[#9a7009] dark:bg-[#D4AF37] dark:hover:bg-[#c49f2b] text-white dark:text-stone-950 font-bold text-xs shadow-xs cursor-pointer transition-all active:scale-[0.98]">
+                    <Upload className="w-4 h-4" />
+                    <span>{language === 'es' ? 'Abrir Galería / Carrete' : 'Open Photo Gallery'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-semibold text-xs border border-stone-300 dark:border-stone-700 shadow-xs cursor-pointer transition-all active:scale-[0.98]">
+                    <Camera className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
+                    <span>{language === 'es' ? 'Hacer foto con cámara' : 'Take photo with camera'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
 
                 {uploadError && (
                   <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
@@ -648,7 +661,7 @@ export const AddPetModal: React.FC<AddPetModalProps> = ({ isOpen, onClose, petTo
                 <div className="relative">
                   <input
                     type="url"
-                    placeholder="O pega una URL de internet (opcional)"
+                    placeholder={language === 'es' ? "O pega una URL de internet (opcional)" : "Or paste web image URL (optional)"}
                     value={avatarUrl.startsWith('data:') ? '' : avatarUrl}
                     onChange={(e) => setAvatarUrl(e.target.value)}
                     className="w-full px-3 py-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0A0F0D] text-[11px] text-stone-900 dark:text-stone-100 focus:outline-hidden"

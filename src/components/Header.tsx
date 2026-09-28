@@ -25,8 +25,6 @@ import {
 } from 'lucide-react';
 import { AddPetModal } from './AddPetModal';
 import { formatLocalDateKey } from '../utils/dietPlanner';
-import { LanguageSelector } from './LanguageSelector';
-import { SUPPORTED_LANGUAGES } from '../data/languages';
 
 export const Header: React.FC = () => {
   const { 
@@ -245,7 +243,7 @@ export const Header: React.FC = () => {
               </button>
             )}
 
-            {/* Single Compact Theme Toggle Button (Always visible on mobile & desktop in Row 1) */}
+            {/* Single Compact Theme Toggle Button (Desktop in Row 1; on mobile it is in Row 2 with clear label) */}
             <button
               type="button"
               onClick={toggleTheme}
@@ -260,7 +258,7 @@ export const Header: React.FC = () => {
                   ? (language === 'es' ? '☀️ Modo Claro activo • Clic para cambiar a Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
                   : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para cambiar a Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
               }
-              className={`p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center group ${
+              className={`hidden sm:flex p-1.5 sm:p-2 rounded-full border transition-all shadow-xs shrink-0 cursor-pointer items-center justify-center group ${
                 theme === 'light'
                   ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 hover:scale-105 active:scale-95'
                   : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:scale-105 active:scale-95'
@@ -304,7 +302,7 @@ export const Header: React.FC = () => {
               <button
                 onClick={() => setActiveTab('agenda')}
                 className="relative p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
-                title={language === 'es' ? 'Avisos y agenda médica' : 'Reminders & agenda'}
+                title="Avisos y agenda médica"
                 id="header-btn-agenda-bell-desktop"
               >
                 <Bell className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
@@ -315,14 +313,11 @@ export const Header: React.FC = () => {
                 )}
               </button>
 
-              {/* Language Selector (Desktop) */}
-              <LanguageSelector idPrefix="header-lang-desktop" align="right" compact={true} />
-
               {/* Settings & Data Utilities */}
               <button
                 onClick={() => setShowSettingsModal(true)}
                 className="p-1.5 sm:p-2 rounded-full bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/30 text-stone-700 dark:text-[#F3E5AB] hover:scale-105 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
-                title={language === 'es' ? 'Ajustes y gestión de datos' : 'Settings & Data'}
+                title="Ajustes y apariencia"
                 id="header-btn-settings-desktop"
               >
                 <Settings className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
@@ -335,38 +330,33 @@ export const Header: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* ROW 2 (MOBILE ONLY): PHONE CONTROLS (IDIOMA, SELECTOR CLARO/OSCURO, AGENDA, AJUSTES) */}
+        {/* ROW 2 (MOBILE ONLY): CONTROLES MÓVIL (MODO CLARO/OSCURO, AGENDA, AJUSTES)  */}
         {/* ========================================================================= */}
         <div className="flex sm:hidden max-w-7xl mx-auto px-2.5 py-1.5 items-center justify-between gap-1.5 bg-[#FAF7F2]/95 dark:bg-[#07130E]/95 border-b border-[#E8DCCB] dark:border-[#D4AF37]/20 shadow-xs relative z-30">
           
-          {/* 1. Language Selector (Mobile) */}
-          <LanguageSelector idPrefix="mobile-lang" compact={true} align="left" />
-
-          {/* 2. Single Compact Theme Toggle Button (Mobile) */}
+          {/* Theme Toggle Button (Mobile with indicator) */}
           <button
             type="button"
             onClick={toggleTheme}
             id="mobile-btn-theme-toggle"
-            aria-label={
-              theme === 'light'
-                ? (language === 'es' ? 'Modo Claro activo • Clic para cambiar a Modo Oscuro' : 'Light Mode active • Click for Dark Mode')
-                : (language === 'es' ? 'Modo Oscuro activo • Clic para cambiar a Modo Claro' : 'Dark Mode active • Click for Light Mode')
-            }
-            title={
-              theme === 'light'
-                ? (language === 'es' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '☀️ Light Mode active • Click for Dark Mode')
-                : (language === 'es' ? '🌙 Modo Oscuro activo • Clic para activar Modo Claro' : '🌙 Dark Mode active • Click for Light Mode')
-            }
-            className={`p-1.5 rounded-xl border transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center ${
+            aria-label={theme === 'light' ? 'Modo Claro activo • Clic para activar Modo Oscuro' : 'Modo Oscuro activo • Clic para activar Modo Claro'}
+            title={theme === 'light' ? '☀️ Modo Claro activo • Clic para activar Modo Oscuro' : '🌙 Modo Oscuro activo • Clic para activar Modo Claro'}
+            className={`px-2.5 py-1.5 rounded-full border text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5 ${
               theme === 'light'
                 ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:border-amber-400 active:scale-95'
                 : 'bg-[#112019] text-[#F3E5AB] border-[#D4AF37]/35 hover:border-[#D4AF37] active:scale-95'
             }`}
           >
             {theme === 'light' ? (
-              <Sun className="w-4 h-4 text-amber-600" />
+              <>
+                <Sun className="w-3.5 h-3.5 text-amber-600" />
+                <span className="text-[11px]">Modo Claro</span>
+              </>
             ) : (
-              <Moon className="w-4 h-4 text-[#D4AF37]" />
+              <>
+                <Moon className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span className="text-[11px]">Modo Oscuro</span>
+              </>
             )}
           </button>
 
@@ -554,41 +544,6 @@ export const Header: React.FC = () => {
                       </div>
                     </div>
                   </button>
-                </div>
-              </div>
-
-              {/* Language Switch Section */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-[#16271F] border border-[#E8DCCB] dark:border-[#D4AF37]/20 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="font-bold text-stone-900 dark:text-[#F3E5AB]">
-                    {language === 'es' ? 'Idioma de la Aplicación' : 'Application Language'}
-                  </div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400 dark:text-[#E8B84A]/70 font-mono">
-                    {language.toUpperCase()}
-                  </span>
-                </div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">
-                  {language === 'es' ? 'Selecciona tu idioma preferido para toda la plataforma' : 'Select your preferred language for the whole platform'}
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
-                  {SUPPORTED_LANGUAGES.map((lang) => {
-                    const isSelected = language === lang.code;
-                    return (
-                      <button
-                        key={lang.code}
-                        type="button"
-                        onClick={() => setLanguage(lang.code)}
-                        className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 shadow-xs'
-                            : 'bg-stone-200/60 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 hover:bg-stone-300/80 dark:hover:bg-stone-700'
-                        }`}
-                      >
-                        <span className="text-sm">{lang.flag}</span>
-                        <span className="text-[11px]">{lang.nativeName}</span>
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
 

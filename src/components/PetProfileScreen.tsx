@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { calculateMER, getConditionClinicalAlerts } from '../utils/nutrition';
 import { RECIPES_CATALOG } from '../data/mockData';
@@ -39,7 +39,9 @@ import {
   CalendarRange,
   ChevronRight,
   Eye,
-  Zap
+  Zap,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 export const PetProfileScreen: React.FC = () => {
@@ -71,6 +73,82 @@ export const PetProfileScreen: React.FC = () => {
   const [showAddPetModal, setShowAddPetModal] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  
+  // Direct photo upload state
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setPhotoMessage(language === 'es' ? 'Por favor selecciona un archivo de imagen válido (JPG, PNG, HEIC, WebP).' : 'Please select a valid image file.');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    setPhotoMessage(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDimension = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          updatePet(selectedPet.id, { avatarUrl: compressedDataUrl });
+        } else {
+          updatePet(selectedPet.id, { avatarUrl: event.target?.result as string });
+        }
+        setAvatarError(false);
+        setIsUploadingPhoto(false);
+        setShowPhotoOptions(false);
+        setPhotoMessage(language === 'es' ? `¡Foto de ${selectedPet.name} actualizada!` : `Photo of ${selectedPet.name} updated!`);
+        setTimeout(() => setPhotoMessage(null), 3500);
+      };
+      img.onerror = () => {
+        setIsUploadingPhoto(false);
+        setPhotoMessage(language === 'es' ? 'No se pudo procesar la foto.' : 'Could not process photo.');
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setIsUploadingPhoto(false);
+      setPhotoMessage(language === 'es' ? 'Error al leer el archivo.' : 'Error reading file.');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleRemovePhoto = () => {
+    updatePet(selectedPet.id, { avatarUrl: '' });
+    setShowPhotoOptions(false);
+    setPhotoMessage(language === 'es' ? 'Foto eliminada. Se usará el avatar predeterminado.' : 'Photo removed.');
+    setTimeout(() => setPhotoMessage(null), 3000);
+  };
   
   // Walk logger state
   const [showWalkForm, setShowWalkForm] = useState(false);
@@ -242,26 +320,74 @@ export const PetProfileScreen: React.FC = () => {
       <div className="rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#121B15] border border-stone-200 dark:border-[#D4AF37]/30 shadow-md">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           
-          {/* Avatar Picture */}
-          <div className="relative shrink-0">
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-[#D4AF37] shadow-lg">
-              {selectedPet.avatarUrl && !avatarError ? (
-                <img
-                  src={selectedPet.avatarUrl}
-                  alt={selectedPet.name}
-                  referrerPolicy="no-referrer"
-                  onError={() => setAvatarError(true)}
-                  className="w-full h-full object-cover rounded-[20px]"
-                />
-              ) : (
-                <div className="w-full h-full bg-stone-100 dark:bg-stone-900 rounded-[20px] flex items-center justify-center text-4xl">
-                  {selectedPet.avatarIcon || (selectedPet.species === 'dog' ? '🐕' : '🐈')}
-                </div>
-              )}
+          {/* Avatar Picture with Direct Photo Uploader */}
+          <div className="relative shrink-0 flex flex-col items-center">
+            <div className="relative group">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden p-1 bg-[#D4AF37] shadow-lg relative">
+                {selectedPet.avatarUrl && !avatarError ? (
+                  <img
+                    src={selectedPet.avatarUrl}
+                    alt={selectedPet.name}
+                    referrerPolicy="no-referrer"
+                    onError={() => setAvatarError(true)}
+                    className="w-full h-full object-cover rounded-[20px]"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-stone-100 dark:bg-stone-900 rounded-[20px] flex items-center justify-center text-4xl">
+                    {selectedPet.avatarIcon || (selectedPet.species === 'dog' ? '🐕' : '🐈')}
+                  </div>
+                )}
+
+                {/* Loading spinner overlay */}
+                {isUploadingPhoto && (
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-xs rounded-[20px] flex items-center justify-center text-white text-xs font-bold">
+                    <span>{language === 'es' ? 'Guardando...' : 'Saving...'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Floating Camera Button to change photo directly */}
+              <button
+                type="button"
+                onClick={() => setShowPhotoOptions(true)}
+                className="absolute -top-1 -right-1 p-2 rounded-full bg-[#B8860B] hover:bg-[#9a7009] dark:bg-[#D4AF37] dark:hover:bg-[#c49f2b] text-white dark:text-stone-950 shadow-md border-2 border-white dark:border-[#121B15] transition-all transform active:scale-90 hover:scale-105 cursor-pointer z-10"
+                title={language === 'es' ? 'Subir o cambiar foto de la mascota' : 'Upload or change pet photo'}
+                aria-label={language === 'es' ? 'Subir foto desde la galería' : 'Upload photo from gallery'}
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+
+              <span className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-stone-900 text-stone-900 dark:text-[#D4AF37] border border-stone-200 dark:border-[#D4AF37]/40 shadow-md">
+                {selectedPet.avatarIcon} {selectedPet.species === 'dog' ? 'Canino' : 'Felino'}
+              </span>
             </div>
-            <span className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-stone-900 text-stone-900 dark:text-[#D4AF37] border border-stone-200 dark:border-[#D4AF37]/40 shadow-md">
-              {selectedPet.avatarIcon} {selectedPet.species === 'dog' ? 'Canino' : 'Felino'}
-            </span>
+
+            {/* Quick text button under photo */}
+            <button
+              type="button"
+              onClick={() => setShowPhotoOptions(true)}
+              className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#B8860B] dark:text-[#D4AF37] hover:underline cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>{language === 'es' ? 'Cambiar foto' : 'Change photo'}</span>
+            </button>
+
+            {/* Hidden file inputs for Gallery and Camera */}
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoFileChange}
+              className="hidden"
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoFileChange}
+              className="hidden"
+            />
           </div>
 
           {/* Details */}
@@ -1763,6 +1889,85 @@ export const PetProfileScreen: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Photo Options Modal */}
+      {showPhotoOptions && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-sm rounded-2xl p-6 bg-white dark:bg-[#121B15] border border-stone-200 dark:border-[#D4AF37]/30 shadow-2xl text-stone-900 dark:text-stone-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-stone-200 dark:border-[#D4AF37]/20 pb-3">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-[#B8860B] dark:text-[#D4AF37]" />
+                <h3 className="font-bold text-sm text-stone-900 dark:text-[#F3E5AB]">
+                  {language === 'es' ? `Foto de ${selectedPet.name}` : `${selectedPet.name}'s Photo`}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPhotoOptions(false)}
+                className="p-1 rounded-lg text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-stone-600 dark:text-stone-300">
+              {language === 'es' 
+                ? 'Elige una foto desde tu galería/carrete o haz una foto con la cámara (compatible con iPhone y Android):' 
+                : 'Choose a photo from your gallery/library or take a new one with your phone camera:'}
+            </p>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  galleryInputRef.current?.click();
+                }}
+                className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-[#B8860B] hover:bg-[#9a7009] dark:bg-[#D4AF37] dark:hover:bg-[#c49f2b] text-white dark:text-stone-950 flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{language === 'es' ? '📱 Abrir Galería / Carrete (Fototeca)' : '📱 Open Photo Library / Gallery'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  cameraInputRef.current?.click();
+                }}
+                className="w-full py-3 px-4 rounded-xl font-semibold text-xs border border-stone-300 dark:border-stone-700 bg-stone-50 hover:bg-stone-100 dark:bg-stone-900 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <Camera className="w-4 h-4 text-[#B8860B] dark:text-[#D4AF37]" />
+                <span>{language === 'es' ? '📷 Hacer foto con la cámara' : '📷 Take photo with camera'}</span>
+              </button>
+
+              {selectedPet.avatarUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="w-full py-2.5 px-4 rounded-xl font-medium text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{language === 'es' ? 'Quitar foto y usar icono' : 'Remove photo'}</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowPhotoOptions(false)}
+              className="w-full py-2 text-center text-xs text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-colors"
+            >
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating feedback message */}
+      {photoMessage && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-900 text-white dark:bg-[#D4AF37] dark:text-stone-950 shadow-xl border border-stone-700 dark:border-[#D4AF37] text-xs font-bold animate-in fade-in slide-in-from-bottom-2">
+          {photoMessage}
         </div>
       )}
     </div>

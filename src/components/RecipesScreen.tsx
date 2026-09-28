@@ -45,7 +45,6 @@ export const RecipesScreen: React.FC = () => {
   // Scaler state inside modal
   const [scalerPetWeight, setScalerPetWeight] = useState(selectedPet ? selectedPet.weightKg : 12);
   const [scalerDays, setScalerDays] = useState(3);
-  const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
 
   const allRecipes = [...customRecipes, ...RECIPES_CATALOG];
 
@@ -314,45 +313,33 @@ export const RecipesScreen: React.FC = () => {
                 key={recipe.id}
                 className="rounded-3xl overflow-hidden bg-white dark:bg-[#112019] border border-[#E8DCCB] dark:border-[#D4AF37]/25 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col group"
               >
-                {/* Recipe Image or Header */}
-                <div className="h-44 relative overflow-hidden bg-gradient-to-br from-[#12241C] to-[#0A1610] flex items-center justify-center">
-                  {!failedImageIds[recipe.id] && recipe.imageUrl ? (
-                    <img 
-                      src={recipe.imageUrl} 
-                      alt={recipe.title}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      onError={() => {
-                        setFailedImageIds(prev => ({ ...prev, [recipe.id]: true }));
-                      }}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-amber-100 to-amber-200 dark:from-[#16271F] dark:to-[#112019]">
-                      <Utensils className="w-10 h-10 text-[#B8860B] dark:text-[#D4AF37] opacity-60 mb-1" />
-                      <span className="text-[11px] font-bold text-stone-700 dark:text-[#F3E5AB]">Plato Gourmet</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
-                  
+                {/* Recipe Card Header (Sin imágenes de platos) */}
+                <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-500/10 via-amber-100/20 to-transparent dark:from-[#16271F] dark:via-[#112019] dark:to-transparent border-b border-[#E8DCCB] dark:border-[#D4AF37]/20">
                   {/* Species & Stage Badges */}
-                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 border border-white/20">
-                      <span>{recipe.species === 'dog' ? '🐕 Perro' : recipe.species === 'cat' ? '🐈 Gato' : '🐾 Ambos'}</span>
-                    </span>
-                    {recipe.growthStage && (
-                      <span className="px-2.5 py-1 rounded-full bg-[#B8860B]/80 backdrop-blur-md text-white text-[10px] font-bold border border-amber-300/40">
-                        {recipe.growthStage === 'puppy_kitten' ? '🍼 Cachorro' : recipe.growthStage === 'senior' ? '👑 Senior' : 'Adulto'}
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5">
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="px-2.5 py-0.5 rounded-full bg-stone-900/80 dark:bg-black/60 text-white text-[10px] font-bold flex items-center gap-1 border border-white/10">
+                        <span>{recipe.species === 'dog' ? '🐕 Perro' : recipe.species === 'cat' ? '🐈 Gato' : '🐾 Ambos'}</span>
                       </span>
-                    )}
+                      {recipe.growthStage && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#B8860B] dark:bg-[#D4AF37] text-white dark:text-stone-950 text-[10px] font-extrabold shadow-2xs">
+                          {recipe.growthStage === 'puppy_kitten' ? '🍼 Cachorro' : recipe.growthStage === 'senior' ? '👑 Senior' : 'Adulto'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/90 dark:bg-stone-900/90 text-[#B8860B] dark:text-[#F3E5AB] border border-[#E8DCCB] dark:border-[#D4AF37]/30">
+                      {recipe.kcalPer100g} kcal/100g
+                    </span>
                   </div>
 
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    {recipe.frenchTitle && (
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-amber-200 font-semibold block">{recipe.frenchTitle}</span>
-                    )}
-                    <h3 className="font-editorial text-lg font-bold leading-tight drop-shadow-sm">{recipe.title}</h3>
-                  </div>
+                  {recipe.frenchTitle && (
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#B8860B] dark:text-[#E8B84A] font-semibold block mb-0.5">
+                      {recipe.frenchTitle}
+                    </span>
+                  )}
+                  <h3 className="font-editorial text-lg sm:text-xl font-bold leading-tight text-stone-900 dark:text-[#F3E5AB]">
+                    {recipe.title}
+                  </h3>
                 </div>
 
                 {/* Body Details */}

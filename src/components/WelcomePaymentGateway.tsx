@@ -4,7 +4,6 @@ import { PRICING_PLANS, LEGAL_TERMS_SUMMARY, STRIPE_PAYMENT_LINKS, openStripeChe
 import { PricingPlan, PaymentMethodType } from '../types';
 import { PhoneVerificationModal } from './PhoneVerificationModal';
 import { PaymentCheckoutModal } from './PaymentCheckoutModal';
-import { LanguageSelector } from './LanguageSelector';
 import { 
   Check, 
   Sparkles, 
@@ -161,9 +160,6 @@ export const WelcomePaymentGateway: React.FC<WelcomePaymentGatewayProps> = ({
               </button>
             ) : null}
             
-            {/* Language Selector */}
-            <LanguageSelector idPrefix="gateway-lang" align="right" />
-
             {/* Single Theme Toggle Button */}
             <button
               type="button"

@@ -116,7 +116,6 @@ export interface Recipe {
   category: 'renal' | 'weight_control' | 'sensitive_digestion' | 'collagen_broth' | 'healthy_snacks' | 'joint_omega3' | 'vitality_gourmet' | 'high_performance';
   categoryLabel: string;
   description: string;
-  imageUrl?: string;
   kcalPer100g: number;
   prepTimeMin: number;
   cookTimeMin: number;

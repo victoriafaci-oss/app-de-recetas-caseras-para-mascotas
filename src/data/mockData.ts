@@ -751,20 +751,26 @@ const CONVERTED_SNACKS_DESSERTS: Recipe[] = MASTER_SNACKS_DESSERTS.map((snk) => 
 });
 
 // Build consolidated master catalog with deduplication guarantee (304 total recipes including the complete 180 guide recipes, desserts & snacks)
+// Removed all mismatched stock images to ensure 100% veterinary accuracy and avoid misleading dish photos
 const consolidatedRecipesMap = new Map<string, Recipe>();
 
-INITIAL_BASE_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-MASTER_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-EXTENDED_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-REMAINING_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-CONVERTED_SNACKS_DESSERTS.forEach(r => consolidatedRecipesMap.set(r.id, r));
-DOG_PUPPY_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-DOG_ADULT_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-DOG_SENIOR_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-CAT_KITTEN_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-CAT_ADULT_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-CAT_SENIOR_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
-HIGH_PERFORMANCE_DOG_RECIPES.forEach(r => consolidatedRecipesMap.set(r.id, r));
+const addRecipeWithoutMismatchedImage = (r: Recipe) => {
+  const { imageUrl, ...rest } = r;
+  consolidatedRecipesMap.set(r.id, rest as Recipe);
+};
+
+INITIAL_BASE_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+MASTER_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+EXTENDED_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+REMAINING_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+CONVERTED_SNACKS_DESSERTS.forEach(addRecipeWithoutMismatchedImage);
+DOG_PUPPY_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+DOG_ADULT_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+DOG_SENIOR_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+CAT_KITTEN_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+CAT_ADULT_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+CAT_SENIOR_RECIPES.forEach(addRecipeWithoutMismatchedImage);
+HIGH_PERFORMANCE_DOG_RECIPES.forEach(addRecipeWithoutMismatchedImage);
 
 export const RECIPES_CATALOG: Recipe[] = Array.from(consolidatedRecipesMap.values());
 
